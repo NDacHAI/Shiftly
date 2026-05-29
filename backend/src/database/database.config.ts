@@ -6,6 +6,10 @@ import { createDatabaseOptions } from './database.options';
 export const databaseConfig = (
     configService: ConfigService,
 ): TypeOrmModuleOptions => ({
-    ...createDatabaseOptions((key) => configService.getOrThrow<string>(key)),
+    ...createDatabaseOptions((key, required = true) =>
+        required
+            ? configService.getOrThrow<string>(key)
+            : configService.get<string>(key),
+    ),
     autoLoadEntities: true,
 });

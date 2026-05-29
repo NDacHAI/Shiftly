@@ -19,8 +19,11 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "migration:generate": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate src/database/migrations/Init -d src/database/data-source.ts",
     "migration:run": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/database/data-source.ts",
+    "migration:run:prod": "node ./node_modules/typeorm/cli.js migration:run -d dist/database/data-source.js",
     "migration:revert": "node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d src/database/data-source.ts",
-    "seed:admin": "node -r ts-node/register -r tsconfig-paths/register src/database/seeders/admin-user.seed.ts"
+    "migration:revert:prod": "node ./node_modules/typeorm/cli.js migration:revert -d dist/database/data-source.js",
+    "seed:admin": "node -r ts-node/register -r tsconfig-paths/register src/database/seeders/admin-user.seed.ts",
+    "seed:admin:prod": "node dist/database/seeders/admin-user.seed.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

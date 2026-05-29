@@ -6,8 +6,8 @@ import { User } from '@/module/user/entities/user.entity';
 import dataSource from '../data-source';
 
 const scrypt = promisify(scryptCallback);
-const adminEmail = 'admin@admin.com';
-const adminPassword = 'admin123';
+const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@admin.com';
+const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123';
 
 async function hashPassword(password: string): Promise<string> {
     const salt = randomBytes(16).toString('hex');
@@ -27,7 +27,6 @@ async function seedAdminUser(): Promise<void> {
     if (existingAdmin) {
         existingAdmin.role = UserRole.Admin;
         existingAdmin.isActive = true;
-        existingAdmin.password = await hashPassword(adminPassword);
 
         await userRepository.save(existingAdmin);
         return;

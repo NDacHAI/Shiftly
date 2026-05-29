@@ -3,10 +3,10 @@ import { DataSource } from 'typeorm';
 import { createDatabaseOptions } from './database.options';
 
 export default new DataSource({
-    ...createDatabaseOptions((key) => {
+    ...createDatabaseOptions((key, required = true) => {
         const value = process.env[key];
 
-        if (!value) {
+        if (required && !value) {
             throw new Error(`Missing environment variable: ${key}`);
         }
 
