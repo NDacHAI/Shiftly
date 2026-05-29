@@ -5,14 +5,11 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { randomBytes, scrypt as scryptCallback } from 'crypto';
-import { promisify } from 'util';
 import { QueryFailedError, Repository } from 'typeorm';
 import { UserRole } from '@/common/enum/role.enum';
+import { PasswordService } from '@/common/services/password.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-
-const scrypt = promisify(scryptCallback);
 
 export type CreateUserPayload = {
     email: string;
@@ -20,13 +17,14 @@ export type CreateUserPayload = {
     role?: UserRole;
 };
 
-export type UserResponse = Omit<User, 'password'>;
+export type UserResponse = Omit<User, 'password' | 'refreshTokenHash'>;
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
+        private readonly passwordService: PasswordService,
     ) { }
 
     async findAll(): Promise<UserResponse[]> {
@@ -43,6 +41,31 @@ export class UserService {
         return this.toResponse(user);
     }
 
+    async findByEmail(email: string): Promise<User | null> {
+        return this.userRepository.findOne({
+            where: { email: email.trim().toLowerCase() },
+        });
+    }
+
+    async findEntityById(id: number): Promise<User> {
+        return this.findUserById(id);
+    }
+
+    async updateRefreshTokenHash(
+        id: number,
+        refreshToken: string,
+    ): Promise<void> {
+        await this.userRepository.update(id, {
+            refreshTokenHash: await this.passwordService.hash(refreshToken),
+        });
+    }
+
+    async clearRefreshTokenHash(id: number): Promise<void> {
+        await this.userRepository.update(id, {
+            refreshTokenHash: null,
+        });
+    }
+
     async create(payload: CreateUserPayload): Promise<UserResponse> {
         const email = payload.email.trim().toLowerCase();
         const existedUser = await this.userRepository.findOne({
@@ -55,7 +78,7 @@ export class UserService {
 
         const user = this.userRepository.create({
             email,
-            password: await this.hashPassword(payload.password),
+            password: await this.passwordService.hash(payload.password),
             role: payload.role ?? UserRole.User,
         });
 
@@ -85,7 +108,7 @@ export class UserService {
         }
 
         if (payload.password !== undefined) {
-            user.password = await this.hashPassword(payload.password);
+            user.password = await this.passwordService.hash(payload.password);
         }
 
         const savedUser = await this.userRepository.save(user);
@@ -118,17 +141,11 @@ export class UserService {
         return user;
     }
 
-    private async hashPassword(password: string): Promise<string> {
-        const salt = randomBytes(16).toString('hex');
-        const hash = (await scrypt(password, salt, 64)) as Buffer;
-
-        return `${salt}:${hash.toString('hex')}`;
-    }
-
     private toResponse(user: User): UserResponse {
-        const { password, ...response } = user;
+        const { password, refreshTokenHash, ...response } = user;
 
         void password;
+        void refreshTokenHash;
 
         return response;
     }
