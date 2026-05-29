@@ -12,9 +12,6 @@ export class User {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ length: 100 })
-    fullName!: string;
-
     @Column({ unique: true, length: 150 })
     email!: string;
 

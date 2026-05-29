@@ -19,6 +19,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
+    "tsBuildInfoFile": "./.cache/tsconfig.tsbuildinfo",
     "paths": {
       "@/*": [
         "./src/*"
