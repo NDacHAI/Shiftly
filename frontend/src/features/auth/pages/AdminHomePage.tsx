@@ -1,3 +1,5 @@
+import { Layout } from '@/components/layout/Layout';
+import { DepartmentsPage } from '@/features/departments/pages/DepartmentsPage';
 import { type AuthUser } from '../types';
 
 type AdminHomePageProps = {
@@ -7,15 +9,8 @@ type AdminHomePageProps = {
 
 export function AdminHomePage({ user, onLogout }: AdminHomePageProps) {
     return (
-        <main className="home-page">
-            <section>
-                <p className="eyebrow">Admin</p>
-                <h1>Quản trị hệ thống</h1>
-                <p>{user.email}</p>
-            </section>
-            <button type="button" onClick={onLogout}>
-                Đăng xuất
-            </button>
-        </main>
+        <Layout title="Departments" user={user} onLogout={onLogout}>
+            <DepartmentsPage />
+        </Layout>
     );
 }

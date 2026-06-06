@@ -1,3 +1,4 @@
+import { Layout } from '@/components/layout/Layout';
 import { type AuthUser } from '../types';
 
 type UserHomePageProps = {
@@ -7,15 +8,12 @@ type UserHomePageProps = {
 
 export function UserHomePage({ user, onLogout }: UserHomePageProps) {
     return (
-        <main className="home-page">
-            <section>
-                <p className="eyebrow">User</p>
-                <h1>Lịch làm việc của tôi</h1>
-                <p>{user.email}</p>
+        <Layout title="Dashboard" user={user} onLogout={onLogout}>
+            <section className="p-8">
+                <h2 className="text-2xl font-bold text-slate-900">
+                    Lịch làm việc của tôi
+                </h2>
             </section>
-            <button type="button" onClick={onLogout}>
-                Đăng xuất
-            </button>
-        </main>
+        </Layout>
     );
 }

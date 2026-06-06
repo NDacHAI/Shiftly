@@ -4,6 +4,7 @@ import { envConfig } from './config/env.config';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './module/auth/auth.module';
 import { UserModule } from './module/user/user.module';
+import { DepartmentModule } from './module/department/department.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { UserModule } from './module/user/user.module';
     DatabaseModule,
     AuthModule,
     UserModule,
+    DepartmentModule,
   ]
 })
 export class AppModule { }

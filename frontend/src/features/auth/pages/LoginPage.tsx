@@ -7,8 +7,8 @@ type LoginPageProps = {
 };
 
 export function LoginPage({ onLoginSuccess }: LoginPageProps) {
-    const [email, setEmail] = useState('admin@admin.com');
-    const [password, setPassword] = useState('admin123');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,7 +33,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
     return (
         <main className="login-page">
-            <form className="login-form" onSubmit={handleSubmit}>
+            <form className="login-form" onSubmit={handleSubmit} autoComplete="off">
                 <div>
                     <p className="eyebrow">Shiftly</p>
                     <h1>Đăng nhập</h1>
@@ -45,7 +45,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                         type="email"
                         value={email}
                         onChange={(event) => setEmail(event.target.value)}
-                        autoComplete="email"
+                        autoComplete="off"
                         required
                     />
                 </label>
@@ -56,7 +56,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                         type="password"
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
-                        autoComplete="current-password"
+                        autoComplete="new-password"
                         minLength={6}
                         required
                     />
