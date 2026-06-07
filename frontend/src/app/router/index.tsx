@@ -1,49 +1,44 @@
-import { useState } from 'react';
-import { roles } from '@/constants/roles';
-import { AdminHomePage } from '@/features/auth/pages/AdminHomePage';
-import { LoginPage } from '@/features/auth/pages/LoginPage';
-import { ManagerHomePage } from '@/features/auth/pages/ManagerHomePage';
-import { UserHomePage } from '@/features/auth/pages/UserHomePage';
-import {
-    clearAuthTokens,
-    getStoredAuthState,
-    saveAuthTokens,
-    type AuthState,
-} from '@/stores/auth.store';
-import { type AuthResponse } from '@/features/auth/types';
+import { Route, Routes } from 'react-router-dom';
+import { Layout } from '@/components/layout/Layout';
+import { routes } from '@/constants/routes';
+import { type AuthUser } from '@/features/auth/types';
+import { DepartmentsPage } from '@/features/departments/pages/DepartmentsPage';
+import { DashboardPage } from '@/pages/DashboardPage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
 
-export function AppRouter() {
-    const [authState, setAuthState] = useState<AuthState>(getStoredAuthState);
+type AppRouterProps = {
+    user: AuthUser;
+    onLogout: () => void;
+};
 
-    function handleLoginSuccess(response: AuthResponse) {
-        saveAuthTokens({
-            accessToken: response.accessToken,
-            refreshToken: response.refreshToken,
-        });
-
-        setAuthState(getStoredAuthState());
-    }
-
-    function handleLogout() {
-        clearAuthTokens();
-        setAuthState(getStoredAuthState());
-    }
-
-    if (!authState.user) {
-        return <LoginPage onLoginSuccess={handleLoginSuccess} />;
-    }
-
-    if (authState.user.role === roles.admin) {
-        return (
-            <AdminHomePage user={authState.user} onLogout={handleLogout} />
-        );
-    }
-
-    if (authState.user.role === roles.manager) {
-        return (
-            <ManagerHomePage user={authState.user} onLogout={handleLogout} />
-        );
-    }
-
-    return <UserHomePage user={authState.user} onLogout={handleLogout} />;
+export function AppRouter({ user, onLogout }: AppRouterProps) {
+    return (
+        <Routes>
+            <Route
+                path={routes.dashboard}
+                element={
+                    <Layout
+                        title="Dashboard"
+                        user={user}
+                        onLogout={onLogout}
+                    >
+                        <DashboardPage />
+                    </Layout>
+                }
+            />
+            <Route
+                path={routes.departments}
+                element={
+                    <Layout
+                        title="Departments"
+                        user={user}
+                        onLogout={onLogout}
+                    >
+                        <DepartmentsPage />
+                    </Layout>
+                }
+            />
+            <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+    );
 }

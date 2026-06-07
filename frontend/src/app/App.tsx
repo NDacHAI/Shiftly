@@ -1,10 +1,15 @@
-import { AppProvider } from './providers/AppProvider';
+import { BrowserRouter } from 'react-router-dom';
+import { ProtectedRoute } from '@/guards/ProtectedRoute';
 import { AppRouter } from './router';
 
 export default function App() {
     return (
-        <AppProvider>
-            <AppRouter />
-        </AppProvider>
+        <BrowserRouter>
+            <ProtectedRoute>
+                {({ user, onLogout }) => (
+                    <AppRouter user={user} onLogout={onLogout} />
+                )}
+            </ProtectedRoute>
+        </BrowserRouter>
     );
 }

@@ -1,5 +1,6 @@
 import { type MouseEvent, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link } from 'react-router-dom';
 import {
     faBriefcase,
     faBuilding,
@@ -11,14 +12,15 @@ import {
     faUsers,
     type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
+import { routes } from '@/constants/routes';
 
 const navigation: Array<{
     label: string;
     icon: IconDefinition;
     href: string;
 }> = [
-    { label: 'Dashboard', icon: faChartColumn, href: '#' },
-    { label: 'Departments', icon: faBuilding, href: '/departments' },
+    { label: 'Dashboard', icon: faChartColumn, href: routes.dashboard },
+    { label: 'Departments', icon: faBuilding, href: routes.departments },
     { label: 'Positions', icon: faBriefcase, href: '#' },
     { label: 'Employees', icon: faUsers, href: '#' },
     { label: 'Work Shifts', icon: faCalendarDays, href: '#' },
@@ -61,15 +63,38 @@ export function Nav({ defaultActiveItem = 'Dashboard' }: NavProps) {
             >
                 {navigation.map((item) => {
                     const isActive = activeItem === item.label;
+                    const className = `relative flex min-h-11 items-center gap-3.5 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                        isActive
+                            ? "bg-[#f2efff] text-[#6842e8] before:absolute before:-left-4 before:h-6 before:w-[3px] before:rounded-r before:bg-[#7047eb] max-sm:before:inset-x-3 max-sm:before:-bottom-1 max-sm:before:top-auto max-sm:before:h-[3px] max-sm:before:w-auto"
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    } max-sm:flex-none`;
+                    const content = (
+                        <>
+                            <FontAwesomeIcon
+                                className="w-[18px] shrink-0"
+                                icon={item.icon}
+                            />
+                            <span>{item.label}</span>
+                        </>
+                    );
+
+                    if (item.href !== '#') {
+                        return (
+                            <Link
+                                aria-current={isActive ? 'page' : undefined}
+                                className={className}
+                                key={item.label}
+                                to={item.href}
+                            >
+                                {content}
+                            </Link>
+                        );
+                    }
 
                     return (
                         <a
                             aria-current={isActive ? 'page' : undefined}
-                            className={`relative flex min-h-11 items-center gap-3.5 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap transition-colors ${
-                                isActive
-                                    ? "bg-[#f2efff] text-[#6842e8] before:absolute before:-left-4 before:h-6 before:w-[3px] before:rounded-r before:bg-[#7047eb] max-sm:before:inset-x-3 max-sm:before:-bottom-1 max-sm:before:top-auto max-sm:before:h-[3px] max-sm:before:w-auto"
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                            } max-sm:flex-none`}
+                            className={className}
                             href={item.href}
                             key={item.label}
                             onClick={(event) =>
@@ -80,11 +105,7 @@ export function Nav({ defaultActiveItem = 'Dashboard' }: NavProps) {
                                 )
                             }
                         >
-                            <FontAwesomeIcon
-                                className="w-[18px] shrink-0"
-                                icon={item.icon}
-                            />
-                            <span>{item.label}</span>
+                            {content}
                         </a>
                     );
                 })}

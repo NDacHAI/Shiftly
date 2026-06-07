@@ -1,13 +1,13 @@
 import { decodeJwtPayload, isRole } from '@/features/auth/lib/token';
 import { type AuthTokens, type AuthUser } from '@/features/auth/types';
 
-export type AuthState = {
+type AuthState = {
     user: AuthUser | null;
     accessToken: string | null;
     refreshToken: string | null;
 };
 
-export const initialAuthState: AuthState = {
+const initialAuthState: AuthState = {
     user: null,
     accessToken: null,
     refreshToken: null,
