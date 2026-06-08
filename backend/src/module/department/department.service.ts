@@ -89,6 +89,7 @@ export class DepartmentService {
         payload: UpdateDepartmentDto,
     ): Promise<Department> {
         if (
+            payload.code === undefined &&
             payload.name === undefined &&
             payload.description === undefined &&
             payload.status === undefined
@@ -97,10 +98,22 @@ export class DepartmentService {
         }
 
         const department = await this.findEntityById(id);
+        const code = payload.code?.trim().toUpperCase();
+        const name = payload.name?.trim();
+        const changedCode =
+            code !== undefined && code !== department.code ? code : undefined;
+        const changedName =
+            name !== undefined && name !== department.name ? name : undefined;
 
-        if (payload.name !== undefined) {
-            const name = payload.name.trim();
-            await this.ensureUnique(undefined, name, id);
+        if (changedCode || changedName) {
+            await this.ensureUnique(changedCode, changedName, id);
+        }
+
+        if (code !== undefined) {
+            department.code = code;
+        }
+
+        if (name !== undefined) {
             department.name = name;
         }
 
@@ -124,7 +137,13 @@ export class DepartmentService {
 
     async remove(id: string): Promise<void> {
         await this.findEntityById(id);
-        await this.departmentRepository.softDelete(id);
+
+        try {
+            await this.departmentRepository.delete(id);
+        } catch (error) {
+            this.handleDeleteError(error);
+            throw error;
+        }
     }
 
     private async findEntityById(id: string): Promise<Department> {
@@ -168,11 +187,15 @@ export class DepartmentService {
 
         const duplicate = await queryBuilder.getOne();
 
-        if (duplicate?.code === code) {
+        if (!duplicate) {
+            return;
+        }
+
+        if (code && duplicate.code === code) {
             throw new ConflictException('Department code already exists');
         }
 
-        if (duplicate?.name === name) {
+        if (name && duplicate.name === name) {
             throw new ConflictException('Department name already exists');
         }
     }
@@ -201,5 +224,24 @@ export class DepartmentService {
         }
 
         throw new ConflictException('Department name already exists');
+    }
+
+    private handleDeleteError(error: unknown): void {
+        if (!(error instanceof QueryFailedError)) {
+            return;
+        }
+
+        const driverError = error.driverError as {
+            code?: string;
+        };
+
+        if (
+            driverError.code === 'ER_ROW_IS_REFERENCED' ||
+            driverError.code === 'ER_ROW_IS_REFERENCED_2'
+        ) {
+            throw new ConflictException(
+                'Department cannot be deleted because related data exists',
+            );
+        }
     }
 }

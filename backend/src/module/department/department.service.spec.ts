@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { DepartmentService } from './department.service';
 import { Department } from './entities/department.entity';
 
@@ -13,7 +13,7 @@ type RepositoryMock = {
     create: jest.Mock;
     save: jest.Mock;
     findOne: jest.Mock;
-    softDelete: jest.Mock;
+    delete: jest.Mock;
     createQueryBuilder: jest.Mock;
 };
 
@@ -52,7 +52,7 @@ describe('DepartmentService', () => {
             create: jest.fn((value: Partial<Department>) => value),
             save: jest.fn((value) => Promise.resolve(value)),
             findOne: jest.fn(),
-            softDelete: jest.fn().mockResolvedValue({ affected: 1 }),
+            delete: jest.fn().mockResolvedValue({ affected: 1 }),
             createQueryBuilder: jest.fn(() => createQueryBuilderMock()),
         };
 
@@ -104,12 +104,72 @@ describe('DepartmentService', () => {
         );
     });
 
-    it('soft deletes an existing department', async () => {
+    it('does not check uniqueness when the department name is unchanged', async () => {
+        repository.findOne.mockResolvedValue({
+            id: 'department-id',
+            name: 'Information Technology',
+        });
+
+        await service.update('department-id', {
+            name: ' Information Technology ',
+        });
+
+        expect(repository.createQueryBuilder).not.toHaveBeenCalled();
+        expect(repository.save).toHaveBeenCalledWith({
+            id: 'department-id',
+            name: 'Information Technology',
+        });
+    });
+
+    it('updates the code while excluding the current department from uniqueness checks', async () => {
+        const queryBuilder = createQueryBuilderMock();
+        repository.createQueryBuilder.mockReturnValue(queryBuilder);
+        repository.findOne.mockResolvedValue({
+            id: 'department-id',
+            code: 'IT',
+            name: 'Information Technology',
+        });
+
+        await service.update('department-id', {
+            code: ' hr ',
+        });
+
+        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+            'department.id != :excludedId',
+            { excludedId: 'department-id' },
+        );
+        expect(repository.save).toHaveBeenCalledWith({
+            id: 'department-id',
+            code: 'HR',
+            name: 'Information Technology',
+        });
+    });
+
+    it('does not check uniqueness when the department code is unchanged', async () => {
+        repository.findOne.mockResolvedValue({
+            id: 'department-id',
+            code: 'IT',
+            name: 'Information Technology',
+        });
+
+        await service.update('department-id', {
+            code: ' it ',
+        });
+
+        expect(repository.createQueryBuilder).not.toHaveBeenCalled();
+        expect(repository.save).toHaveBeenCalledWith({
+            id: 'department-id',
+            code: 'IT',
+            name: 'Information Technology',
+        });
+    });
+
+    it('hard deletes an existing department', async () => {
         repository.findOne.mockResolvedValue({ id: 'department-id' });
 
         await service.remove('department-id');
 
-        expect(repository.softDelete).toHaveBeenCalledWith('department-id');
+        expect(repository.delete).toHaveBeenCalledWith('department-id');
     });
 
     it('does not delete a missing department', async () => {
@@ -118,6 +178,21 @@ describe('DepartmentService', () => {
         await expect(service.remove('missing-id')).rejects.toBeInstanceOf(
             NotFoundException,
         );
-        expect(repository.softDelete).not.toHaveBeenCalled();
+        expect(repository.delete).not.toHaveBeenCalled();
+    });
+
+    it('rejects deletion when related data exists', async () => {
+        repository.findOne.mockResolvedValue({ id: 'department-id' });
+        repository.delete.mockRejectedValue(
+            new QueryFailedError('', [], {
+                code: 'ER_ROW_IS_REFERENCED_2',
+            } as never),
+        );
+
+        await expect(service.remove('department-id')).rejects.toEqual(
+            new ConflictException(
+                'Department cannot be deleted because related data exists',
+            ),
+        );
     });
 });

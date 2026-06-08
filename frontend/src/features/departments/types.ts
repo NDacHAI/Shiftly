@@ -15,7 +15,7 @@ export type DepartmentPayload = {
     status: boolean;
 };
 
-export type UpdateDepartmentPayload = Omit<DepartmentPayload, 'code'>;
+export type UpdateDepartmentPayload = DepartmentPayload;
 
 export type DepartmentSortField = 'code' | 'name' | 'status' | 'createdAt';
 export type SortOrder = 'ASC' | 'DESC';

@@ -10,6 +10,12 @@ export class UpdateDepartmentDto {
     @IsOptional()
     @IsString()
     @IsNotEmpty()
+    @MaxLength(20)
+    code?: string;
+
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
     @MaxLength(100)
     name?: string;
 

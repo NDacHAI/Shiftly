@@ -13,8 +13,10 @@ const initialAuthState: AuthState = {
     refreshToken: null,
 };
 
-const accessTokenKey = 'shiftly.accessToken';
-const refreshTokenKey = 'shiftly.refreshToken';
+export const accessTokenKey = 'shiftly.accessToken';
+export const refreshTokenKey = 'shiftly.refreshToken';
+export const authUnauthorizedEvent = 'shiftly:auth-unauthorized';
+export const apiErrorEvent = 'shiftly:api-error';
 
 export function saveAuthTokens(tokens: AuthTokens) {
     localStorage.setItem(accessTokenKey, tokens.accessToken);

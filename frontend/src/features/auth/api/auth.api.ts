@@ -22,3 +22,7 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
         throw error;
     }
 }
+
+export async function logout(): Promise<void> {
+    await api.post('/auth/logout');
+}

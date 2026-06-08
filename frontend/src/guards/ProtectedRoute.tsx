@@ -1,10 +1,12 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { routes } from '@/constants/routes';
+import { logout } from '@/features/auth/api/auth.api';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { type AuthResponse, type AuthUser } from '@/features/auth/types';
 import {
     clearAuthTokens,
+    authUnauthorizedEvent,
     getStoredAuthState,
     saveAuthTokens,
 } from '@/stores/auth.store';
@@ -18,27 +20,21 @@ type ProtectedRouteProps = {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
     const [authState, setAuthState] = useState(getStoredAuthState);
-    const location = useLocation();
     const navigate = useNavigate();
-    const [initialRedirectPending, setInitialRedirectPending] = useState(
-        () =>
-            Boolean(authState.user) &&
-            location.pathname === routes.departments,
-    );
 
     useEffect(() => {
-        if (!initialRedirectPending) {
-            return;
+        function handleUnauthorized() {
+            setAuthState(getStoredAuthState());
+            navigate(routes.dashboard, { replace: true });
         }
 
-        navigate(routes.dashboard, { replace: true });
-        const timeoutId = window.setTimeout(
-            () => setInitialRedirectPending(false),
-            0,
-        );
-
-        return () => window.clearTimeout(timeoutId);
-    }, [initialRedirectPending, navigate]);
+        window.addEventListener(authUnauthorizedEvent, handleUnauthorized);
+        return () =>
+            window.removeEventListener(
+                authUnauthorizedEvent,
+                handleUnauthorized,
+            );
+    }, [navigate]);
 
     function handleLoginSuccess(response: AuthResponse) {
         saveAuthTokens({
@@ -50,7 +46,13 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         navigate(routes.dashboard, { replace: true });
     }
 
-    function handleLogout() {
+    async function handleLogout() {
+        try {
+            await logout();
+        } catch {
+            // Local logout must still complete if the server is unavailable.
+        }
+
         clearAuthTokens();
         setAuthState(getStoredAuthState());
         navigate(routes.dashboard, { replace: true });
@@ -60,12 +62,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         return <LoginPage onLoginSuccess={handleLoginSuccess} />;
     }
 
-    if (initialRedirectPending) {
-        return null;
-    }
-
     return children({
         user: authState.user,
-        onLogout: handleLogout,
+        onLogout: () => void handleLogout(),
     });
 }

@@ -18,7 +18,11 @@ export function Layout({
 }: LayoutProps) {
     return (
         <main className="grid min-h-screen grid-cols-[248px_minmax(0,1fr)] max-sm:block">
-            <Nav key={title} defaultActiveItem={title} />
+            <Nav
+                key={title}
+                defaultActiveItem={title}
+                userRole={user.role}
+            />
             <div className="min-w-0">
                 <Header title={title} user={user} onLogout={onLogout} />
                 {children}

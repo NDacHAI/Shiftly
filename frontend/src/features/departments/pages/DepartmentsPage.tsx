@@ -1,9 +1,7 @@
-import { type FormEvent, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faBuilding,
-    faChevronLeft,
-    faChevronRight,
     faEye,
     faFilter,
     faPause,
@@ -14,6 +12,13 @@ import {
     faTrash,
     faUsers,
 } from '@fortawesome/free-solid-svg-icons';
+import { ConfirmDialog, useToast } from '@/components/feedback';
+import {
+    Button,
+    EmptyState,
+    LoadingOverlay,
+    Pagination,
+} from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
 import {
     createDepartment,
@@ -23,6 +28,8 @@ import {
     listDepartments,
     updateDepartment,
 } from '../api/departments.api';
+import { DepartmentDetailsDialog } from '../components/DepartmentDetailsDialog';
+import { DepartmentFormDialog } from '../components/DepartmentFormDialog';
 import {
     type Department,
     type DepartmentPayload,
@@ -31,17 +38,10 @@ import {
 } from '../types';
 
 const pageSize = 10;
-const initialForm: DepartmentPayload = {
-    code: '',
-    name: '',
-    description: '',
-    status: true,
-};
-
 type StatusFilter = 'all' | 'active' | 'inactive';
 
 const fieldClass =
-    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100 disabled:bg-slate-100 disabled:text-slate-500';
+    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat('vi-VN', {
@@ -51,6 +51,7 @@ function formatDate(value: string) {
 }
 
 export function DepartmentsPage() {
+    const { showToast } = useToast();
     const [departments, setDepartments] = useState<Department[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -63,11 +64,12 @@ export function DepartmentsPage() {
     const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [form, setForm] = useState<DepartmentPayload>(initialForm);
     const [editing, setEditing] = useState<Department | null>(null);
     const [selected, setSelected] = useState<Department | null>(null);
     const [showForm, setShowForm] = useState(false);
-    const [saving, setSaving] = useState(false);
+    const [departmentToDelete, setDepartmentToDelete] =
+        useState<Department | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const loadDepartments = useCallback(async () => {
         setLoading(true);
@@ -122,48 +124,32 @@ export function DepartmentsPage() {
 
     function openCreateForm() {
         setEditing(null);
-        setForm(initialForm);
-        setError('');
         setShowForm(true);
     }
 
     function openEditForm(department: Department) {
         setEditing(department);
-        setForm({
-            code: department.code,
-            name: department.name,
-            description: department.description ?? '',
-            status: department.status,
-        });
-        setError('');
         setShowForm(true);
     }
 
-    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        setSaving(true);
-        setError('');
-
-        try {
-            if (editing) {
-                await updateDepartment(editing.id, {
-                    name: form.name,
-                    description: form.description,
-                    status: form.status,
-                });
-            } else {
-                await createDepartment(form);
-            }
-
-            setShowForm(false);
-            setEditing(null);
-            setForm(initialForm);
-            await loadDepartments();
-        } catch (saveError) {
-            setError(getDepartmentErrorMessage(saveError));
-        } finally {
-            setSaving(false);
+    async function handleSubmit(form: DepartmentPayload) {
+        if (editing) {
+            await updateDepartment(editing.id, form);
+        } else {
+            await createDepartment(form);
         }
+
+        const wasEditing = Boolean(editing);
+        setShowForm(false);
+        setEditing(null);
+        await loadDepartments();
+        showToast({
+            message: wasEditing
+                ? 'Đã cập nhật thông tin phòng ban.'
+                : 'Đã tạo phòng ban mới.',
+            title: wasEditing ? 'Cập nhật thành công' : 'Tạo thành công',
+            variant: 'success',
+        });
     }
 
     async function handleView(id: string) {
@@ -172,25 +158,47 @@ export function DepartmentsPage() {
         try {
             setSelected(await getDepartment(id));
         } catch (viewError) {
-            setError(getDepartmentErrorMessage(viewError));
+            const message = getDepartmentErrorMessage(viewError);
+            setError(message);
+            showToast({
+                message,
+                title: 'Không thể xem chi tiết',
+                variant: 'error',
+            });
         }
     }
 
-    async function handleDelete(department: Department) {
-        if (!window.confirm(`Xóa phòng ban "${department.name}"?`)) {
+    async function handleConfirmDelete() {
+        if (!departmentToDelete) {
             return;
         }
 
+        setDeleting(true);
         setError('');
 
         try {
-            await deleteDepartment(department.id);
-            if (selected?.id === department.id) {
+            await deleteDepartment(departmentToDelete.id);
+            if (selected?.id === departmentToDelete.id) {
                 setSelected(null);
             }
+            const deletedDepartmentName = departmentToDelete.name;
+            setDepartmentToDelete(null);
             await loadDepartments();
+            showToast({
+                message: `Đã xóa phòng ban "${deletedDepartmentName}".`,
+                title: 'Xóa thành công',
+                variant: 'success',
+            });
         } catch (deleteError) {
-            setError(getDepartmentErrorMessage(deleteError));
+            const message = getDepartmentErrorMessage(deleteError);
+            setError(message);
+            showToast({
+                message,
+                title: 'Không thể xóa phòng ban',
+                variant: 'error',
+            });
+        } finally {
+            setDeleting(false);
         }
     }
 
@@ -217,7 +225,7 @@ export function DepartmentsPage() {
             value: total,
             note: 'Phòng ban trong hệ thống',
             icon: faUsers,
-            color: 'bg-violet-50 text-violet-600',
+            color: 'bg-primary-50 text-primary-600',
         },
         {
             label: 'Đang hoạt động',
@@ -246,7 +254,7 @@ export function DepartmentsPage() {
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
             <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-sm:items-stretch max-sm:flex-col">
                 <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-violet-50 text-xl text-violet-600">
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl text-primary-600">
                         <FontAwesomeIcon icon={faBuilding} />
                     </span>
                     <div>
@@ -258,14 +266,14 @@ export function DepartmentsPage() {
                         </p>
                     </div>
                 </div>
-                <button
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-violet-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700"
+                <Button
+                    className="shadow-sm"
                     onClick={openCreateForm}
-                    type="button"
+                    size="lg"
                 >
                     <FontAwesomeIcon icon={faPlus} />
                     Thêm phòng ban
-                </button>
+                </Button>
             </div>
 
             <div className="grid grid-cols-4 gap-4 max-xl:grid-cols-2 max-sm:grid-cols-1">
@@ -300,7 +308,11 @@ export function DepartmentsPage() {
                 </div>
             )}
 
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <LoadingOverlay
+                    label="Đang tải phòng ban..."
+                    visible={loading}
+                />
                 <div className="flex items-center justify-between gap-4 border-b border-slate-200 p-4 max-md:items-stretch max-md:flex-col">
                     <label className="relative block w-full max-w-sm">
                         <span className="sr-only">Tìm kiếm phòng ban</span>
@@ -328,7 +340,7 @@ export function DepartmentsPage() {
                                 icon={faFilter}
                             />
                             <select
-                                className="min-h-11 rounded-lg border border-slate-200 bg-white pr-9 pl-9 text-sm font-medium text-slate-700 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100 max-sm:w-full"
+                                className="min-h-11 cursor-pointer rounded-lg border border-slate-200 bg-white pr-9 pl-9 text-sm font-medium text-slate-700 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100 max-sm:w-full"
                                 value={statusFilter}
                                 onChange={(event) =>
                                     setStatusFilter(
@@ -341,35 +353,43 @@ export function DepartmentsPage() {
                                 <option value="inactive">Tạm ngưng</option>
                             </select>
                         </label>
-                        <button
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 max-sm:w-full"
+                        <Button
+                            className="max-sm:w-full"
                             onClick={() => void loadDepartments()}
-                            type="button"
+                            size="lg"
+                            variant="secondary"
                         >
                             <FontAwesomeIcon icon={faRotateRight} />
                             Làm mới
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[820px] border-collapse text-left">
+                    <table className="w-full min-w-[820px] table-fixed border-collapse">
+                        <colgroup>
+                            <col className="w-[16%]" />
+                            <col className="w-[26%]" />
+                            <col className="w-[18%]" />
+                            <col className="w-[20%]" />
+                            <col className="w-[20%]" />
+                        </colgroup>
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50">
                                 {(
                                     [
-                                        ['code', 'Mã'],
+                                        ['code', 'Mã Phòng ban'],
                                         ['name', 'Tên phòng ban'],
                                         ['status', 'Trạng thái'],
                                         ['createdAt', 'Ngày tạo'],
                                     ] as const
                                 ).map(([field, label]) => (
                                     <th
-                                        className="px-5 py-3 text-xs font-semibold text-slate-600"
+                                        className="px-5 py-3 text-center text-xs font-semibold text-slate-600"
                                         key={field}
                                     >
                                         <button
-                                            className="min-h-0 bg-transparent p-0 text-inherit hover:text-violet-600"
+                                            className="min-h-0 cursor-pointer bg-transparent p-0 text-inherit hover:text-primary-600"
                                             onClick={() => changeSort(field)}
                                             type="button"
                                         >
@@ -378,7 +398,7 @@ export function DepartmentsPage() {
                                         </button>
                                     </th>
                                 ))}
-                                <th className="px-5 py-3 text-xs font-semibold text-slate-600">
+                                <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
                                     Thao tác
                                 </th>
                             </tr>
@@ -391,48 +411,41 @@ export function DepartmentsPage() {
                                         key={department.id}
                                     >
                                         <td className="px-5 py-3.5">
-                                            <div className="flex items-center gap-3">
-                                                <span className="flex size-8 items-center justify-center rounded-full bg-violet-50 text-[11px] font-bold text-violet-600">
-                                                    {department.code
-                                                        .slice(0, 2)
-                                                        .toUpperCase()}
-                                                </span>
+                                            <div className="flex items-center justify-center gap-3">
                                                 <strong className="text-sm text-slate-800">
                                                     {department.code}
                                                 </strong>
                                             </div>
                                         </td>
-                                        <td className="px-5 py-3.5 text-sm text-slate-700">
+                                        <td className="px-5 py-3.5 text-center text-sm text-slate-700">
                                             {department.name}
                                         </td>
-                                        <td className="px-5 py-3.5">
+                                        <td className="px-5 py-3.5 text-center">
                                             <span
-                                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                                    department.status
-                                                        ? 'bg-emerald-50 text-emerald-700'
-                                                        : 'bg-amber-50 text-amber-700'
-                                                }`}
+                                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${department.status
+                                                    ? 'bg-emerald-50 text-emerald-700'
+                                                    : 'bg-amber-50 text-amber-700'
+                                                    }`}
                                             >
                                                 <span
-                                                    className={`size-1.5 rounded-full ${
-                                                        department.status
-                                                            ? 'bg-emerald-500'
-                                                            : 'bg-amber-500'
-                                                    }`}
+                                                    className={`size-1.5 rounded-full ${department.status
+                                                        ? 'bg-emerald-500'
+                                                        : 'bg-amber-500'
+                                                        }`}
                                                 />
                                                 {department.status
                                                     ? 'Hoạt động'
                                                     : 'Tạm ngưng'}
                                             </span>
                                         </td>
-                                        <td className="px-5 py-3.5 text-sm text-slate-600">
+                                        <td className="px-5 py-3.5 text-center text-sm text-slate-600">
                                             {formatDate(department.createdAt)}
                                         </td>
                                         <td className="px-5 py-3.5">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center justify-center gap-2">
                                                 <button
                                                     aria-label={`Xem ${department.name}`}
-                                                    className="flex size-9 min-h-0 items-center justify-center rounded-lg border border-violet-100 bg-violet-50 p-0 text-violet-600 transition hover:border-violet-300 hover:bg-violet-600 hover:text-white"
+                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
                                                     onClick={() =>
                                                         void handleView(
                                                             department.id,
@@ -447,7 +460,7 @@ export function DepartmentsPage() {
                                                 </button>
                                                 <button
                                                     aria-label={`Sửa ${department.name}`}
-                                                    className="flex size-9 min-h-0 items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
+                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
                                                     onClick={() =>
                                                         openEditForm(department)
                                                     }
@@ -460,9 +473,9 @@ export function DepartmentsPage() {
                                                 </button>
                                                 <button
                                                     aria-label={`Xóa ${department.name}`}
-                                                    className="flex size-9 min-h-0 items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
+                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
                                                     onClick={() =>
-                                                        void handleDelete(
+                                                        setDepartmentToDelete(
                                                             department,
                                                         )
                                                     }
@@ -479,21 +492,16 @@ export function DepartmentsPage() {
                                 ))}
                             {!loading && displayedDepartments.length === 0 && (
                                 <tr>
-                                    <td
-                                        className="px-5 py-12 text-center text-sm text-slate-500"
-                                        colSpan={5}
-                                    >
-                                        Chưa có phòng ban phù hợp.
-                                    </td>
-                                </tr>
-                            )}
-                            {loading && (
-                                <tr>
-                                    <td
-                                        className="px-5 py-12 text-center text-sm text-slate-500"
-                                        colSpan={5}
-                                    >
-                                        Đang tải...
+                                    <td colSpan={5}>
+                                        <EmptyState
+                                            description="Thử thay đổi từ khóa hoặc bộ lọc trạng thái."
+                                            icon={
+                                                <FontAwesomeIcon
+                                                    icon={faBuilding}
+                                                />
+                                            }
+                                            title="Chưa có phòng ban phù hợp"
+                                        />
                                     </td>
                                 </tr>
                             )}
@@ -501,195 +509,39 @@ export function DepartmentsPage() {
                     </table>
                 </div>
 
-                <div className="flex items-center justify-between gap-4 border-t border-slate-200 px-5 py-4 text-sm text-slate-500 max-sm:flex-col">
-                    <span>Hiển thị {pageSize} trên mỗi trang</span>
-                    <div className="flex items-center gap-2">
-                        <button
-                            aria-label="Trang trước"
-                            className="flex size-9 min-h-0 items-center justify-center rounded-lg border border-slate-200 bg-white p-0 text-slate-500 transition hover:border-violet-200 hover:text-violet-600 disabled:opacity-40"
-                            disabled={page <= 1}
-                            onClick={() => setPage((current) => current - 1)}
-                            type="button"
-                        >
-                            <FontAwesomeIcon icon={faChevronLeft} />
-                        </button>
-                        <span className="flex size-9 items-center justify-center rounded-lg bg-violet-600 font-semibold text-white">
-                            {totalPages === 0 ? 0 : page}
-                        </span>
-                        <button
-                            aria-label="Trang sau"
-                            className="flex size-9 min-h-0 items-center justify-center rounded-lg border border-slate-200 bg-white p-0 text-slate-500 transition hover:border-violet-200 hover:text-violet-600 disabled:opacity-40"
-                            disabled={page >= totalPages}
-                            onClick={() => setPage((current) => current + 1)}
-                            type="button"
-                        >
-                            <FontAwesomeIcon icon={faChevronRight} />
-                        </button>
-                        <span className="ml-3">
-                            Trang {totalPages === 0 ? 0 : page} / {totalPages}
-                        </span>
-                    </div>
-                </div>
+                <Pagination
+                    page={page}
+                    pageSize={pageSize}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
             </div>
 
             {showForm && (
-                <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-950/55 p-5">
-                    <div
-                        aria-modal="true"
-                        className="max-h-[calc(100vh-40px)] w-full max-w-xl overflow-y-auto rounded-xl bg-white p-6 shadow-2xl"
-                        role="dialog"
-                    >
-                        <div className="flex items-start justify-between gap-4">
-                            <h2 className="text-xl font-bold text-slate-950">
-                                {editing
-                                    ? 'Cập nhật phòng ban'
-                                    : 'Tạo phòng ban'}
-                            </h2>
-                            <button
-                                className="min-h-9 rounded-lg bg-slate-100 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-200"
-                                onClick={() => setShowForm(false)}
-                                type="button"
-                            >
-                                Đóng
-                            </button>
-                        </div>
-                        <form
-                            className="mt-6 grid gap-4"
-                            onSubmit={handleSubmit}
-                        >
-                            {error && (
-                                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                                    {error}
-                                </div>
-                            )}
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                                Mã phòng ban
-                                <input
-                                    className={fieldClass}
-                                    disabled={Boolean(editing)}
-                                    maxLength={20}
-                                    required
-                                    value={form.code}
-                                    onChange={(event) =>
-                                        setForm((current) => ({
-                                            ...current,
-                                            code: event.target.value,
-                                        }))
-                                    }
-                                />
-                            </label>
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                                Tên phòng ban
-                                <input
-                                    className={fieldClass}
-                                    maxLength={100}
-                                    required
-                                    value={form.name}
-                                    onChange={(event) =>
-                                        setForm((current) => ({
-                                            ...current,
-                                            name: event.target.value,
-                                        }))
-                                    }
-                                />
-                            </label>
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                                Mô tả
-                                <textarea
-                                    className={`${fieldClass} min-h-28 py-3`}
-                                    rows={4}
-                                    value={form.description}
-                                    onChange={(event) =>
-                                        setForm((current) => ({
-                                            ...current,
-                                            description: event.target.value,
-                                        }))
-                                    }
-                                />
-                            </label>
-                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                                <input
-                                    checked={form.status}
-                                    className="size-4 min-h-0 w-4 accent-violet-600"
-                                    type="checkbox"
-                                    onChange={(event) =>
-                                        setForm((current) => ({
-                                            ...current,
-                                            status: event.target.checked,
-                                        }))
-                                    }
-                                />
-                                Đang hoạt động
-                            </label>
-                            <button
-                                className="mt-2 min-h-11 rounded-lg bg-violet-600 px-5 text-sm font-semibold text-white transition hover:bg-violet-700"
-                                disabled={saving}
-                                type="submit"
-                            >
-                                {saving
-                                    ? 'Đang lưu...'
-                                    : 'Lưu phòng ban'}
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                <DepartmentFormDialog
+                    editing={editing}
+                    onClose={() => setShowForm(false)}
+                    onSubmit={handleSubmit}
+                />
             )}
 
             {selected && (
-                <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-950/55 p-5">
-                    <div
-                        aria-modal="true"
-                        className="max-h-[calc(100vh-40px)] w-full max-w-xl overflow-y-auto rounded-xl bg-white p-6 shadow-2xl"
-                        role="dialog"
-                    >
-                        <div className="flex items-start justify-between gap-4">
-                            <div>
-                                <p className="text-xs font-bold tracking-wider text-violet-600 uppercase">
-                                    {selected.code}
-                                </p>
-                                <h2 className="mt-1 text-xl font-bold text-slate-950">
-                                    {selected.name}
-                                </h2>
-                            </div>
-                            <button
-                                className="min-h-9 rounded-lg bg-slate-100 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-200"
-                                onClick={() => setSelected(null)}
-                                type="button"
-                            >
-                                Đóng
-                            </button>
-                        </div>
-                        <dl className="mt-6 divide-y divide-slate-200 border-y border-slate-200">
-                            {[
-                                [
-                                    'Mô tả',
-                                    selected.description || 'Không có',
-                                ],
-                                [
-                                    'Trạng thái',
-                                    selected.status
-                                        ? 'Hoạt động'
-                                        : 'Tạm ngưng',
-                                ],
-                                ['Ngày tạo', formatDate(selected.createdAt)],
-                                [
-                                    'Ngày cập nhật',
-                                    formatDate(selected.updatedAt),
-                                ],
-                            ].map(([label, value]) => (
-                                <div className="grid gap-1 py-4" key={label}>
-                                    <dt className="text-xs font-semibold text-slate-500">
-                                        {label}
-                                    </dt>
-                                    <dd className="m-0 text-sm text-slate-800">
-                                        {value}
-                                    </dd>
-                                </div>
-                            ))}
-                        </dl>
-                    </div>
-                </div>
+                <DepartmentDetailsDialog
+                    department={selected}
+                    onClose={() => setSelected(null)}
+                />
             )}
+
+            <ConfirmDialog
+                confirmLabel="Xóa phòng ban"
+                description={`Bạn có chắc muốn xóa phòng ban "${departmentToDelete?.name ?? ''}"? Hành động này không thể hoàn tác.`}
+                loading={deleting}
+                open={Boolean(departmentToDelete)}
+                title="Xác nhận xóa"
+                tone="danger"
+                onCancel={() => setDepartmentToDelete(null)}
+                onConfirm={() => void handleConfirmDelete()}
+            />
         </section>
     );
 }
