@@ -28,7 +28,12 @@ const navigation: Array<{
         href: routes.departments,
         allowedRoles: [roles.admin],
     },
-    { label: 'Positions', icon: faBriefcase, href: '#' },
+    {
+        label: 'Positions',
+        icon: faBriefcase,
+        href: routes.positions,
+        allowedRoles: [roles.admin, roles.manager],
+    },
     { label: 'Employees', icon: faUsers, href: '#' },
     { label: 'Work Shifts', icon: faCalendarDays, href: '#' },
     { label: 'Attendance', icon: faClock, href: '#' },

@@ -24,11 +24,12 @@ import { Department } from './entities/department.entity';
 
 @Controller('departments')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.Admin)
+@Roles(UserRole.Admin, UserRole.Manager)
 export class DepartmentController {
     constructor(private readonly departmentService: DepartmentService) {}
 
     @Post()
+    @Roles(UserRole.Admin)
     create(@Body() payload: CreateDepartmentDto): Promise<Department> {
         return this.departmentService.create(payload);
     }
@@ -48,6 +49,7 @@ export class DepartmentController {
     }
 
     @Put(':id')
+    @Roles(UserRole.Admin)
     update(
         @Param('id', new ParseUUIDPipe()) id: string,
         @Body() payload: UpdateDepartmentDto,
@@ -56,6 +58,7 @@ export class DepartmentController {
     }
 
     @Delete(':id')
+    @Roles(UserRole.Admin)
     @HttpCode(HttpStatus.NO_CONTENT)
     remove(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
         return this.departmentService.remove(id);
