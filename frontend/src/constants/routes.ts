@@ -4,4 +4,5 @@ export const routes = {
     positions: '/positions',
     employees: '/employees',
     employeeDetail: '/employees/:id',
+    settings: '/settings',
 } as const;

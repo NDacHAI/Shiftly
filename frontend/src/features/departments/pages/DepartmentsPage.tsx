@@ -15,11 +15,13 @@ import {
 import { ConfirmDialog, useToast } from '@/components/feedback';
 import {
     Button,
+    DropdownSelect,
     EmptyState,
     LoadingOverlay,
     Pagination,
 } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useI18n } from '@/i18n';
 import {
     createDepartment,
     deleteDepartment,
@@ -52,6 +54,7 @@ function formatDate(value: string) {
 
 export function DepartmentsPage() {
     const { showToast } = useToast();
+    const { t } = useI18n();
     const [departments, setDepartments] = useState<Department[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -59,8 +62,7 @@ export function DepartmentsPage() {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const debouncedSearch = useDebounce(search);
-    const [sortBy, setSortBy] =
-        useState<DepartmentSortField>('createdAt');
+    const [sortBy, setSortBy] = useState<DepartmentSortField>('createdAt');
     const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -113,24 +115,10 @@ export function DepartmentsPage() {
     ).length;
     const inactiveCount = departments.length - activeCount;
     const displayedDepartments = departments.filter((department) => {
-        if (statusFilter === 'active') {
-            return department.status;
-        }
-        if (statusFilter === 'inactive') {
-            return !department.status;
-        }
+        if (statusFilter === 'active') return department.status;
+        if (statusFilter === 'inactive') return !department.status;
         return true;
     });
-
-    function openCreateForm() {
-        setEditing(null);
-        setShowForm(true);
-    }
-
-    function openEditForm(department: Department) {
-        setEditing(department);
-        setShowForm(true);
-    }
 
     async function handleSubmit(form: DepartmentPayload) {
         if (editing) {
@@ -145,9 +133,9 @@ export function DepartmentsPage() {
         await loadDepartments();
         showToast({
             message: wasEditing
-                ? 'Đã cập nhật thông tin phòng ban.'
-                : 'Đã tạo phòng ban mới.',
-            title: wasEditing ? 'Cập nhật thành công' : 'Tạo thành công',
+                ? t('departments.updated')
+                : t('departments.created'),
+            title: t('common.success'),
             variant: 'success',
         });
     }
@@ -162,31 +150,30 @@ export function DepartmentsPage() {
             setError(message);
             showToast({
                 message,
-                title: 'Không thể xem chi tiết',
+                title: t('departments.viewError'),
                 variant: 'error',
             });
         }
     }
 
     async function handleConfirmDelete() {
-        if (!departmentToDelete) {
-            return;
-        }
+        if (!departmentToDelete) return;
 
         setDeleting(true);
         setError('');
 
         try {
             await deleteDepartment(departmentToDelete.id);
-            if (selected?.id === departmentToDelete.id) {
-                setSelected(null);
-            }
+            if (selected?.id === departmentToDelete.id) setSelected(null);
             const deletedDepartmentName = departmentToDelete.name;
             setDepartmentToDelete(null);
             await loadDepartments();
             showToast({
-                message: `Đã xóa phòng ban "${deletedDepartmentName}".`,
-                title: 'Xóa thành công',
+                message: t('departments.deleted').replace(
+                    '{name}',
+                    deletedDepartmentName,
+                ),
+                title: t('common.success'),
                 variant: 'success',
             });
         } catch (deleteError) {
@@ -194,7 +181,7 @@ export function DepartmentsPage() {
             setError(message);
             showToast({
                 message,
-                title: 'Không thể xóa phòng ban',
+                title: t('departments.deleteError'),
                 variant: 'error',
             });
         } finally {
@@ -213,38 +200,36 @@ export function DepartmentsPage() {
     }
 
     function sortLabel(field: DepartmentSortField) {
-        if (sortBy !== field) {
-            return '';
-        }
+        if (sortBy !== field) return '';
         return sortOrder === 'ASC' ? ' ↑' : ' ↓';
     }
 
     const stats = [
         {
-            label: 'Tổng phòng ban',
+            label: t('departments.total'),
             value: total,
-            note: 'Phòng ban trong hệ thống',
+            note: t('departments.totalNote'),
             icon: faUsers,
             color: 'bg-primary-50 text-primary-600',
         },
         {
-            label: 'Đang hoạt động',
+            label: t('departments.activeOnPage'),
             value: activeCount,
-            note: 'Trên trang hiện tại',
+            note: t('departments.activeOnPage'),
             icon: faPlus,
             color: 'bg-emerald-50 text-emerald-600',
         },
         {
-            label: 'Tạm ngưng',
+            label: t('departments.inactiveOnPage'),
             value: inactiveCount,
-            note: 'Trên trang hiện tại',
+            note: t('departments.inactiveOnPage'),
             icon: faPause,
             color: 'bg-amber-50 text-amber-500',
         },
         {
-            label: 'Tổng nhân viên',
+            label: t('departments.employeeTotal'),
             value: 0,
-            note: 'Chưa liên kết Employees',
+            note: t('departments.employeeTotalNote'),
             icon: faBuilding,
             color: 'bg-sky-50 text-sky-600',
         },
@@ -259,20 +244,23 @@ export function DepartmentsPage() {
                     </span>
                     <div>
                         <h2 className="text-xl font-bold text-slate-950">
-                            Phòng ban
+                            {t('departments.title')}
                         </h2>
                         <p className="mt-1 text-sm text-slate-500">
-                            Quản lý và tổ chức các phòng ban trong hệ thống.
+                            {t('departments.subtitle')}
                         </p>
                     </div>
                 </div>
                 <Button
                     className="shadow-sm"
-                    onClick={openCreateForm}
+                    onClick={() => {
+                        setEditing(null);
+                        setShowForm(true);
+                    }}
                     size="lg"
                 >
                     <FontAwesomeIcon icon={faPlus} />
-                    Thêm phòng ban
+                    {t('departments.add')}
                 </Button>
             </div>
 
@@ -288,9 +276,7 @@ export function DepartmentsPage() {
                             <FontAwesomeIcon icon={stat.icon} />
                         </span>
                         <div>
-                            <p className="text-sm text-slate-500">
-                                {stat.label}
-                            </p>
+                            <p className="text-sm text-slate-500">{stat.label}</p>
                             <strong className="mt-1 block text-2xl text-slate-950">
                                 {stat.value}
                             </strong>
@@ -309,21 +295,18 @@ export function DepartmentsPage() {
             )}
 
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <LoadingOverlay
-                    label="Đang tải phòng ban..."
-                    visible={loading}
-                />
+                <LoadingOverlay label={t('departments.loading')} visible={loading} />
                 <div className="flex items-center justify-between gap-4 border-b border-slate-200 p-4 max-md:items-stretch max-md:flex-col">
                     <label className="relative block w-full max-w-sm">
-                        <span className="sr-only">Tìm kiếm phòng ban</span>
+                        <span className="sr-only">{t('common.search')}</span>
                         <FontAwesomeIcon
                             className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-slate-400"
                             icon={faSearch}
                         />
                         <input
-                            aria-label="Tìm kiếm phòng ban"
+                            aria-label={t('common.search')}
                             className={`${fieldClass} pl-9`}
-                            placeholder="Tìm theo mã hoặc tên phòng ban..."
+                            placeholder={t('departments.searchPlaceholder')}
                             value={search}
                             onChange={(event) => {
                                 setSearch(event.target.value);
@@ -334,24 +317,33 @@ export function DepartmentsPage() {
 
                     <div className="flex items-center gap-3 max-sm:flex-col">
                         <label className="relative">
-                            <span className="sr-only">Lọc trạng thái</span>
+                            <span className="sr-only">{t('common.status')}</span>
                             <FontAwesomeIcon
                                 className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-slate-500"
                                 icon={faFilter}
                             />
-                            <select
-                                className="min-h-11 cursor-pointer rounded-lg border border-slate-200 bg-white pr-9 pl-9 text-sm font-medium text-slate-700 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100 max-sm:w-full"
+                            <DropdownSelect
+                                ariaLabel={t('common.status')}
+                                className="max-sm:w-full"
+                                options={[
+                                    {
+                                        value: 'all',
+                                        label: t('common.allStatuses'),
+                                    },
+                                    {
+                                        value: 'active',
+                                        label: t('common.active'),
+                                    },
+                                    {
+                                        value: 'inactive',
+                                        label: t('common.inactive'),
+                                    },
+                                ]}
                                 value={statusFilter}
-                                onChange={(event) =>
-                                    setStatusFilter(
-                                        event.target.value as StatusFilter,
-                                    )
+                                onChange={(value) =>
+                                    setStatusFilter(value as StatusFilter)
                                 }
-                            >
-                                <option value="all">Trạng thái: Tất cả</option>
-                                <option value="active">Hoạt động</option>
-                                <option value="inactive">Tạm ngưng</option>
-                            </select>
+                            />
                         </label>
                         <Button
                             className="max-sm:w-full"
@@ -360,28 +352,21 @@ export function DepartmentsPage() {
                             variant="secondary"
                         >
                             <FontAwesomeIcon icon={faRotateRight} />
-                            Làm mới
+                            {t('common.refresh')}
                         </Button>
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[820px] table-fixed border-collapse">
-                        <colgroup>
-                            <col className="w-[16%]" />
-                            <col className="w-[26%]" />
-                            <col className="w-[18%]" />
-                            <col className="w-[20%]" />
-                            <col className="w-[20%]" />
-                        </colgroup>
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50">
                                 {(
                                     [
-                                        ['code', 'Mã Phòng ban'],
-                                        ['name', 'Tên phòng ban'],
-                                        ['status', 'Trạng thái'],
-                                        ['createdAt', 'Ngày tạo'],
+                                        ['code', t('common.code')],
+                                        ['name', t('common.name')],
+                                        ['status', t('common.status')],
+                                        ['createdAt', t('common.createdAt')],
                                     ] as const
                                 ).map(([field, label]) => (
                                     <th
@@ -399,7 +384,7 @@ export function DepartmentsPage() {
                                     </th>
                                 ))}
                                 <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
-                                    Thao tác
+                                    {t('common.actions')}
                                 </th>
                             </tr>
                         </thead>
@@ -410,32 +395,30 @@ export function DepartmentsPage() {
                                         className="border-b border-slate-100 transition hover:bg-slate-50/80 last:border-0"
                                         key={department.id}
                                     >
-                                        <td className="px-5 py-3.5">
-                                            <div className="flex items-center justify-center gap-3">
-                                                <strong className="text-sm text-slate-800">
-                                                    {department.code}
-                                                </strong>
-                                            </div>
+                                        <td className="px-5 py-3.5 text-center text-sm font-semibold text-slate-800">
+                                            {department.code}
                                         </td>
                                         <td className="px-5 py-3.5 text-center text-sm text-slate-700">
                                             {department.name}
                                         </td>
                                         <td className="px-5 py-3.5 text-center">
                                             <span
-                                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${department.status
-                                                    ? 'bg-emerald-50 text-emerald-700'
-                                                    : 'bg-amber-50 text-amber-700'
-                                                    }`}
+                                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                    department.status
+                                                        ? 'bg-emerald-50 text-emerald-700'
+                                                        : 'bg-amber-50 text-amber-700'
+                                                }`}
                                             >
                                                 <span
-                                                    className={`size-1.5 rounded-full ${department.status
-                                                        ? 'bg-emerald-500'
-                                                        : 'bg-amber-500'
-                                                        }`}
+                                                    className={`size-1.5 rounded-full ${
+                                                        department.status
+                                                            ? 'bg-emerald-500'
+                                                            : 'bg-amber-500'
+                                                    }`}
                                                 />
                                                 {department.status
-                                                    ? 'Hoạt động'
-                                                    : 'Tạm ngưng'}
+                                                    ? t('common.active')
+                                                    : t('common.inactive')}
                                             </span>
                                         </td>
                                         <td className="px-5 py-3.5 text-center text-sm text-slate-600">
@@ -444,47 +427,40 @@ export function DepartmentsPage() {
                                         <td className="px-5 py-3.5">
                                             <div className="flex items-center justify-center gap-2">
                                                 <button
-                                                    aria-label={`Xem ${department.name}`}
+                                                    aria-label={t('common.view')}
                                                     className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
                                                     onClick={() =>
-                                                        void handleView(
-                                                            department.id,
-                                                        )
+                                                        void handleView(department.id)
                                                     }
-                                                    title="Xem chi tiết"
+                                                    title={t('common.view')}
                                                     type="button"
                                                 >
-                                                    <FontAwesomeIcon
-                                                        icon={faEye}
-                                                    />
+                                                    <FontAwesomeIcon icon={faEye} />
                                                 </button>
                                                 <button
-                                                    aria-label={`Sửa ${department.name}`}
+                                                    aria-label={t('common.edit')}
                                                     className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
-                                                    onClick={() =>
-                                                        openEditForm(department)
-                                                    }
-                                                    title="Chỉnh sửa"
+                                                    onClick={() => {
+                                                        setEditing(department);
+                                                        setShowForm(true);
+                                                    }}
+                                                    title={t('common.edit')}
                                                     type="button"
                                                 >
-                                                    <FontAwesomeIcon
-                                                        icon={faPen}
-                                                    />
+                                                    <FontAwesomeIcon icon={faPen} />
                                                 </button>
                                                 <button
-                                                    aria-label={`Xóa ${department.name}`}
+                                                    aria-label={t('common.delete')}
                                                     className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
                                                     onClick={() =>
                                                         setDepartmentToDelete(
                                                             department,
                                                         )
                                                     }
-                                                    title="Xóa"
+                                                    title={t('common.delete')}
                                                     type="button"
                                                 >
-                                                    <FontAwesomeIcon
-                                                        icon={faTrash}
-                                                    />
+                                                    <FontAwesomeIcon icon={faTrash} />
                                                 </button>
                                             </div>
                                         </td>
@@ -494,13 +470,11 @@ export function DepartmentsPage() {
                                 <tr>
                                     <td colSpan={5}>
                                         <EmptyState
-                                            description="Thử thay đổi từ khóa hoặc bộ lọc trạng thái."
-                                            icon={
-                                                <FontAwesomeIcon
-                                                    icon={faBuilding}
-                                                />
-                                            }
-                                            title="Chưa có phòng ban phù hợp"
+                                            description={t(
+                                                'departments.noResultsDescription',
+                                            )}
+                                            icon={<FontAwesomeIcon icon={faBuilding} />}
+                                            title={t('departments.noResultsTitle')}
                                         />
                                     </td>
                                 </tr>
@@ -533,11 +507,14 @@ export function DepartmentsPage() {
             )}
 
             <ConfirmDialog
-                confirmLabel="Xóa phòng ban"
-                description={`Bạn có chắc muốn xóa phòng ban "${departmentToDelete?.name ?? ''}"? Hành động này không thể hoàn tác.`}
+                confirmLabel={t('departments.deleteConfirmLabel')}
+                description={t('departments.deleteDescription').replace(
+                    '{name}',
+                    departmentToDelete?.name ?? '',
+                )}
                 loading={deleting}
                 open={Boolean(departmentToDelete)}
-                title="Xác nhận xóa"
+                title={t('common.confirmDelete')}
                 tone="danger"
                 onCancel={() => setDepartmentToDelete(null)}
                 onConfirm={() => void handleConfirmDelete()}

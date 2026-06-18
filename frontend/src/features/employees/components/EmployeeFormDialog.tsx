@@ -1,10 +1,11 @@
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
-import { Button } from '@/components/ui';
+import { Button, DropdownSelect } from '@/components/ui';
 import { type Department } from '@/features/departments/types';
 import { type Position } from '@/features/positions/types';
+import { useI18n } from '@/i18n';
 import { getEmployeeErrorMessage } from '../api/employees.api';
 import {
     type Employee,
@@ -41,11 +42,14 @@ export function EmployeeFormDialog({
     onSubmit,
 }: EmployeeFormDialogProps) {
     const { showToast } = useToast();
+    const { t } = useI18n();
     const {
+        control,
         formState: { errors, isSubmitting },
         handleSubmit,
         register,
         setError,
+        setValue,
     } = useForm<EmployeeFormValues>({
         defaultValues: {
             employeeCode: editing?.employeeCode ?? '',
@@ -62,29 +66,42 @@ export function EmployeeFormDialog({
             status: editing?.status ?? 'Active',
         },
     });
+    const status = useWatch({ control, name: 'status' });
+    const gender = useWatch({ control, name: 'gender' }) ?? '';
+    const departmentId = useWatch({ control, name: 'departmentId' });
+    const positionId = useWatch({ control, name: 'positionId' });
 
     async function handleValidSubmit(values: EmployeeFormValues) {
         try {
-            const payload = {
-                ...values,
+            const employeePayload: EmployeePayload = {
+                firstName: values.firstName,
+                lastName: values.lastName,
+                email: values.email,
                 employeeCode: values.employeeCode?.trim() || undefined,
                 phoneNumber: values.phoneNumber?.trim() || undefined,
                 dateOfBirth: values.dateOfBirth || undefined,
                 gender: values.gender?.trim() || undefined,
+                hireDate: values.hireDate,
                 address: values.address?.trim() || undefined,
+                status: values.status,
                 departmentIds: [values.departmentId],
                 positionIds: [values.positionId],
             };
-            const {
-                departmentId: _departmentId,
-                positionId: _positionId,
-                ...employeePayload
-            } = payload;
 
             if (editing) {
-                const { employeeCode: _employeeCode, ...updatePayload } =
-                    employeePayload;
-                await onSubmit(updatePayload);
+                await onSubmit({
+                    firstName: employeePayload.firstName,
+                    lastName: employeePayload.lastName,
+                    email: employeePayload.email,
+                    phoneNumber: employeePayload.phoneNumber,
+                    dateOfBirth: employeePayload.dateOfBirth,
+                    gender: employeePayload.gender,
+                    departmentIds: employeePayload.departmentIds,
+                    positionIds: employeePayload.positionIds,
+                    hireDate: employeePayload.hireDate,
+                    address: employeePayload.address,
+                    status: employeePayload.status,
+                });
             } else {
                 await onSubmit(employeePayload);
             }
@@ -103,7 +120,7 @@ export function EmployeeFormDialog({
 
             showToast({
                 message,
-                title: 'Could not save employee',
+                title: t('employees.saveError'),
                 variant: 'error',
             });
         }
@@ -118,7 +135,7 @@ export function EmployeeFormDialog({
             >
                 <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
                     <h2 className="text-xl font-bold text-slate-950">
-                        {editing ? 'Update Employee' : 'Add Employee'}
+                        {editing ? t('employees.update') : t('employees.add')}
                     </h2>
                     <Button
                         aria-label="Close"
@@ -136,7 +153,7 @@ export function EmployeeFormDialog({
                 >
                     <div className="grid grid-cols-2 gap-4 overflow-y-auto px-6 py-5 max-md:grid-cols-1">
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Employee Code
+                            {t('employees.employeeCode')}
                             <input
                                 className={fieldClass}
                                 disabled={Boolean(editing)}
@@ -153,24 +170,42 @@ export function EmployeeFormDialog({
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Status
-                            <select
-                                className={`${fieldClass} cursor-pointer`}
+                            {t('common.status')}
+                            <input
+                                type="hidden"
                                 {...register('status', {
-                                    required: 'Status is required.',
+                                    required: t('common.required'),
                                 })}
-                            >
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
-                            </select>
+                            />
+                            <DropdownSelect
+                                ariaLabel={t('common.status')}
+                                className="w-full"
+                                options={[
+                                    {
+                                        value: 'Active',
+                                        label: t('common.active'),
+                                    },
+                                    {
+                                        value: 'Inactive',
+                                        label: t('common.inactive'),
+                                    },
+                                ]}
+                                value={status}
+                                onChange={(value) =>
+                                    setValue('status', value, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                    })
+                                }
+                            />
                             <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            First Name
+                            {t('employees.firstName')}
                             <input
                                 className={fieldClass}
                                 {...register('firstName', {
-                                    required: 'First name is required.',
+                                    required: t('common.required'),
                                     maxLength: {
                                         message: 'Maximum 100 characters.',
                                         value: 100,
@@ -182,11 +217,11 @@ export function EmployeeFormDialog({
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Last Name
+                            {t('employees.lastName')}
                             <input
                                 className={fieldClass}
                                 {...register('lastName', {
-                                    required: 'Last name is required.',
+                                    required: t('common.required'),
                                     maxLength: {
                                         message: 'Maximum 100 characters.',
                                         value: 100,
@@ -198,7 +233,7 @@ export function EmployeeFormDialog({
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Email
+                            {t('common.email')}
                             <input
                                 className={fieldClass}
                                 type="email"
@@ -211,7 +246,7 @@ export function EmployeeFormDialog({
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Phone Number
+                            {t('employees.phoneNumber')}
                             <input
                                 className={fieldClass}
                                 {...register('phoneNumber')}
@@ -219,7 +254,7 @@ export function EmployeeFormDialog({
                             <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Date Of Birth
+                            {t('employees.dateOfBirth')}
                             <input
                                 className={fieldClass}
                                 type="date"
@@ -228,69 +263,111 @@ export function EmployeeFormDialog({
                             <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Gender
-                            <select
-                                className={`${fieldClass} cursor-pointer`}
-                                {...register('gender')}
-                            >
-                                <option value="">Select gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            {t('employees.gender')}
+                            <input type="hidden" {...register('gender')} />
+                            <DropdownSelect
+                                ariaLabel={t('employees.gender')}
+                                className="w-full"
+                                options={[
+                                    {
+                                        value: '',
+                                        label: t('employees.selectGender'),
+                                    },
+                                    {
+                                        value: 'Male',
+                                        label: t('employees.male'),
+                                    },
+                                    {
+                                        value: 'Female',
+                                        label: t('employees.female'),
+                                    },
+                                    {
+                                        value: 'Other',
+                                        label: t('employees.other'),
+                                    },
+                                ]}
+                                value={gender}
+                                onChange={(value) =>
+                                    setValue('gender', value, {
+                                        shouldDirty: true,
+                                    })
+                                }
+                            />
                             <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Departments
-                            <select
-                                className={`${fieldClass} cursor-pointer`}
+                            {t('common.departments')}
+                            <input
+                                type="hidden"
                                 {...register('departmentId', {
-                                    required: 'Select a department.',
+                                    required: t('common.required'),
                                 })}
-                            >
-                                <option value="">Select department</option>
-                                {departments.map((department) => (
-                                    <option
-                                        key={department.id}
-                                        value={department.id}
-                                    >
-                                        {department.name}
-                                    </option>
-                                ))}
-                            </select>
+                            />
+                            <DropdownSelect
+                                ariaLabel={t('common.departments')}
+                                className="w-full"
+                                options={[
+                                    {
+                                        value: '',
+                                        label: t('employees.selectDepartment'),
+                                    },
+                                    ...departments.map((department) => ({
+                                        value: department.id,
+                                        label: department.name,
+                                    })),
+                                ]}
+                                value={departmentId}
+                                onChange={(value) =>
+                                    setValue('departmentId', value, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                    })
+                                }
+                            />
                             <span className="min-h-4 text-xs font-normal text-red-400">
                                 {errors.departmentId?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Positions
-                            <select
-                                className={`${fieldClass} cursor-pointer`}
+                            {t('common.positions')}
+                            <input
+                                type="hidden"
                                 {...register('positionId', {
-                                    required: 'Select a position.',
+                                    required: t('common.required'),
                                 })}
-                            >
-                                <option value="">Select position</option>
-                                {positions.map((position) => (
-                                    <option
-                                        key={position.id}
-                                        value={position.id}
-                                    >
-                                        {position.name}
-                                    </option>
-                                ))}
-                            </select>
+                            />
+                            <DropdownSelect
+                                ariaLabel={t('common.positions')}
+                                className="w-full"
+                                options={[
+                                    {
+                                        value: '',
+                                        label: t('employees.selectPosition'),
+                                    },
+                                    ...positions.map((position) => ({
+                                        value: position.id,
+                                        label: position.name,
+                                    })),
+                                ]}
+                                value={positionId}
+                                onChange={(value) =>
+                                    setValue('positionId', value, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                    })
+                                }
+                            />
                             <span className="min-h-4 text-xs font-normal text-red-400">
                                 {errors.positionId?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Hire Date
+                            {t('employees.hireDate')}
                             <input
                                 className={fieldClass}
                                 type="date"
                                 {...register('hireDate', {
-                                    required: 'Hire date is required.',
+                                    required: t('common.required'),
                                 })}
                             />
                             <span className="min-h-4 text-xs font-normal text-red-400">
@@ -298,7 +375,7 @@ export function EmployeeFormDialog({
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700 md:col-span-2">
-                            Address
+                            {t('employees.address')}
                             <textarea
                                 className={`${fieldClass} min-h-24 py-3`}
                                 rows={3}
@@ -312,14 +389,14 @@ export function EmployeeFormDialog({
                             onClick={onClose}
                             variant="secondary"
                         >
-                            Cancel
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             loading={isSubmitting}
-                            loadingLabel="Saving..."
+                            loadingLabel={t('common.loadingSave')}
                             type="submit"
                         >
-                            Save
+                            {t('common.save')}
                         </Button>
                     </div>
                 </form>

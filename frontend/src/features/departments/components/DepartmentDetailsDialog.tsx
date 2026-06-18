@@ -1,5 +1,6 @@
-import { type Department } from '../types';
 import { Button } from '@/components/ui';
+import { useI18n } from '@/i18n';
+import { type Department } from '../types';
 
 type DepartmentDetailsDialogProps = {
     department: Department;
@@ -17,14 +18,15 @@ export function DepartmentDetailsDialog({
     department,
     onClose,
 }: DepartmentDetailsDialogProps) {
+    const { t } = useI18n();
     const details = [
-        ['Mô tả', department.description || 'Không có'],
+        [t('common.description'), department.description || '-'],
         [
-            'Trạng thái',
-            department.status ? 'Hoạt động' : 'Tạm ngưng',
+            t('common.status'),
+            department.status ? t('common.active') : t('common.inactive'),
         ],
-        ['Ngày tạo', formatDate(department.createdAt)],
-        ['Ngày cập nhật', formatDate(department.updatedAt)],
+        [t('common.createdAt'), formatDate(department.createdAt)],
+        [t('common.updatedAt'), formatDate(department.updatedAt)],
     ];
 
     return (
@@ -43,12 +45,8 @@ export function DepartmentDetailsDialog({
                             {department.name}
                         </h2>
                     </div>
-                    <Button
-                        onClick={onClose}
-                        size="sm"
-                        variant="ghost"
-                    >
-                        Đóng
+                    <Button onClick={onClose} size="sm" variant="ghost">
+                        {t('common.close')}
                     </Button>
                 </div>
                 <dl className="mt-6 divide-y divide-slate-200 border-y border-slate-200">

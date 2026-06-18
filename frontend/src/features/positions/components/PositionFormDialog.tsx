@@ -2,8 +2,9 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
-import { Button } from '@/components/ui';
+import { Button, DropdownSelect } from '@/components/ui';
 import { type Department } from '@/features/departments/types';
+import { useI18n } from '@/i18n';
 import { getPositionErrorMessage } from '../api/positions.api';
 import {
     type Position,
@@ -30,12 +31,14 @@ export function PositionFormDialog({
     onSubmit,
 }: PositionFormDialogProps) {
     const { showToast } = useToast();
+    const { t } = useI18n();
     const {
         control,
         formState: { errors, isSubmitting },
         handleSubmit,
         register,
         setError,
+        setValue,
     } = useForm<PositionPayload>({
         defaultValues: {
             code: editing?.code ?? '',
@@ -46,6 +49,7 @@ export function PositionFormDialog({
         },
     });
     const status = useWatch({ control, name: 'status' });
+    const departmentId = useWatch({ control, name: 'departmentId' });
 
     async function handleValidSubmit(values: PositionPayload) {
         try {
@@ -64,7 +68,7 @@ export function PositionFormDialog({
 
             if (message.toLowerCase().includes('code')) {
                 setError('code', {
-                    message: 'Mã vị trí đã tồn tại.',
+                    message,
                     type: 'server',
                 });
                 return;
@@ -72,7 +76,7 @@ export function PositionFormDialog({
 
             showToast({
                 message,
-                title: 'Không thể lưu vị trí',
+                title: t('positions.saveError'),
                 variant: 'error',
             });
         }
@@ -87,10 +91,10 @@ export function PositionFormDialog({
             >
                 <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
                     <h2 className="text-xl font-bold text-slate-950">
-                        {editing ? 'Cập nhật vị trí' : 'Tạo vị trí'}
+                        {editing ? t('positions.update') : t('positions.add')}
                     </h2>
                     <Button
-                        aria-label="Đóng"
+                        aria-label={t('common.close')}
                         disabled={isSubmitting}
                         onClick={onClose}
                         size="icon"
@@ -106,19 +110,21 @@ export function PositionFormDialog({
                     <div className="grid gap-3 overflow-y-auto px-6 py-5">
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             <span>
-                                Mã vị trí
+                                {t('positions.code')}
                                 <span className="ml-1 text-red-500">*</span>
                             </span>
                             <input
                                 aria-invalid={Boolean(errors.code)}
-                                className={`${fieldClass} ${errors.code ? 'border-2 border-red-400' : ''}`}
+                                className={`${fieldClass} ${
+                                    errors.code ? 'border-2 border-red-400' : ''
+                                }`}
                                 disabled={Boolean(editing)}
                                 {...register('code', {
                                     maxLength: {
-                                        message: 'Mã tối đa 50 ký tự.',
+                                        message: t('common.required'),
                                         value: 50,
                                     },
-                                    required: 'Mã vị trí là bắt buộc.',
+                                    required: t('common.required'),
                                 })}
                             />
                             <span className="min-h-4 text-xs font-normal text-red-400">
@@ -127,18 +133,20 @@ export function PositionFormDialog({
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             <span>
-                                Tên vị trí
+                                {t('positions.name')}
                                 <span className="ml-1 text-red-500">*</span>
                             </span>
                             <input
                                 aria-invalid={Boolean(errors.name)}
-                                className={`${fieldClass} ${errors.name ? 'border-2 border-red-400' : ''}`}
+                                className={`${fieldClass} ${
+                                    errors.name ? 'border-2 border-red-400' : ''
+                                }`}
                                 {...register('name', {
                                     maxLength: {
-                                        message: 'Tên tối đa 255 ký tự.',
+                                        message: t('common.required'),
                                         value: 255,
                                     },
-                                    required: 'Tên vị trí là bắt buộc.',
+                                    required: t('common.required'),
                                 })}
                             />
                             <span className="min-h-4 text-xs font-normal text-red-400">
@@ -147,38 +155,49 @@ export function PositionFormDialog({
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             <span>
-                                Phòng ban
+                                {t('common.department')}
                                 <span className="ml-1 text-red-500">*</span>
                             </span>
-                            <select
-                                className={`${fieldClass} cursor-pointer`}
+                            <input
+                                type="hidden"
                                 {...register('departmentId', {
-                                    required: 'Phòng ban là bắt buộc.',
+                                    required: t('common.required'),
                                 })}
-                            >
-                                <option value="">Chọn phòng ban</option>
-                                {departments
-                                    .filter(
-                                        (department) =>
-                                            department.status ||
-                                            department.id ===
-                                                editing?.departmentId,
-                                    )
-                                    .map((department) => (
-                                        <option
-                                            key={department.id}
-                                            value={department.id}
-                                        >
-                                            {department.name}
-                                        </option>
-                                    ))}
-                            </select>
+                            />
+                            <DropdownSelect
+                                ariaLabel={t('common.department')}
+                                className="w-full"
+                                options={[
+                                    {
+                                        value: '',
+                                        label: t('employees.selectDepartment'),
+                                    },
+                                    ...departments
+                                        .filter(
+                                            (department) =>
+                                                department.status ||
+                                                department.id ===
+                                                    editing?.departmentId,
+                                        )
+                                        .map((department) => ({
+                                            value: department.id,
+                                            label: department.name,
+                                        })),
+                                ]}
+                                value={departmentId}
+                                onChange={(value) =>
+                                    setValue('departmentId', value, {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                    })
+                                }
+                            />
                             <span className="min-h-4 text-xs font-normal text-red-400">
                                 {errors.departmentId?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Mô tả
+                            {t('common.description')}
                             <textarea
                                 className={`${fieldClass} min-h-24 py-3`}
                                 rows={3}
@@ -186,7 +205,7 @@ export function PositionFormDialog({
                             />
                         </label>
                         <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-slate-700">
-                            <span>Đang hoạt động</span>
+                            <span>{t('common.active')}</span>
                             <span className="relative inline-flex">
                                 <input
                                     checked={status}
@@ -205,14 +224,14 @@ export function PositionFormDialog({
                             onClick={onClose}
                             variant="secondary"
                         >
-                            Hủy
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             loading={isSubmitting}
-                            loadingLabel="Đang lưu..."
+                            loadingLabel={t('common.loadingSave')}
                             type="submit"
                         >
-                            Lưu
+                            {t('common.save')}
                         </Button>
                     </div>
                 </form>

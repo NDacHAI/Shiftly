@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faArrowLeft,
@@ -13,6 +13,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useToast } from '@/components/feedback';
 import { EmptyState, LoadingOverlay } from '@/components/ui';
 import { routes } from '@/constants/routes';
+import { type I18nKey, useI18n } from '@/i18n';
 import { getEmployee, getEmployeeErrorMessage } from '../api/employees.api';
 import { type Employee } from '../types';
 
@@ -20,13 +21,13 @@ type EmployeeTab = 'profile' | 'account' | 'education' | 'work';
 
 const tabs: Array<{
     id: EmployeeTab;
-    label: string;
+    labelKey: I18nKey;
     icon: IconDefinition;
 }> = [
-    { id: 'profile', label: 'Thông tin nhân viên', icon: faUser },
-    { id: 'account', label: 'Tài khoản', icon: faIdCard },
-    { id: 'education', label: 'Học vấn', icon: faGraduationCap },
-    { id: 'work', label: 'Công việc', icon: faBriefcase },
+    { id: 'profile', labelKey: 'employees.profile', icon: faUser },
+    { id: 'account', labelKey: 'employees.account', icon: faIdCard },
+    { id: 'education', labelKey: 'employees.education', icon: faGraduationCap },
+    { id: 'work', labelKey: 'employees.work', icon: faBriefcase },
 ];
 
 function fullName(employee: Employee) {
@@ -50,21 +51,27 @@ function joinNames(items: Array<{ name: string }>) {
 }
 
 function ProfileTab({ employee }: { employee: Employee }) {
+    const { t } = useI18n();
     const details = [
-        ['Employee Code', employee.employeeCode],
-        ['First Name', employee.firstName],
-        ['Last Name', employee.lastName],
-        ['Full Name', fullName(employee)],
-        ['Email', employee.email],
-        ['Phone Number', employee.phoneNumber || '-'],
-        ['Date Of Birth', formatDate(employee.dateOfBirth)],
-        ['Gender', employee.gender || '-'],
-        ['Address', employee.address || '-'],
-        ['Departments', joinNames(employee.departments)],
-        ['Positions', joinNames(employee.positions)],
-        ['Hire Date', formatDate(employee.hireDate)],
-        ['Status', employee.status],
-        ['Updated At', formatDateTime(employee.updatedAt)],
+        [t('employees.employeeCode'), employee.employeeCode],
+        [t('employees.firstName'), employee.firstName],
+        [t('employees.lastName'), employee.lastName],
+        [t('common.fullName'), fullName(employee)],
+        [t('common.email'), employee.email],
+        [t('employees.phoneNumber'), employee.phoneNumber || '-'],
+        [t('employees.dateOfBirth'), formatDate(employee.dateOfBirth)],
+        [t('employees.gender'), employee.gender || '-'],
+        [t('employees.address'), employee.address || '-'],
+        [t('common.departments'), joinNames(employee.departments)],
+        [t('common.positions'), joinNames(employee.positions)],
+        [t('employees.hireDate'), formatDate(employee.hireDate)],
+        [
+            t('common.status'),
+            employee.status === 'Active'
+                ? t('common.active')
+                : t('common.inactive'),
+        ],
+        [t('common.updatedAt'), formatDateTime(employee.updatedAt)],
     ];
 
     return (
@@ -93,9 +100,11 @@ function ComingSoonTab({
     icon: IconDefinition;
     title: string;
 }) {
+    const { t } = useI18n();
+
     return (
         <EmptyState
-            description="Nội dung tab này sẽ được bổ sung ở giai đoạn sau."
+            description={t('employees.tabComingSoon')}
             icon={<FontAwesomeIcon icon={icon} />}
             title={title}
         />
@@ -105,31 +114,44 @@ function ComingSoonTab({
 export function EmployeeDetailPage() {
     const { id } = useParams<{ id: string }>();
     const { showToast } = useToast();
+    const { t } = useI18n();
     const [employee, setEmployee] = useState<Employee | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<EmployeeTab>('profile');
 
-    const loadEmployee = useCallback(async () => {
+    useEffect(() => {
         if (!id) return;
 
-        setLoading(true);
+        let active = true;
 
-        try {
-            setEmployee(await getEmployee(id));
-        } catch (error) {
-            showToast({
-                message: getEmployeeErrorMessage(error),
-                title: 'Không thể tải nhân viên',
-                variant: 'error',
-            });
-        } finally {
-            setLoading(false);
+        async function loadEmployee() {
+            try {
+                const employeeResponse = await getEmployee(id as string);
+
+                if (active) {
+                    setEmployee(employeeResponse);
+                }
+            } catch (error) {
+                if (active) {
+                    showToast({
+                        message: getEmployeeErrorMessage(error),
+                        title: t('employees.loadDetailError'),
+                        variant: 'error',
+                    });
+                }
+            } finally {
+                if (active) {
+                    setLoading(false);
+                }
+            }
         }
-    }, [id, showToast]);
 
-    useEffect(() => {
         void loadEmployee();
-    }, [loadEmployee]);
+
+        return () => {
+            active = false;
+        };
+    }, [id, showToast, t]);
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
@@ -143,7 +165,7 @@ export function EmployeeDetailPage() {
                             {employee?.employeeCode ?? 'Employee'}
                         </p>
                         <h2 className="mt-1 text-xl font-bold text-slate-950">
-                            {employee ? fullName(employee) : 'Chi tiết nhân viên'}
+                            {employee ? fullName(employee) : t('employees.details')}
                         </h2>
                     </div>
                 </div>
@@ -152,12 +174,12 @@ export function EmployeeDetailPage() {
                     to={routes.employees}
                 >
                     <FontAwesomeIcon icon={faArrowLeft} />
-                    Quay lại
+                    {t('common.back')}
                 </Link>
             </div>
 
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <LoadingOverlay label="Đang tải nhân viên..." visible={loading} />
+                <LoadingOverlay label={t('employees.loading')} visible={loading} />
                 <div className="flex gap-2 overflow-x-auto border-b border-slate-200 px-4 pt-4">
                     {tabs.map((tab) => {
                         const isActive = activeTab === tab.id;
@@ -174,7 +196,7 @@ export function EmployeeDetailPage() {
                                 type="button"
                             >
                                 <FontAwesomeIcon icon={tab.icon} />
-                                {tab.label}
+                                {t(tab.labelKey)}
                             </button>
                         );
                     })}
@@ -182,9 +204,9 @@ export function EmployeeDetailPage() {
 
                 {!loading && !employee && (
                     <EmptyState
-                        description="Nhân viên không tồn tại hoặc bạn không có quyền xem."
+                        description={t('employees.notFoundDescription')}
                         icon={<FontAwesomeIcon icon={faUser} />}
-                        title="Không tìm thấy nhân viên"
+                        title={t('employees.notFoundTitle')}
                     />
                 )}
 
@@ -192,13 +214,16 @@ export function EmployeeDetailPage() {
                     <ProfileTab employee={employee} />
                 )}
                 {employee && activeTab === 'account' && (
-                    <ComingSoonTab icon={faIdCard} title="Tài khoản" />
+                    <ComingSoonTab icon={faIdCard} title={t('employees.account')} />
                 )}
                 {employee && activeTab === 'education' && (
-                    <ComingSoonTab icon={faGraduationCap} title="Học vấn" />
+                    <ComingSoonTab
+                        icon={faGraduationCap}
+                        title={t('employees.education')}
+                    />
                 )}
                 {employee && activeTab === 'work' && (
-                    <ComingSoonTab icon={faBriefcase} title="Công việc" />
+                    <ComingSoonTab icon={faBriefcase} title={t('employees.work')} />
                 )}
             </div>
         </section>

@@ -12,6 +12,7 @@ import {
 import { ConfirmDialog, useToast } from '@/components/feedback';
 import {
     Button,
+    DropdownSelect,
     EmptyState,
     LoadingOverlay,
     Pagination,
@@ -19,6 +20,7 @@ import {
 import { listDepartments } from '@/features/departments/api/departments.api';
 import { type Department } from '@/features/departments/types';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useI18n } from '@/i18n';
 import {
     createPosition,
     deletePosition,
@@ -47,14 +49,14 @@ type PositionsPageProps = {
 
 export function PositionsPage({ canManage }: PositionsPageProps) {
     const { showToast } = useToast();
+    const { t } = useI18n();
     const [positions, setPositions] = useState<Position[]>([]);
     const [departments, setDepartments] = useState<Department[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState('');
     const [departmentId, setDepartmentId] = useState('');
-    const [statusFilter, setStatusFilter] =
-        useState<StatusFilter>('all');
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [sortBy, setSortBy] = useState<PositionSortField>('createdAt');
     const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
     const [loading, setLoading] = useState(true);
@@ -68,6 +70,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
 
     const loadPositions = useCallback(async () => {
         setLoading(true);
+
         try {
             const response = await listPositions({
                 page,
@@ -86,7 +89,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
         } catch (error) {
             showToast({
                 message: getPositionErrorMessage(error),
-                title: 'Không thể tải vị trí',
+                title: t('positions.loadError'),
                 variant: 'error',
             });
         } finally {
@@ -100,6 +103,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
         sortBy,
         sortOrder,
         statusFilter,
+        t,
     ]);
 
     useEffect(() => {
@@ -124,7 +128,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
             })
             .catch(() => {
                 showToast({
-                    message: 'Không thể tải danh sách phòng ban.',
+                    message: t('positions.departmentsLoadError'),
                     variant: 'error',
                 });
             });
@@ -132,7 +136,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
         return () => {
             active = false;
         };
-    }, [showToast]);
+    }, [showToast, t]);
 
     function changeSort(field: PositionSortField) {
         if (sortBy === field) {
@@ -158,10 +162,8 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
         setEditing(null);
         await loadPositions();
         showToast({
-            message: wasEditing
-                ? 'Đã cập nhật vị trí.'
-                : 'Đã tạo vị trí mới.',
-            title: 'Thành công',
+            message: wasEditing ? t('positions.updated') : t('positions.created'),
+            title: t('common.success'),
             variant: 'success',
         });
     }
@@ -171,13 +173,13 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
             await updatePositionStatus(position.id, !position.status);
             await loadPositions();
             showToast({
-                message: 'Đã cập nhật trạng thái vị trí.',
+                message: t('positions.statusUpdated'),
                 variant: 'success',
             });
         } catch (error) {
             showToast({
                 message: getPositionErrorMessage(error),
-                title: 'Không thể cập nhật trạng thái',
+                title: t('positions.statusUpdateError'),
                 variant: 'error',
             });
         }
@@ -185,20 +187,21 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
 
     async function handleDelete() {
         if (!positionToDelete) return;
+
         setDeleting(true);
+
         try {
             await deletePosition(positionToDelete.id);
             setPositionToDelete(null);
             await loadPositions();
             showToast({
-                message:
-                    'Đã xử lý xóa vị trí. Vị trí có dữ liệu liên quan sẽ được chuyển sang tạm ngưng.',
+                message: t('positions.deleted'),
                 variant: 'success',
             });
         } catch (error) {
             showToast({
                 message: getPositionErrorMessage(error),
-                title: 'Không thể xóa vị trí',
+                title: t('positions.deleteError'),
                 variant: 'error',
             });
         } finally {
@@ -215,10 +218,10 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                     </span>
                     <div>
                         <h2 className="text-xl font-bold text-slate-950">
-                            Vị trí
+                            {t('positions.title')}
                         </h2>
                         <p className="mt-1 text-sm text-slate-500">
-                            Quản lý chức danh theo từng phòng ban.
+                            {t('positions.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -231,16 +234,13 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                         size="lg"
                     >
                         <FontAwesomeIcon icon={faPlus} />
-                        Thêm vị trí
+                        {t('positions.add')}
                     </Button>
                 )}
             </div>
 
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <LoadingOverlay
-                    label="Đang tải vị trí..."
-                    visible={loading}
-                />
+                <LoadingOverlay label={t('positions.loading')} visible={loading} />
                 <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
                     <label className="relative min-w-64 flex-1">
                         <FontAwesomeIcon
@@ -249,7 +249,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                         />
                         <input
                             className="min-h-11 w-full rounded-lg border border-slate-200 pl-9 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-                            placeholder="Tìm mã hoặc tên vị trí..."
+                            placeholder={t('positions.searchPlaceholder')}
                             value={search}
                             onChange={(event) => {
                                 setSearch(event.target.value);
@@ -257,42 +257,53 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                             }}
                         />
                     </label>
-                    <select
-                        className="min-h-11 cursor-pointer rounded-lg border border-slate-200 bg-white px-3 text-sm"
+                    <DropdownSelect
+                        ariaLabel={t('common.department')}
+                        options={[
+                            {
+                                value: '',
+                                label: t('common.allDepartments'),
+                            },
+                            ...departments.map((department) => ({
+                                value: department.id,
+                                label: department.name,
+                            })),
+                        ]}
                         value={departmentId}
-                        onChange={(event) => {
-                            setDepartmentId(event.target.value);
+                        onChange={(value) => {
+                            setDepartmentId(value);
                             setPage(1);
                         }}
-                    >
-                        <option value="">Tất cả phòng ban</option>
-                        {departments.map((department) => (
-                            <option key={department.id} value={department.id}>
-                                {department.name}
-                            </option>
-                        ))}
-                    </select>
-                    <select
-                        className="min-h-11 cursor-pointer rounded-lg border border-slate-200 bg-white px-3 text-sm"
+                    />
+                    <DropdownSelect
+                        ariaLabel={t('common.status')}
+                        options={[
+                            {
+                                value: 'all',
+                                label: t('common.allStatuses'),
+                            },
+                            {
+                                value: 'active',
+                                label: t('common.active'),
+                            },
+                            {
+                                value: 'inactive',
+                                label: t('common.inactive'),
+                            },
+                        ]}
                         value={statusFilter}
-                        onChange={(event) => {
-                            setStatusFilter(
-                                event.target.value as StatusFilter,
-                            );
+                        onChange={(value) => {
+                            setStatusFilter(value as StatusFilter);
                             setPage(1);
                         }}
-                    >
-                        <option value="all">Tất cả trạng thái</option>
-                        <option value="active">Hoạt động</option>
-                        <option value="inactive">Tạm ngưng</option>
-                    </select>
+                    />
                     <Button
                         onClick={() => void loadPositions()}
                         size="lg"
                         variant="secondary"
                     >
                         <FontAwesomeIcon icon={faRotateRight} />
-                        Làm mới
+                        {t('common.refresh')}
                     </Button>
                 </div>
 
@@ -301,12 +312,12 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                         <thead className="bg-slate-50">
                             <tr className="border-b border-slate-200">
                                 <th className="w-[16%] px-4 py-3 text-center text-xs text-slate-600">
-                                    Mã
+                                    {t('common.code')}
                                 </th>
                                 {(
                                     [
-                                        ['name', 'Tên vị trí'],
-                                        ['createdAt', 'Ngày tạo'],
+                                        ['name', t('common.name')],
+                                        ['createdAt', t('common.createdAt')],
                                     ] as const
                                 ).map(([field, label]) => (
                                     <th
@@ -328,13 +339,13 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                     </th>
                                 ))}
                                 <th className="w-[20%] px-4 py-3 text-center text-xs text-slate-600">
-                                    Phòng ban
+                                    {t('common.department')}
                                 </th>
                                 <th className="w-[16%] px-4 py-3 text-center text-xs text-slate-600">
-                                    Trạng thái
+                                    {t('common.status')}
                                 </th>
                                 <th className="w-[20%] px-4 py-3 text-center text-xs text-slate-600">
-                                    Thao tác
+                                    {t('common.actions')}
                                 </th>
                             </tr>
                         </thead>
@@ -361,55 +372,51 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <button
-                                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${canManage ? 'cursor-pointer' : 'cursor-default'} ${
+                                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                    canManage
+                                                        ? 'cursor-pointer'
+                                                        : 'cursor-default'
+                                                } ${
                                                     position.status
                                                         ? 'bg-emerald-50 text-emerald-700'
                                                         : 'bg-amber-50 text-amber-700'
                                                 }`}
                                                 disabled={!canManage}
                                                 onClick={() =>
-                                                    void handleStatusChange(
-                                                        position,
-                                                    )
+                                                    void handleStatusChange(position)
                                                 }
                                                 type="button"
                                             >
                                                 {position.status
-                                                    ? 'Hoạt động'
-                                                    : 'Tạm ngưng'}
+                                                    ? t('common.active')
+                                                    : t('common.inactive')}
                                             </button>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="flex justify-center gap-2">
                                                 <button
-                                                    aria-label="Xem chi tiết"
+                                                    aria-label={t('common.view')}
                                                     className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
                                                     onClick={() =>
                                                         void getPosition(
                                                             position.id,
                                                         ).then(setSelected)
                                                     }
-                                                    title="Xem chi tiết"
+                                                    title={t('common.view')}
                                                     type="button"
                                                 >
-                                                    <FontAwesomeIcon
-                                                        icon={faEye}
-                                                    />
+                                                    <FontAwesomeIcon icon={faEye} />
                                                 </button>
                                                 {canManage && (
                                                     <>
                                                         <button
-                                                            aria-label="Chỉnh sửa"
+                                                            aria-label={t('common.edit')}
                                                             className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
                                                             onClick={() => {
-                                                                setEditing(
-                                                                    position,
-                                                                );
-                                                                setShowForm(
-                                                                    true,
-                                                                );
+                                                                setEditing(position);
+                                                                setShowForm(true);
                                                             }}
-                                                            title="Chỉnh sửa"
+                                                            title={t('common.edit')}
                                                             type="button"
                                                         >
                                                             <FontAwesomeIcon
@@ -417,14 +424,14 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                                             />
                                                         </button>
                                                         <button
-                                                            aria-label="Xóa"
+                                                            aria-label={t('common.delete')}
                                                             className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
                                                             onClick={() =>
                                                                 setPositionToDelete(
                                                                     position,
                                                                 )
                                                             }
-                                                            title="Xóa"
+                                                            title={t('common.delete')}
                                                             type="button"
                                                         >
                                                             <FontAwesomeIcon
@@ -441,13 +448,11 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                 <tr>
                                     <td colSpan={6}>
                                         <EmptyState
-                                            description="Thử thay đổi từ khóa hoặc bộ lọc."
-                                            icon={
-                                                <FontAwesomeIcon
-                                                    icon={faBriefcase}
-                                                />
-                                            }
-                                            title="Chưa có vị trí phù hợp"
+                                            description={t(
+                                                'positions.noResultsDescription',
+                                            )}
+                                            icon={<FontAwesomeIcon icon={faBriefcase} />}
+                                            title={t('positions.noResultsTitle')}
                                         />
                                     </td>
                                 </tr>
@@ -478,11 +483,14 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                 />
             )}
             <ConfirmDialog
-                confirmLabel="Xóa vị trí"
-                description={`Xóa vị trí "${positionToDelete?.name ?? ''}"? Nếu đã có dữ liệu liên quan, vị trí sẽ được chuyển sang tạm ngưng.`}
+                confirmLabel={t('positions.deleteConfirmLabel')}
+                description={t('positions.deleteDescription').replace(
+                    '{name}',
+                    positionToDelete?.name ?? '',
+                )}
                 loading={deleting}
                 open={Boolean(positionToDelete)}
-                title="Xác nhận xóa"
+                title={t('common.confirmDelete')}
                 tone="danger"
                 onCancel={() => setPositionToDelete(null)}
                 onConfirm={() => void handleDelete()}

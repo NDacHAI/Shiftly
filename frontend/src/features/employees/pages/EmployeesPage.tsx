@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faEye,
-    faFilter,
     faPen,
     faPlus,
     faRotateRight,
@@ -14,12 +13,14 @@ import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog, useToast } from '@/components/feedback';
 import {
     Button,
+    DropdownSelect,
     EmptyState,
     LoadingOverlay,
     Pagination,
 } from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
 import { routes } from '@/constants/routes';
+import { useI18n } from '@/i18n';
 import { listDepartments } from '@/features/departments/api/departments.api';
 import { type Department } from '@/features/departments/types';
 import { listPositions } from '@/features/positions/api/positions.api';
@@ -58,6 +59,7 @@ function fullName(employee: Employee) {
 }
 
 export function EmployeesPage({ userRole }: EmployeesPageProps) {
+    const { t } = useI18n();
     const canManage = userRole === roles.admin;
     const canList = userRole === roles.admin || userRole === roles.manager;
     const navigate = useNavigate();
@@ -111,7 +113,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
         } catch (error) {
             showToast({
                 message: getEmployeeErrorMessage(error),
-                title: 'Could not load employees',
+                title: t('employees.loadError'),
                 variant: 'error',
             });
         } finally {
@@ -127,6 +129,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
         sortBy,
         sortOrder,
         statusFilter,
+        t,
     ]);
 
     useEffect(() => {
@@ -164,7 +167,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             .catch((error) => {
                 showToast({
                     message: getEmployeeErrorMessage(error),
-                    title: 'Could not load filters',
+                    title: t('employees.filtersLoadError'),
                     variant: 'error',
                 });
             });
@@ -172,7 +175,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
         return () => {
             active = false;
         };
-    }, [canList, showToast]);
+    }, [canList, showToast, t]);
 
     function changeSort(field: EmployeeSortField) {
         if (sortBy === field) {
@@ -199,8 +202,8 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
         await loadEmployees();
         showToast({
             message: wasEditing
-                ? 'Employee updated successfully.'
-                : 'Employee created successfully.',
+                ? t('employees.updated')
+                : t('employees.created'),
             variant: 'success',
         });
     }
@@ -215,13 +218,13 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             await loadEmployees();
             showToast({
                 message:
-                    'Employee removed. Records with related data are moved to Inactive.',
+                    t('employees.deleted'),
                 variant: 'success',
             });
         } catch (error) {
             showToast({
                 message: getEmployeeErrorMessage(error),
-                title: 'Could not delete employee',
+                title: t('employees.deleteError'),
                 variant: 'error',
             });
         } finally {
@@ -242,11 +245,10 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                     </span>
                     <div>
                         <h2 className="text-xl font-bold text-slate-950">
-                            Employees
+                            {t('employees.title')}
                         </h2>
                         <p className="mt-1 text-sm text-slate-500">
-                            Manage employee profiles, departments, positions,
-                            and status.
+                            {t('employees.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -259,7 +261,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                         size="lg"
                     >
                         <FontAwesomeIcon icon={faPlus} />
-                        Add Employee
+                        {t('employees.add')}
                     </Button>
                 )}
             </div>
@@ -267,19 +269,25 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             {canList && (
                 <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
                     <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p className="text-sm text-slate-500">Total</p>
+                        <p className="text-sm text-slate-500">
+                            {t('employees.total')}
+                        </p>
                         <strong className="mt-1 block text-2xl text-slate-950">
                             {total}
                         </strong>
                     </article>
                     <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p className="text-sm text-slate-500">Active on page</p>
+                        <p className="text-sm text-slate-500">
+                            {t('employees.activeOnPage')}
+                        </p>
                         <strong className="mt-1 block text-2xl text-emerald-700">
                             {activeCount}
                         </strong>
                     </article>
                     <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p className="text-sm text-slate-500">Inactive on page</p>
+                        <p className="text-sm text-slate-500">
+                            {t('employees.inactiveOnPage')}
+                        </p>
                         <strong className="mt-1 block text-2xl text-amber-700">
                             {employees.length - activeCount}
                         </strong>
@@ -288,7 +296,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             )}
 
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <LoadingOverlay label="Loading employees..." visible={loading} />
+                <LoadingOverlay label={t('employees.loading')} visible={loading} />
                 {canList && (
                     <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
                         <label className="relative min-w-64 flex-1">
@@ -298,7 +306,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                             />
                             <input
                                 className={`${fieldClass} w-full pl-9`}
-                                placeholder="Search code, name, or email..."
+                                placeholder={t('employees.searchPlaceholder')}
                                 value={search}
                                 onChange={(event) => {
                                     setSearch(event.target.value);
@@ -306,63 +314,71 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                 }}
                             />
                         </label>
-                        <label className="relative">
-                            <FontAwesomeIcon
-                                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
-                                icon={faFilter}
-                            />
-                            <select
-                                className={`${fieldClass} cursor-pointer pl-9`}
-                                value={departmentId}
-                                onChange={(event) => {
-                                    setDepartmentId(event.target.value);
-                                    setPage(1);
-                                }}
-                            >
-                                <option value="">All departments</option>
-                                {departments.map((department) => (
-                                    <option key={department.id} value={department.id}>
-                                        {department.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                        <select
-                            className={`${fieldClass} cursor-pointer`}
+                        <DropdownSelect
+                            ariaLabel={t('common.department')}
+                            options={[
+                                {
+                                    value: '',
+                                    label: t('common.allDepartments'),
+                                },
+                                ...departments.map((department) => ({
+                                    value: department.id,
+                                    label: department.name,
+                                })),
+                            ]}
+                            value={departmentId}
+                            onChange={(value) => {
+                                setDepartmentId(value);
+                                setPage(1);
+                            }}
+                        />
+                        <DropdownSelect
+                            ariaLabel={t('common.position')}
+                            options={[
+                                {
+                                    value: '',
+                                    label: t('common.allPositions'),
+                                },
+                                ...positions.map((position) => ({
+                                    value: position.id,
+                                    label: position.name,
+                                })),
+                            ]}
                             value={positionId}
-                            onChange={(event) => {
-                                setPositionId(event.target.value);
+                            onChange={(value) => {
+                                setPositionId(value);
                                 setPage(1);
                             }}
-                        >
-                            <option value="">All positions</option>
-                            {positions.map((position) => (
-                                <option key={position.id} value={position.id}>
-                                    {position.name}
-                                </option>
-                            ))}
-                        </select>
-                        <select
-                            className={`${fieldClass} cursor-pointer`}
+                        />
+                        <DropdownSelect
+                            ariaLabel={t('common.status')}
+                            options={[
+                                {
+                                    value: 'all',
+                                    label: t('common.allStatuses'),
+                                },
+                                {
+                                    value: 'Active',
+                                    label: t('common.active'),
+                                },
+                                {
+                                    value: 'Inactive',
+                                    label: t('common.inactive'),
+                                },
+                            ]}
                             value={statusFilter}
-                            onChange={(event) => {
-                                setStatusFilter(
-                                    event.target.value as StatusFilter,
-                                );
+                            onChange={(value) => {
+                                setStatusFilter(value as StatusFilter);
                                 setPage(1);
                             }}
-                        >
-                            <option value="all">All statuses</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
+                        />
                         <Button
                             onClick={() => void loadEmployees()}
                             size="lg"
                             variant="secondary"
                         >
                             <FontAwesomeIcon icon={faRotateRight} />
-                            Refresh
+                            {t('common.refresh')}
                         </Button>
                     </div>
                 )}
@@ -377,7 +393,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                         onClick={() => changeSort('employeeCode')}
                                         type="button"
                                     >
-                                        Code
+                                        {t('common.code')}
                                     </button>
                                 </th>
                                 <th className="w-[26%] px-4 py-3 text-center text-xs font-semibold text-slate-600">
@@ -386,17 +402,17 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                         onClick={() => changeSort('fullName')}
                                         type="button"
                                     >
-                                        Full Name
+                                        {t('common.fullName')}
                                     </button>
                                 </th>
                                 <th className="w-[30%] px-4 py-3 text-center text-xs font-semibold text-slate-600">
-                                    Email
+                                    {t('common.email')}
                                 </th>
                                 <th className="w-[14%] px-4 py-3 text-center text-xs font-semibold text-slate-600">
-                                    Status
+                                    {t('common.status')}
                                 </th>
                                 <th className="w-[14%] px-4 py-3 text-center text-xs font-semibold text-slate-600">
-                                    Actions
+                                    {t('common.actions')}
                                 </th>
                             </tr>
                         </thead>
@@ -424,20 +440,22 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                                         : 'bg-amber-50 text-amber-700'
                                                 }`}
                                             >
-                                                {employee.status}
+                                                {employee.status === 'Active'
+                                                    ? t('common.active')
+                                                    : t('common.inactive')}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="flex justify-center gap-2">
                                                 <button
-                                                    aria-label="View employee"
+                                                    aria-label={t('common.view')}
                                                     className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
                                                     onClick={() =>
                                                         navigate(
                                                             `${routes.employees}/${employee.id}`,
                                                         )
                                                     }
-                                                    title="View employee"
+                                                    title={t('common.view')}
                                                     type="button"
                                                 >
                                                     <FontAwesomeIcon icon={faEye} />
@@ -445,13 +463,13 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                                 {canManage && (
                                                     <>
                                                         <button
-                                                            aria-label="Edit employee"
+                                                            aria-label={t('common.edit')}
                                                             className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
                                                             onClick={() => {
                                                                 setEditing(employee);
                                                                 setShowForm(true);
                                                             }}
-                                                            title="Edit employee"
+                                                            title={t('common.edit')}
                                                             type="button"
                                                         >
                                                             <FontAwesomeIcon
@@ -459,14 +477,14 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                                             />
                                                         </button>
                                                         <button
-                                                            aria-label="Delete employee"
+                                                            aria-label={t('common.delete')}
                                                             className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
                                                             onClick={() =>
                                                                 setEmployeeToDelete(
                                                                     employee,
                                                                 )
                                                             }
-                                                            title="Delete employee"
+                                                            title={t('common.delete')}
                                                             type="button"
                                                         >
                                                             <FontAwesomeIcon
@@ -483,9 +501,9 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                 <tr>
                                     <td colSpan={5}>
                                         <EmptyState
-                                            description="Try changing the search or filters."
+                                            description={t('employees.noResultsDescription')}
                                             icon={<FontAwesomeIcon icon={faUsers} />}
-                                            title="No employees found"
+                                            title={t('employees.noResultsTitle')}
                                         />
                                     </td>
                                 </tr>
@@ -513,11 +531,14 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                 />
             )}
             <ConfirmDialog
-                confirmLabel="Delete employee"
-                description={`Delete employee "${employeeToDelete ? fullName(employeeToDelete) : ''}"? If related data exists, the profile will be moved to Inactive.`}
+                confirmLabel={t('employees.deleteConfirmLabel')}
+                description={t('employees.deleteDescription').replace(
+                    '{name}',
+                    employeeToDelete ? fullName(employeeToDelete) : '',
+                )}
                 loading={deleting}
                 open={Boolean(employeeToDelete)}
-                title="Confirm delete"
+                title={t('common.confirmDelete')}
                 tone="danger"
                 onCancel={() => setEmployeeToDelete(null)}
                 onConfirm={() => void handleDelete()}

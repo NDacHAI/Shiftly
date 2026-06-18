@@ -8,6 +8,7 @@ import {
     faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { type AuthUser } from '@/features/auth/types';
+import { useI18n } from '@/i18n';
 
 type HeaderProps = {
     title: string;
@@ -16,6 +17,7 @@ type HeaderProps = {
 };
 
 export function Header({ title, user, onLogout }: HeaderProps) {
+    const { t } = useI18n();
     const [profileOpen, setProfileOpen] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
     const displayName = user.email.split('@')[0];
@@ -53,20 +55,20 @@ export function Header({ title, user, onLogout }: HeaderProps) {
 
             <div className="flex items-center gap-4 max-sm:w-full">
                 <label className="relative block w-60 max-sm:flex-1">
-                    <span className="sr-only">Search</span>
+                    <span className="sr-only">{t('common.search')}</span>
                     <FontAwesomeIcon
                         className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-slate-400"
                         icon={faSearch}
                     />
                     <input
                         className="h-10 min-h-0 rounded-md border-slate-200 bg-white pr-3 pl-9 text-sm font-normal shadow-sm outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100"
-                        placeholder="Search..."
+                        placeholder={t('common.searchPlaceholder')}
                         type="search"
                     />
                 </label>
 
                 <button
-                    aria-label="Thông báo"
+                    aria-label={t('header.notifications')}
                     className="relative flex size-10 min-h-0 items-center justify-center bg-transparent p-0 text-slate-600 transition-colors hover:bg-violet-50 hover:text-violet-600"
                     type="button"
                 >
@@ -112,7 +114,7 @@ export function Header({ title, user, onLogout }: HeaderProps) {
                                     className="mr-2.5 w-4"
                                     icon={faUser}
                                 />
-                                Trang cá nhân
+                                {t('header.profile')}
                             </a>
                             <button
                                 className="flex min-h-0 w-full items-center rounded-none bg-transparent px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
@@ -124,7 +126,7 @@ export function Header({ title, user, onLogout }: HeaderProps) {
                                     className="mr-2.5 w-4"
                                     icon={faRightFromBracket}
                                 />
-                                Đăng xuất
+                                {t('header.logout')}
                             </button>
                         </div>
                     )}

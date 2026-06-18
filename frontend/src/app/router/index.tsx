@@ -7,6 +7,7 @@ import { DepartmentsPage } from '@/features/departments/pages/DepartmentsPage';
 import { EmployeeDetailPage } from '@/features/employees/pages/EmployeeDetailPage';
 import { EmployeesPage } from '@/features/employees/pages/EmployeesPage';
 import { PositionsPage } from '@/features/positions/pages/PositionsPage';
+import { SettingsPage } from '@/features/settings/pages/SettingsPage';
 import { PermissionRoute } from '@/guards/PermissionRoute';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -23,7 +24,8 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                 path={routes.dashboard}
                 element={
                     <Layout
-                        title="Dashboard"
+                        activeNavKey="nav.dashboard"
+                        titleKey="routes.dashboard"
                         user={user}
                         onLogout={onLogout}
                     >
@@ -39,7 +41,8 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                         userRole={user.role}
                     >
                         <Layout
-                            title="Departments"
+                            activeNavKey="nav.departments"
+                            titleKey="routes.departments"
                             user={user}
                             onLogout={onLogout}
                         >
@@ -56,7 +59,8 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                         userRole={user.role}
                     >
                         <Layout
-                            title="Positions"
+                            activeNavKey="nav.positions"
+                            titleKey="routes.positions"
                             user={user}
                             onLogout={onLogout}
                         >
@@ -79,7 +83,8 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                         userRole={user.role}
                     >
                         <Layout
-                            title="Employees"
+                            activeNavKey="nav.employees"
+                            titleKey="routes.employees"
                             user={user}
                             onLogout={onLogout}
                         >
@@ -100,13 +105,27 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                         userRole={user.role}
                     >
                         <Layout
-                            title="Employee Details"
+                            activeNavKey="nav.employees"
+                            titleKey="routes.employeeDetails"
                             user={user}
                             onLogout={onLogout}
                         >
                             <EmployeeDetailPage />
                         </Layout>
                     </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.settings}
+                element={
+                    <Layout
+                        activeNavKey="nav.settings"
+                        titleKey="routes.settings"
+                        user={user}
+                        onLogout={onLogout}
+                    >
+                        <SettingsPage />
+                    </Layout>
                 }
             />
             <Route path="*" element={<NotFoundPage />} />

@@ -14,55 +14,57 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { routes } from '@/constants/routes';
 import { roles, type Role } from '@/constants/roles';
+import { type I18nKey, useI18n } from '@/i18n';
 
 const navigation: Array<{
-    label: string;
+    labelKey: I18nKey;
     icon: IconDefinition;
     href: string;
     allowedRoles?: readonly Role[];
 }> = [
-    { label: 'Dashboard', icon: faChartColumn, href: routes.dashboard },
+    { labelKey: 'nav.dashboard', icon: faChartColumn, href: routes.dashboard },
     {
-        label: 'Departments',
+        labelKey: 'nav.departments',
         icon: faBuilding,
         href: routes.departments,
         allowedRoles: [roles.admin],
     },
     {
-        label: 'Positions',
+        labelKey: 'nav.positions',
         icon: faBriefcase,
         href: routes.positions,
         allowedRoles: [roles.admin, roles.manager],
     },
     {
-        label: 'Employees',
+        labelKey: 'nav.employees',
         icon: faUsers,
         href: routes.employees,
         allowedRoles: [roles.admin, roles.manager, roles.user],
     },
-    { label: 'Work Shifts', icon: faCalendarDays, href: '#' },
-    { label: 'Attendance', icon: faClock, href: '#' },
-    { label: 'Leave Requests', icon: faFileLines, href: '#' },
-    { label: 'Settings', icon: faGear, href: '#' },
+    { labelKey: 'nav.workShifts', icon: faCalendarDays, href: '#' },
+    { labelKey: 'nav.attendance', icon: faClock, href: '#' },
+    { labelKey: 'nav.leaveRequests', icon: faFileLines, href: '#' },
+    { labelKey: 'nav.settings', icon: faGear, href: routes.settings },
 ];
 
 type NavProps = {
-    defaultActiveItem?: string;
+    defaultActiveItem?: I18nKey;
     userRole: Role;
 };
 
 export function Nav({
-    defaultActiveItem = 'Dashboard',
+    defaultActiveItem = 'nav.dashboard',
     userRole,
 }: NavProps) {
+    const { t } = useI18n();
     const [activeItem, setActiveItem] = useState(defaultActiveItem);
 
     function handleNavigation(
         event: MouseEvent<HTMLAnchorElement>,
-        label: string,
+        labelKey: I18nKey,
         href: string,
     ) {
-        setActiveItem(label);
+        setActiveItem(labelKey);
 
         if (href === '#') {
             event.preventDefault();
@@ -74,12 +76,12 @@ export function Nav({
             <a className="flex items-center gap-2.5 px-2 pb-7 max-sm:pb-3" href="#">
                 <span className="relative flex size-[22px] rotate-45 items-center justify-center rounded-[5px] bg-primary-600 after:size-[7px] after:rounded-sm after:bg-white after:content-['']" />
                 <strong className="text-xl tracking-[-0.5px] text-slate-950">
-                    Shiftly
+                    {t('common.appName')}
                 </strong>
             </a>
 
             <nav
-                aria-label="Điều hướng chính"
+                aria-label={t('nav.mainNavigation')}
                 className="grid gap-1.5 max-sm:flex max-sm:overflow-x-auto max-sm:pb-1"
             >
                 {navigation
@@ -89,7 +91,8 @@ export function Nav({
                             item.allowedRoles.includes(userRole),
                     )
                     .map((item) => {
-                    const isActive = activeItem === item.label;
+                    const label = t(item.labelKey);
+                    const isActive = activeItem === item.labelKey;
                     const className = `relative flex min-h-11 items-center gap-3.5 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap transition-colors ${
                         isActive
                             ? "bg-primary-50 text-primary-700 before:absolute before:-left-4 before:h-6 before:w-[3px] before:rounded-r before:bg-primary-600 max-sm:before:inset-x-3 max-sm:before:-bottom-1 max-sm:before:top-auto max-sm:before:h-[3px] max-sm:before:w-auto"
@@ -101,7 +104,7 @@ export function Nav({
                                 className="w-[18px] shrink-0"
                                 icon={item.icon}
                             />
-                            <span>{item.label}</span>
+                            <span>{label}</span>
                         </>
                     );
 
@@ -110,8 +113,9 @@ export function Nav({
                             <Link
                                 aria-current={isActive ? 'page' : undefined}
                                 className={className}
-                                key={item.label}
+                                key={item.labelKey}
                                 to={item.href}
+                                onClick={() => setActiveItem(item.labelKey)}
                             >
                                 {content}
                             </Link>
@@ -123,11 +127,11 @@ export function Nav({
                             aria-current={isActive ? 'page' : undefined}
                             className={className}
                             href={item.href}
-                            key={item.label}
+                            key={item.labelKey}
                             onClick={(event) =>
                                 handleNavigation(
                                     event,
-                                    item.label,
+                                    item.labelKey,
                                     item.href,
                                 )
                             }

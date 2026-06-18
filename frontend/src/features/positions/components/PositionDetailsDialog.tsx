@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui';
+import { useI18n } from '@/i18n';
 import { type Position } from '../types';
 
 type PositionDetailsDialogProps = {
@@ -17,12 +18,16 @@ export function PositionDetailsDialog({
     position,
     onClose,
 }: PositionDetailsDialogProps) {
+    const { t } = useI18n();
     const details = [
-        ['Phòng ban', position.department.name],
-        ['Mô tả', position.description || 'Không có'],
-        ['Trạng thái', position.status ? 'Hoạt động' : 'Tạm ngưng'],
-        ['Ngày tạo', formatDate(position.createdAt)],
-        ['Ngày cập nhật', formatDate(position.updatedAt)],
+        [t('common.department'), position.department.name],
+        [t('common.description'), position.description || '-'],
+        [
+            t('common.status'),
+            position.status ? t('common.active') : t('common.inactive'),
+        ],
+        [t('common.createdAt'), formatDate(position.createdAt)],
+        [t('common.updatedAt'), formatDate(position.updatedAt)],
     ];
 
     return (
@@ -42,7 +47,7 @@ export function PositionDetailsDialog({
                         </h2>
                     </div>
                     <Button onClick={onClose} size="sm" variant="ghost">
-                        Đóng
+                        {t('common.close')}
                     </Button>
                 </div>
                 <dl className="mt-6 divide-y divide-slate-200 border-y border-slate-200">
