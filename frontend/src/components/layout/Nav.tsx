@@ -34,7 +34,12 @@ const navigation: Array<{
         href: routes.positions,
         allowedRoles: [roles.admin, roles.manager],
     },
-    { label: 'Employees', icon: faUsers, href: '#' },
+    {
+        label: 'Employees',
+        icon: faUsers,
+        href: routes.employees,
+        allowedRoles: [roles.admin, roles.manager, roles.user],
+    },
     { label: 'Work Shifts', icon: faCalendarDays, href: '#' },
     { label: 'Attendance', icon: faClock, href: '#' },
     { label: 'Leave Requests', icon: faFileLines, href: '#' },

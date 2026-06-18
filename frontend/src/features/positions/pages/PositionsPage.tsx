@@ -381,24 +381,26 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                         </td>
                                         <td className="px-4 py-3">
                                             <div className="flex justify-center gap-2">
-                                                <Button
+                                                <button
                                                     aria-label="Xem chi tiết"
+                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
                                                     onClick={() =>
                                                         void getPosition(
                                                             position.id,
                                                         ).then(setSelected)
                                                     }
-                                                    size="icon"
-                                                    variant="ghost"
+                                                    title="Xem chi tiết"
+                                                    type="button"
                                                 >
                                                     <FontAwesomeIcon
                                                         icon={faEye}
                                                     />
-                                                </Button>
+                                                </button>
                                                 {canManage && (
                                                     <>
-                                                        <Button
+                                                        <button
                                                             aria-label="Chỉnh sửa"
+                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
                                                             onClick={() => {
                                                                 setEditing(
                                                                     position,
@@ -407,27 +409,28 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                                                     true,
                                                                 );
                                                             }}
-                                                            size="icon"
-                                                            variant="secondary"
+                                                            title="Chỉnh sửa"
+                                                            type="button"
                                                         >
                                                             <FontAwesomeIcon
                                                                 icon={faPen}
                                                             />
-                                                        </Button>
-                                                        <Button
+                                                        </button>
+                                                        <button
                                                             aria-label="Xóa"
+                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
                                                             onClick={() =>
                                                                 setPositionToDelete(
                                                                     position,
                                                                 )
                                                             }
-                                                            size="icon"
-                                                            variant="danger"
+                                                            title="Xóa"
+                                                            type="button"
                                                         >
                                                             <FontAwesomeIcon
                                                                 icon={faTrash}
                                                             />
-                                                        </Button>
+                                                        </button>
                                                     </>
                                                 )}
                                             </div>
