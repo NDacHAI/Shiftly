@@ -2,8 +2,11 @@ import { AxiosError } from 'axios';
 import { api } from '@/lib/axios';
 import {
     type Employee,
+    type EmployeeAccount,
     type EmployeeListResponse,
     type EmployeePayload,
+    type CreateEmployeeAccountPayload,
+    type ResetEmployeePasswordPayload,
     type EmployeeSortField,
     type EmployeeStatus,
     type SortOrder,
@@ -57,6 +60,37 @@ export async function updateEmployee(
 
 export async function deleteEmployee(id: string): Promise<void> {
     await api.delete(`/employees/${id}`);
+}
+
+export async function createEmployeeAccount(
+    id: string,
+    payload: CreateEmployeeAccountPayload,
+): Promise<EmployeeAccount> {
+    const response = await api.post<EmployeeAccount>(
+        `/employees/${id}/account`,
+        payload,
+    );
+    return response.data;
+}
+
+export async function getEmployeeAccount(
+    id: string,
+): Promise<EmployeeAccount | null> {
+    const response = await api.get<EmployeeAccount | null>(
+        `/employees/${id}/account`,
+    );
+    return response.data;
+}
+
+export async function resetEmployeePassword(
+    id: string,
+    payload: ResetEmployeePasswordPayload,
+): Promise<EmployeeAccount> {
+    const response = await api.post<EmployeeAccount>(
+        `/employees/${id}/account/reset-password`,
+        payload,
+    );
+    return response.data;
 }
 
 export function getEmployeeErrorMessage(error: unknown): string {

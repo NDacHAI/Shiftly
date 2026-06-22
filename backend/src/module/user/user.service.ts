@@ -15,6 +15,9 @@ export type CreateUserPayload = {
     email: string;
     password: string;
     role?: UserRole;
+    employeeId?: string | null;
+    mustChangePassword?: boolean;
+    isMaster?: boolean;
 };
 
 export type UserResponse = Omit<User, 'password' | 'refreshTokenHash'>;
@@ -80,6 +83,9 @@ export class UserService {
             email,
             password: await this.passwordService.hash(payload.password),
             role: payload.role ?? UserRole.User,
+            employeeId: payload.employeeId ?? null,
+            mustChangePassword: payload.mustChangePassword ?? false,
+            isMaster: payload.isMaster ?? false,
         });
 
         const savedUser = await this.userRepository.save(user);
@@ -129,6 +135,46 @@ export class UserService {
 
             throw error;
         }
+    }
+
+    async findByEmployeeId(employeeId: string): Promise<User | null> {
+        return this.userRepository.findOne({
+            where: { employeeId },
+        });
+    }
+
+    async ensureEmployeeHasNoAccount(employeeId: string): Promise<void> {
+        const hasAccount = await this.findByEmployeeId(employeeId);
+
+        if (hasAccount) {
+            throw new ConflictException('Employee already has an account');
+        }
+    }
+
+    async findAccountByEmployeeId(
+        employeeId: string,
+    ): Promise<UserResponse | null> {
+        const user = await this.findByEmployeeId(employeeId);
+
+        return user ? this.toResponse(user) : null;
+    }
+
+    async resetEmployeePassword(
+        employeeId: string,
+        temporaryPassword: string,
+    ): Promise<UserResponse> {
+        const user = await this.findByEmployeeId(employeeId);
+
+        if (!user) {
+            throw new NotFoundException('Employee account not found');
+        }
+
+        user.password = await this.passwordService.hash(temporaryPassword);
+        user.mustChangePassword = true;
+        user.refreshTokenHash = null;
+
+        const savedUser = await this.userRepository.save(user);
+        return this.toResponse(savedUser);
     }
 
     private async findUserById(id: number): Promise<User> {

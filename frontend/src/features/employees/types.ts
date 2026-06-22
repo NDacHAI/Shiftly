@@ -1,5 +1,6 @@
 import { type Department } from '@/features/departments/types';
 import { type Position } from '@/features/positions/types';
+import { type Role } from '@/constants/roles';
 
 export type EmployeeStatus = 'Active' | 'Inactive';
 
@@ -48,4 +49,23 @@ export type EmployeeListResponse = {
         total: number;
         totalPages: number;
     };
+};
+
+export type EmployeeAccount = {
+    id: number;
+    email: string;
+    role: Role;
+    isActive: boolean;
+    isMaster: boolean;
+    mustChangePassword: boolean;
+    employeeId: string | null;
+};
+
+export type CreateEmployeeAccountPayload = {
+    role?: Role;
+    temporaryPassword: string;
+};
+
+export type ResetEmployeePasswordPayload = {
+    temporaryPassword: string;
 };

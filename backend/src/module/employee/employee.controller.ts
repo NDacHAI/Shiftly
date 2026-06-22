@@ -24,12 +24,14 @@ import { EmployeeQueryDto } from './dto/employee-query.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { Employee } from './entities/employee.entity';
 import { EmployeeService, PaginatedEmployees } from './employee.service';
+import { CreateEmployeeAccountDto } from './dto/create_account_dto';
+import { ResetEmployeePasswordDto } from './dto/reset_employee_password.dto';
 
 @Controller('employees')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.Admin, UserRole.Manager, UserRole.User)
 export class EmployeeController {
-    constructor(private readonly employeeService: EmployeeService) {}
+    constructor(private readonly employeeService: EmployeeService) { }
 
     @Get()
     @Roles(UserRole.Admin, UserRole.Manager)
@@ -65,6 +67,30 @@ export class EmployeeController {
     @Roles(UserRole.Admin)
     create(@Body() payload: CreateEmployeeDto): Promise<Employee> {
         return this.employeeService.create(payload);
+    }
+
+    @Post(':id/account')
+    @Roles(UserRole.Admin)
+    createAccount(
+        @Param('id', new ParseUUIDPipe()) id: string,
+        @Body() payload: CreateEmployeeAccountDto,
+    ) {
+        return this.employeeService.createAccount(id, payload);
+    }
+
+    @Get(':id/account')
+    @Roles(UserRole.Admin)
+    findAccount(@Param('id', new ParseUUIDPipe()) id: string) {
+        return this.employeeService.findAccount(id);
+    }
+
+    @Post(':id/account/reset-password')
+    @Roles(UserRole.Admin)
+    resetAccountPassword(
+        @Param('id', new ParseUUIDPipe()) id: string,
+        @Body() payload: ResetEmployeePasswordDto,
+    ) {
+        return this.employeeService.resetAccountPassword(id, payload);
     }
 
     @Put(':id')

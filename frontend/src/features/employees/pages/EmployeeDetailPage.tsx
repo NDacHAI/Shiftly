@@ -5,113 +5,33 @@ import {
     faBriefcase,
     faEnvelope,
     faGraduationCap,
-    faIdCard,
     faUser,
-    type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 import { Link, useParams } from 'react-router-dom';
 import { useToast } from '@/components/feedback';
 import { EmptyState, LoadingOverlay } from '@/components/ui';
+import { roles, type Role } from '@/constants/roles';
 import { routes } from '@/constants/routes';
-import { type I18nKey, useI18n } from '@/i18n';
+import { useI18n } from '@/i18n';
+import { EmployeeAccountTab } from '../components/detail/EmployeeAccountTab';
+import { EmployeeComingSoonTab } from '../components/detail/EmployeeComingSoonTab';
+import {
+    employeeDetailTabs,
+    type EmployeeTab,
+} from '../components/detail/employee-detail-tabs';
+import { EmployeeProfileTab } from '../components/detail/EmployeeProfileTab';
 import { getEmployee, getEmployeeErrorMessage } from '../api/employees.api';
 import { type Employee } from '../types';
-
-type EmployeeTab = 'profile' | 'account' | 'education' | 'work';
-
-const tabs: Array<{
-    id: EmployeeTab;
-    labelKey: I18nKey;
-    icon: IconDefinition;
-}> = [
-    { id: 'profile', labelKey: 'employees.profile', icon: faUser },
-    { id: 'account', labelKey: 'employees.account', icon: faIdCard },
-    { id: 'education', labelKey: 'employees.education', icon: faGraduationCap },
-    { id: 'work', labelKey: 'employees.work', icon: faBriefcase },
-];
 
 function fullName(employee: Employee) {
     return `${employee.firstName} ${employee.lastName}`;
 }
 
-function formatDate(value: string | null) {
-    if (!value) return '-';
-    return new Intl.DateTimeFormat('vi-VN').format(new Date(value));
-}
+type EmployeeDetailPageProps = {
+    userRole: Role;
+};
 
-function formatDateTime(value: string) {
-    return new Intl.DateTimeFormat('vi-VN', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-    }).format(new Date(value));
-}
-
-function joinNames(items: Array<{ name: string }>) {
-    return items.map((item) => item.name).join(', ') || '-';
-}
-
-function ProfileTab({ employee }: { employee: Employee }) {
-    const { t } = useI18n();
-    const details = [
-        [t('employees.employeeCode'), employee.employeeCode],
-        [t('employees.firstName'), employee.firstName],
-        [t('employees.lastName'), employee.lastName],
-        [t('common.fullName'), fullName(employee)],
-        [t('common.email'), employee.email],
-        [t('employees.phoneNumber'), employee.phoneNumber || '-'],
-        [t('employees.dateOfBirth'), formatDate(employee.dateOfBirth)],
-        [t('employees.gender'), employee.gender || '-'],
-        [t('employees.address'), employee.address || '-'],
-        [t('common.departments'), joinNames(employee.departments)],
-        [t('common.positions'), joinNames(employee.positions)],
-        [t('employees.hireDate'), formatDate(employee.hireDate)],
-        [
-            t('common.status'),
-            employee.status === 'Active'
-                ? t('common.active')
-                : t('common.inactive'),
-        ],
-        [t('common.updatedAt'), formatDateTime(employee.updatedAt)],
-    ];
-
-    return (
-        <dl className="grid grid-cols-2 gap-x-8 gap-y-1 p-6 max-lg:grid-cols-1">
-            {details.map(([label, value]) => (
-                <div
-                    className="grid grid-cols-[160px_1fr] gap-4 border-b border-slate-100 py-4 max-sm:grid-cols-1 max-sm:gap-1"
-                    key={label}
-                >
-                    <dt className="text-xs font-semibold text-slate-500">
-                        {label}
-                    </dt>
-                    <dd className="text-sm font-medium text-slate-800">
-                        {value}
-                    </dd>
-                </div>
-            ))}
-        </dl>
-    );
-}
-
-function ComingSoonTab({
-    icon,
-    title,
-}: {
-    icon: IconDefinition;
-    title: string;
-}) {
-    const { t } = useI18n();
-
-    return (
-        <EmptyState
-            description={t('employees.tabComingSoon')}
-            icon={<FontAwesomeIcon icon={icon} />}
-            title={title}
-        />
-    );
-}
-
-export function EmployeeDetailPage() {
+export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
     const { id } = useParams<{ id: string }>();
     const { showToast } = useToast();
     const { t } = useI18n();
@@ -181,7 +101,7 @@ export function EmployeeDetailPage() {
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <LoadingOverlay label={t('employees.loading')} visible={loading} />
                 <div className="flex gap-2 overflow-x-auto border-b border-slate-200 px-4 pt-4">
-                    {tabs.map((tab) => {
+                    {employeeDetailTabs.map((tab) => {
                         const isActive = activeTab === tab.id;
 
                         return (
@@ -211,19 +131,25 @@ export function EmployeeDetailPage() {
                 )}
 
                 {employee && activeTab === 'profile' && (
-                    <ProfileTab employee={employee} />
+                    <EmployeeProfileTab employee={employee} />
                 )}
                 {employee && activeTab === 'account' && (
-                    <ComingSoonTab icon={faIdCard} title={t('employees.account')} />
+                    <EmployeeAccountTab
+                        canManage={userRole === roles.admin}
+                        employee={employee}
+                    />
                 )}
                 {employee && activeTab === 'education' && (
-                    <ComingSoonTab
+                    <EmployeeComingSoonTab
                         icon={faGraduationCap}
                         title={t('employees.education')}
                     />
                 )}
                 {employee && activeTab === 'work' && (
-                    <ComingSoonTab icon={faBriefcase} title={t('employees.work')} />
+                    <EmployeeComingSoonTab
+                        icon={faBriefcase}
+                        title={t('employees.work')}
+                    />
                 )}
             </div>
         </section>

@@ -27,6 +27,8 @@ async function seedAdminUser(): Promise<void> {
     if (existingAdmin) {
         existingAdmin.role = UserRole.Admin;
         existingAdmin.isActive = true;
+        existingAdmin.isMaster = true;
+
 
         await userRepository.save(existingAdmin);
         return;

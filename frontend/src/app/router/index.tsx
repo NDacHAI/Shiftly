@@ -110,7 +110,7 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                             user={user}
                             onLogout={onLogout}
                         >
-                            <EmployeeDetailPage />
+                            <EmployeeDetailPage userRole={user.role} />
                         </Layout>
                     </PermissionRoute>
                 }

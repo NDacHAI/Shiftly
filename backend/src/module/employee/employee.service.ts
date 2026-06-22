@@ -13,7 +13,10 @@ import { EmployeeQueryDto } from './dto/employee-query.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeeStatus } from './entities/employee-status.enum';
 import { Employee } from './entities/employee.entity';
-
+import { UserRole } from '@/common/enum/role.enum';
+import { UserService, UserResponse } from '@/module/user/user.service';
+import { CreateEmployeeAccountDto } from './dto/create_account_dto';
+import { ResetEmployeePasswordDto } from './dto/reset_employee_password.dto';
 export type PaginatedEmployees = {
     data: Employee[];
     meta: {
@@ -33,7 +36,8 @@ export class EmployeeService {
         private readonly departmentRepository: Repository<Department>,
         @InjectRepository(Position)
         private readonly positionRepository: Repository<Position>,
-    ) {}
+        private readonly userService: UserService,
+    ) { }
 
     async create(payload: CreateEmployeeDto): Promise<Employee> {
         const employeeCode =
@@ -239,6 +243,48 @@ export class EmployeeService {
         }
     }
 
+    async findAccount(employeeId: string): Promise<UserResponse | null> {
+        const employee = await this.findOne(employeeId);
+
+        return this.userService.findAccountByEmployeeId(employee.id);
+    }
+
+    async createAccount(
+        employeeId: string,
+        payload: CreateEmployeeAccountDto,
+    ): Promise<UserResponse> {
+        const employee = await this.findOne(employeeId);
+
+        if (employee.status !== EmployeeStatus.Active) {
+            throw new BadRequestException(
+                'Cannot create account for inactive employee',
+            );
+        }
+
+        await this.userService.ensureEmployeeHasNoAccount(employee.id);
+        return this.userService.create({
+            email: employee.email,
+            password: payload.temporaryPassword,
+            role: payload.role ?? UserRole.User,
+            employeeId: employee.id,
+            mustChangePassword: true,
+            isMaster: false,
+        });
+    }
+
+    async resetAccountPassword(
+        employeeId: string,
+        payload: ResetEmployeePasswordDto,
+    ): Promise<UserResponse> {
+        const employee = await this.findOne(employeeId);
+
+        return this.userService.resetEmployeePassword(
+            employee.id,
+            payload.temporaryPassword,
+        );
+    }
+
+    //tách ra file riêng
     private async generateEmployeeCode(): Promise<string> {
         const latest = await this.employeeRepository
             .createQueryBuilder('employee')
