@@ -1,6 +1,5 @@
 import { Transform } from 'class-transformer';
 import {
-    ArrayNotEmpty,
     IsArray,
     IsEmail,
     IsEnum,
@@ -49,24 +48,25 @@ export class CreateEmployeeDto {
     @MaxLength(20)
     gender?: string;
 
+    @IsOptional()
     @IsArray()
-    @ArrayNotEmpty()
     @IsUUID('4', { each: true })
-    departmentIds!: string[];
+    departmentIds?: string[];
 
+    @IsOptional()
     @IsArray()
-    @ArrayNotEmpty()
     @IsUUID('4', { each: true })
-    positionIds!: string[];
+    positionIds?: string[];
 
+    @IsOptional()
     @IsString()
-    @IsNotEmpty()
-    hireDate!: string;
+    hireDate?: string;
 
     @IsOptional()
     @IsString()
     address?: string;
 
+    @IsOptional()
     @IsEnum(EmployeeStatus)
-    status!: EmployeeStatus;
+    status?: EmployeeStatus;
 }

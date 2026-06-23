@@ -177,6 +177,17 @@ export class UserService {
         return this.toResponse(savedUser);
     }
 
+    async changePassword(id: number, newPassword: string): Promise<UserResponse> {
+        const user = await this.findUserById(id);
+
+        user.password = await this.passwordService.hash(newPassword);
+        user.mustChangePassword = false;
+        user.refreshTokenHash = null;
+
+        const savedUser = await this.userRepository.save(user);
+        return this.toResponse(savedUser);
+    }
+
     private async findUserById(id: number): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id } });
 

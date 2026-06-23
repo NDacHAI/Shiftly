@@ -164,34 +164,35 @@ export function PositionFormDialog({
                                     required: t('common.required'),
                                 })}
                             />
-                            <DropdownSelect
-                                ariaLabel={t('common.department')}
-                                className="w-full"
-                                options={[
-                                    {
-                                        value: '',
-                                        label: t('employees.selectDepartment'),
-                                    },
-                                    ...departments
-                                        .filter(
-                                            (department) =>
-                                                department.status ||
-                                                department.id ===
-                                                    editing?.departmentId,
-                                        )
-                                        .map((department) => ({
-                                            value: department.id,
-                                            label: department.name,
-                                        })),
-                                ]}
-                                value={departmentId}
-                                onChange={(value) =>
-                                    setValue('departmentId', value, {
-                                        shouldDirty: true,
-                                        shouldValidate: true,
-                                    })
-                                }
-                            />
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel={t('common.department')}
+                                    options={[
+                                        {
+                                            value: '',
+                                            label: t('employees.selectDepartment'),
+                                        },
+                                        ...departments
+                                            .filter(
+                                                (department) =>
+                                                    department.status ||
+                                                    department.id ===
+                                                        editing?.departmentId,
+                                            )
+                                            .map((department) => ({
+                                                value: department.id,
+                                                label: department.name,
+                                            })),
+                                    ]}
+                                    value={departmentId}
+                                    onChange={(value) =>
+                                        setValue('departmentId', value, {
+                                            shouldDirty: true,
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                />
+                            </div>
                             <span className="min-h-4 text-xs font-normal text-red-400">
                                 {errors.departmentId?.message}
                             </span>

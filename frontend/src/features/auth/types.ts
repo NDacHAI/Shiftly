@@ -5,6 +5,9 @@ export type AuthUser = {
     email: string;
     role: Role;
     isActive: boolean;
+    employeeId: string | null;
+    mustChangePassword: boolean;
+    isMaster: boolean;
 };
 
 export type AuthTokens = {
@@ -20,5 +23,8 @@ export type JwtPayload = {
     sub: number;
     email: string;
     role: Role;
+    employeeId?: string | null;
+    mustChangePassword?: boolean;
+    isMaster?: boolean;
     exp?: number;
 };

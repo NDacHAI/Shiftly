@@ -1,6 +1,5 @@
 import { Transform } from 'class-transformer';
 import {
-    ArrayNotEmpty,
     IsArray,
     IsEmail,
     IsEnum,
@@ -13,6 +12,12 @@ import {
 import { EmployeeStatus } from '../entities/employee-status.enum';
 
 export class UpdateEmployeeDto {
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    @MaxLength(50)
+    employeeCode?: string;
+
     @IsOptional()
     @IsString()
     @IsNotEmpty()
@@ -49,13 +54,11 @@ export class UpdateEmployeeDto {
 
     @IsOptional()
     @IsArray()
-    @ArrayNotEmpty()
     @IsUUID('4', { each: true })
     departmentIds?: string[];
 
     @IsOptional()
     @IsArray()
-    @ArrayNotEmpty()
     @IsUUID('4', { each: true })
     positionIds?: string[];
 

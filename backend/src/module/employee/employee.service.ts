@@ -49,8 +49,8 @@ export class EmployeeService {
         await this.ensureEmailUnique(email);
 
         const [departments, positions] = await Promise.all([
-            this.findDepartments(payload.departmentIds),
-            this.findPositions(payload.positionIds),
+            this.findDepartments(payload.departmentIds ?? []),
+            this.findPositions(payload.positionIds ?? []),
         ]);
 
         const employee = this.employeeRepository.create({
@@ -61,9 +61,9 @@ export class EmployeeService {
             phoneNumber: this.normalizeNullable(payload.phoneNumber),
             dateOfBirth: this.normalizeNullable(payload.dateOfBirth),
             gender: this.normalizeNullable(payload.gender),
-            hireDate: payload.hireDate,
+            hireDate: payload.hireDate ?? this.today(),
             address: this.normalizeNullable(payload.address),
-            status: payload.status,
+            status: payload.status ?? EmployeeStatus.Active,
             departments,
             positions,
         });
@@ -176,6 +176,14 @@ export class EmployeeService {
         }
 
         const employee = await this.findOne(id);
+
+        if (payload.employeeCode !== undefined) {
+            const employeeCode = payload.employeeCode.trim().toUpperCase();
+            if (employeeCode !== employee.employeeCode) {
+                await this.ensureEmployeeCodeUnique(employeeCode);
+            }
+            employee.employeeCode = employeeCode;
+        }
 
         if (payload.email !== undefined) {
             const email = payload.email.trim().toLowerCase();
@@ -364,6 +372,10 @@ export class EmployeeService {
     private normalizeNullable(value?: string | null): string | null {
         const normalized = value?.trim();
         return normalized ? normalized : null;
+    }
+
+    private today(): string {
+        return new Date().toISOString().slice(0, 10);
     }
 
     private handleDuplicateError(error: unknown): void {

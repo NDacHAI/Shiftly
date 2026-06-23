@@ -51,6 +51,9 @@ export function getStoredAuthState(): AuthState {
             email: payload.email,
             role: payload.role,
             isActive: true,
+            employeeId: payload.employeeId ?? null,
+            mustChangePassword: payload.mustChangePassword ?? false,
+            isMaster: payload.isMaster ?? false,
         },
     };
 }

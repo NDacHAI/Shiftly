@@ -9,6 +9,7 @@ import {
 import { useToast } from '@/components/feedback';
 import { Button, DropdownSelect, EmptyState, LoadingOverlay } from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
+import { useI18n } from '@/i18n';
 import {
     createEmployeeAccount,
     getEmployeeAccount,
@@ -22,7 +23,16 @@ type EmployeeAccountTabProps = {
     employee: Employee;
 };
 
+function getRoleLabel(role: EmployeeAccount['role'], t: ReturnType<typeof useI18n>['t']) {
+    if (role === roles.manager) return t('employees.managerRole');
+    if (role === roles.user) return t('employees.employeeRole');
+
+    return role;
+}
+
 function AccountDetails({ account }: { account: EmployeeAccount }) {
+    const { t } = useI18n();
+
     return (
         <dl className="grid gap-3">
             <div className="flex justify-between gap-4 border-b border-slate-200 pb-3">
@@ -32,23 +42,29 @@ function AccountDetails({ account }: { account: EmployeeAccount }) {
                 </dd>
             </div>
             <div className="flex justify-between gap-4 border-b border-slate-200 pb-3">
-                <dt className="text-sm text-slate-500">Vai trò</dt>
+                <dt className="text-sm text-slate-500">
+                    {t('employees.accountRole')}
+                </dt>
                 <dd className="text-sm font-semibold text-slate-900">
-                    {account.role}
+                    {getRoleLabel(account.role, t)}
                 </dd>
             </div>
             <div className="flex justify-between gap-4 border-b border-slate-200 pb-3">
-                <dt className="text-sm text-slate-500">Trạng thái</dt>
+                <dt className="text-sm text-slate-500">
+                    {t('employees.accountStatus')}
+                </dt>
                 <dd className="text-sm font-semibold text-emerald-700">
-                    {account.isActive ? 'Đang hoạt động' : 'Đã khóa'}
+                    {account.isActive ? t('common.active') : t('common.inactive')}
                 </dd>
             </div>
             <div className="flex justify-between gap-4">
-                <dt className="text-sm text-slate-500">Đổi mật khẩu</dt>
+                <dt className="text-sm text-slate-500">
+                    {t('employees.accountMustChangePassword')}
+                </dt>
                 <dd className="text-sm font-semibold text-amber-700">
                     {account.mustChangePassword
-                        ? 'Bắt buộc'
-                        : 'Không bắt buộc'}
+                        ? t('employees.accountMustChangeRequired')
+                        : t('employees.accountMustChangeNotRequired')}
                 </dd>
             </div>
         </dl>
@@ -60,6 +76,7 @@ export function EmployeeAccountTab({
     employee,
 }: EmployeeAccountTabProps) {
     const { showToast } = useToast();
+    const { t } = useI18n();
     const [role, setRole] = useState<Role>(roles.user);
     const [temporaryPassword, setTemporaryPassword] = useState('');
     const [account, setAccount] = useState<EmployeeAccount | null>(null);
@@ -88,7 +105,7 @@ export function EmployeeAccountTab({
                 if (active) {
                     showToast({
                         message: getEmployeeErrorMessage(error),
-                        title: 'Không thể tải tài khoản',
+                        title: t('employees.accountLoadError'),
                         variant: 'error',
                     });
                 }
@@ -104,7 +121,7 @@ export function EmployeeAccountTab({
         return () => {
             active = false;
         };
-    }, [canManage, employee.id, showToast]);
+    }, [canManage, employee.id, showToast, t]);
 
     async function handleCreate(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -118,13 +135,13 @@ export function EmployeeAccountTab({
             setAccount(createdAccount);
             setTemporaryPassword('');
             showToast({
-                message: 'Tài khoản nhân viên đã được tạo.',
+                message: t('employees.accountCreated'),
                 variant: 'success',
             });
         } catch (error) {
             showToast({
                 message: getEmployeeErrorMessage(error),
-                title: 'Không thể tạo tài khoản',
+                title: t('employees.accountCreateError'),
                 variant: 'error',
             });
         } finally {
@@ -148,13 +165,13 @@ export function EmployeeAccountTab({
             });
             setAccount(updatedAccount);
             showToast({
-                message: 'Mật khẩu tạm thời đã được cập nhật.',
+                message: t('employees.passwordReset'),
                 variant: 'success',
             });
         } catch (error) {
             showToast({
                 message: getEmployeeErrorMessage(error),
-                title: 'Không thể reset mật khẩu',
+                title: t('employees.passwordResetError'),
                 variant: 'error',
             });
         } finally {
@@ -165,16 +182,16 @@ export function EmployeeAccountTab({
     if (!canManage) {
         return (
             <EmptyState
-                description="Bạn không có quyền quản lý tài khoản nhân viên này."
+                description={t('employees.accountAccessDeniedDescription')}
                 icon={<FontAwesomeIcon icon={faShieldHalved} />}
-                title="Không có quyền truy cập"
+                title={t('employees.accountAccessDeniedTitle')}
             />
         );
     }
 
     return (
         <div className="relative grid gap-6 p-6 lg:grid-cols-[minmax(0,420px)_1fr]">
-            <LoadingOverlay label="Đang tải tài khoản..." visible={loading} />
+            <LoadingOverlay label={t('employees.accountLoading')} visible={loading} />
             {!account ? (
                 <form
                     className="grid content-start gap-4 rounded-xl border border-slate-200 bg-white p-5"
@@ -182,7 +199,7 @@ export function EmployeeAccountTab({
                 >
                     <div>
                         <h3 className="text-base font-bold text-slate-950">
-                            Tạo tài khoản đăng nhập
+                            {t('employees.createLoginAccount')}
                         </h3>
                         <p className="mt-1 text-sm text-slate-500">
                             {employee.email}
@@ -190,20 +207,28 @@ export function EmployeeAccountTab({
                     </div>
 
                     <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                        Vai trò
-                        <DropdownSelect
-                            ariaLabel="Vai trò tài khoản"
-                            options={[
-                                { value: roles.user, label: 'Nhân viên' },
-                                { value: roles.manager, label: 'Quản lý' },
-                            ]}
-                            value={role}
-                            onChange={(value) => setRole(value as Role)}
-                        />
+                        {t('employees.accountRole')}
+                        <div className="dropdown-select-field">
+                            <DropdownSelect
+                                ariaLabel={t('employees.accountRoleAria')}
+                                options={[
+                                    {
+                                        value: roles.user,
+                                        label: t('employees.employeeRole'),
+                                    },
+                                    {
+                                        value: roles.manager,
+                                        label: t('employees.managerRole'),
+                                    },
+                                ]}
+                                value={role}
+                                onChange={(value) => setRole(value as Role)}
+                            />
+                        </div>
                     </label>
 
                     <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                        Mật khẩu tạm thời
+                        {t('employees.temporaryPassword')}
                         <span className="relative">
                             <FontAwesomeIcon
                                 className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
@@ -224,52 +249,53 @@ export function EmployeeAccountTab({
 
                     <Button
                         loading={submitting}
-                        loadingLabel="Đang tạo..."
+                        loadingLabel={t('employees.creatingAccount')}
                         size="lg"
                         type="submit"
                     >
                         <FontAwesomeIcon icon={faIdCard} />
-                        Tạo tài khoản
+                        {t('employees.createAccount')}
                     </Button>
                 </form>
             ) : (
-                <div
-                    className="grid content-start gap-4 rounded-xl border border-slate-200 bg-white p-5"
-                >
+                <div className="grid content-start gap-4 rounded-xl border border-slate-200 bg-white p-5">
                     <div>
                         <h3 className="text-base font-bold text-slate-950">
-                            Reset mật khẩu
+                            {t('employees.resetPassword')}
                         </h3>
                         <p className="mt-1 text-sm text-slate-500">
-                            Tài khoản đã tồn tại cho {employee.email}
+                            {t('employees.accountExistsFor').replace(
+                                '{email}',
+                                employee.email,
+                            )}
                         </p>
                     </div>
 
                     <Button
                         loading={resetting}
-                        loadingLabel="Đang reset..."
+                        loadingLabel={t('employees.resettingPassword')}
                         onClick={() => void handleReset()}
                         size="lg"
                         variant="secondary"
                     >
                         <FontAwesomeIcon icon={faRotateRight} />
-                        Reset mật khẩu
+                        {t('employees.resetPassword')}
                     </Button>
                 </div>
             )}
 
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
                 <h3 className="text-base font-bold text-slate-950">
-                    Thông tin tài khoản
+                    {t('employees.accountInfo')}
                 </h3>
                 <div className="mt-4">
                     {account ? (
                         <AccountDetails account={account} />
                     ) : (
                         <EmptyState
-                            description="Nhân viên này chưa có tài khoản đăng nhập."
+                            description={t('employees.noAccountDescription')}
                             icon={<FontAwesomeIcon icon={faIdCard} />}
-                            title="Chưa có tài khoản"
+                            title={t('employees.noAccountTitle')}
                         />
                     )}
                 </div>

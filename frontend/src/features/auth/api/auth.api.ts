@@ -7,6 +7,11 @@ type LoginPayload = {
     password: string;
 };
 
+type ChangePasswordPayload = {
+    currentPassword: string;
+    newPassword: string;
+};
+
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
     try {
         const response = await api.post<AuthResponse>('/auth/login', payload);
@@ -25,4 +30,20 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 
 export async function logout(): Promise<void> {
     await api.post('/auth/logout');
+}
+
+export async function changePassword(
+    payload: ChangePasswordPayload,
+): Promise<void> {
+    try {
+        await api.post('/auth/change-password', payload);
+    } catch (error) {
+        if (error instanceof AxiosError) {
+            throw new Error('Current password is invalid', {
+                cause: error,
+            });
+        }
+
+        throw error;
+    }
 }

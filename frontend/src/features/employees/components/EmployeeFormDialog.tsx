@@ -10,6 +10,7 @@ import { getEmployeeErrorMessage } from '../api/employees.api';
 import {
     type Employee,
     type EmployeePayload,
+    type EmployeeStatus,
     type UpdateEmployeePayload,
 } from '../types';
 
@@ -66,7 +67,7 @@ export function EmployeeFormDialog({
             status: editing?.status ?? 'Active',
         },
     });
-    const status = useWatch({ control, name: 'status' });
+    const status = useWatch({ control, name: 'status' }) ?? 'Active';
     const gender = useWatch({ control, name: 'gender' }) ?? '';
     const departmentId = useWatch({ control, name: 'departmentId' });
     const positionId = useWatch({ control, name: 'positionId' });
@@ -84,12 +85,15 @@ export function EmployeeFormDialog({
                 hireDate: values.hireDate,
                 address: values.address?.trim() || undefined,
                 status: values.status,
-                departmentIds: [values.departmentId],
-                positionIds: [values.positionId],
+                departmentIds: values.departmentId
+                    ? [values.departmentId]
+                    : [],
+                positionIds: values.positionId ? [values.positionId] : [],
             };
 
             if (editing) {
                 await onSubmit({
+                    employeeCode: employeePayload.employeeCode,
                     firstName: employeePayload.firstName,
                     lastName: employeePayload.lastName,
                     email: employeePayload.email,
@@ -156,7 +160,6 @@ export function EmployeeFormDialog({
                             {t('employees.employeeCode')}
                             <input
                                 className={fieldClass}
-                                disabled={Boolean(editing)}
                                 placeholder="Auto: NV0001"
                                 {...register('employeeCode', {
                                     maxLength: {
@@ -177,27 +180,32 @@ export function EmployeeFormDialog({
                                     required: t('common.required'),
                                 })}
                             />
-                            <DropdownSelect
-                                ariaLabel={t('common.status')}
-                                className="w-full"
-                                options={[
-                                    {
-                                        value: 'Active',
-                                        label: t('common.active'),
-                                    },
-                                    {
-                                        value: 'Inactive',
-                                        label: t('common.inactive'),
-                                    },
-                                ]}
-                                value={status}
-                                onChange={(value) =>
-                                    setValue('status', value, {
-                                        shouldDirty: true,
-                                        shouldValidate: true,
-                                    })
-                                }
-                            />
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel={t('common.status')}
+                                    options={[
+                                        {
+                                            value: 'Active',
+                                            label: t('common.active'),
+                                        },
+                                        {
+                                            value: 'Inactive',
+                                            label: t('common.inactive'),
+                                        },
+                                    ]}
+                                    value={status}
+                                    onChange={(value) =>
+                                        setValue(
+                                            'status',
+                                            value as EmployeeStatus,
+                                            {
+                                                shouldDirty: true,
+                                                shouldValidate: true,
+                                            },
+                                        )
+                                    }
+                                />
+                            </div>
                             <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
@@ -265,100 +273,97 @@ export function EmployeeFormDialog({
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             {t('employees.gender')}
                             <input type="hidden" {...register('gender')} />
-                            <DropdownSelect
-                                ariaLabel={t('employees.gender')}
-                                className="w-full"
-                                options={[
-                                    {
-                                        value: '',
-                                        label: t('employees.selectGender'),
-                                    },
-                                    {
-                                        value: 'Male',
-                                        label: t('employees.male'),
-                                    },
-                                    {
-                                        value: 'Female',
-                                        label: t('employees.female'),
-                                    },
-                                    {
-                                        value: 'Other',
-                                        label: t('employees.other'),
-                                    },
-                                ]}
-                                value={gender}
-                                onChange={(value) =>
-                                    setValue('gender', value, {
-                                        shouldDirty: true,
-                                    })
-                                }
-                            />
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel={t('employees.gender')}
+                                    options={[
+                                        {
+                                            value: '',
+                                            label: t('employees.selectGender'),
+                                        },
+                                        {
+                                            value: 'Male',
+                                            label: t('employees.male'),
+                                        },
+                                        {
+                                            value: 'Female',
+                                            label: t('employees.female'),
+                                        },
+                                        {
+                                            value: 'Other',
+                                            label: t('employees.other'),
+                                        },
+                                    ]}
+                                    value={gender}
+                                    onChange={(value) =>
+                                        setValue('gender', value, {
+                                            shouldDirty: true,
+                                        })
+                                    }
+                                />
+                            </div>
                             <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             {t('common.departments')}
                             <input
                                 type="hidden"
-                                {...register('departmentId', {
-                                    required: t('common.required'),
-                                })}
+                                {...register('departmentId')}
                             />
-                            <DropdownSelect
-                                ariaLabel={t('common.departments')}
-                                className="w-full"
-                                options={[
-                                    {
-                                        value: '',
-                                        label: t('employees.selectDepartment'),
-                                    },
-                                    ...departments.map((department) => ({
-                                        value: department.id,
-                                        label: department.name,
-                                    })),
-                                ]}
-                                value={departmentId}
-                                onChange={(value) =>
-                                    setValue('departmentId', value, {
-                                        shouldDirty: true,
-                                        shouldValidate: true,
-                                    })
-                                }
-                            />
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel={t('common.departments')}
+                                    options={[
+                                        {
+                                            value: '',
+                                            label: t('employees.selectDepartment'),
+                                        },
+                                        ...departments.map((department) => ({
+                                            value: department.id,
+                                            label: department.name,
+                                        })),
+                                    ]}
+                                    value={departmentId}
+                                    onChange={(value) =>
+                                        setValue('departmentId', value, {
+                                            shouldDirty: true,
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                />
+                            </div>
                             <span className="min-h-4 text-xs font-normal text-red-400">
-                                {errors.departmentId?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             {t('common.positions')}
                             <input
                                 type="hidden"
-                                {...register('positionId', {
-                                    required: t('common.required'),
-                                })}
+                                {...register('positionId')}
                             />
-                            <DropdownSelect
-                                ariaLabel={t('common.positions')}
-                                className="w-full"
-                                options={[
-                                    {
-                                        value: '',
-                                        label: t('employees.selectPosition'),
-                                    },
-                                    ...positions.map((position) => ({
-                                        value: position.id,
-                                        label: position.name,
-                                    })),
-                                ]}
-                                value={positionId}
-                                onChange={(value) =>
-                                    setValue('positionId', value, {
-                                        shouldDirty: true,
-                                        shouldValidate: true,
-                                    })
-                                }
-                            />
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel={t('common.positions')}
+                                    options={[
+                                        {
+                                            value: '',
+                                            label: t('employees.selectPosition'),
+                                        },
+                                        ...positions.map((position) => ({
+                                            value: position.id,
+                                            label: position.name,
+                                        })),
+                                    ]}
+                                    value={positionId}
+                                    onChange={(value) =>
+                                        setValue('positionId', value, {
+                                            shouldDirty: true,
+                                            shouldValidate: true,
+                                        })
+                                    }
+                                />
+                            </div>
                             <span className="min-h-4 text-xs font-normal text-red-400">
-                                {errors.positionId?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
@@ -366,12 +371,9 @@ export function EmployeeFormDialog({
                             <input
                                 className={fieldClass}
                                 type="date"
-                                {...register('hireDate', {
-                                    required: t('common.required'),
-                                })}
+                                {...register('hireDate')}
                             />
                             <span className="min-h-4 text-xs font-normal text-red-400">
-                                {errors.hireDate?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700 md:col-span-2">

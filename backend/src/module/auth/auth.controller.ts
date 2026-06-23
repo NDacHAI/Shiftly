@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import {
     AuthenticatedRequest,
     JwtAuthGuard,
@@ -34,6 +35,18 @@ export class AuthController {
     @UseGuards(JwtAuthGuard)
     logout(@Req() request: AuthenticatedRequest): Promise<void> {
         return this.authService.logout(request.user);
+    }
+
+    @Post('change-password')
+    @UseGuards(JwtAuthGuard)
+    changePassword(
+        @Req() request: AuthenticatedRequest,
+        @Body() changePasswordDto: ChangePasswordDto,
+    ): Promise<void> {
+        return this.authService.changePassword(
+            request.user,
+            changePasswordDto,
+        );
     }
 
     @Get('me')

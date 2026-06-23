@@ -13,6 +13,10 @@ import { EmptyState, LoadingOverlay } from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
 import { routes } from '@/constants/routes';
 import { useI18n } from '@/i18n';
+import { listDepartments } from '@/features/departments/api/departments.api';
+import { type Department } from '@/features/departments/types';
+import { listPositions } from '@/features/positions/api/positions.api';
+import { type Position } from '@/features/positions/types';
 import { EmployeeAccountTab } from '../components/detail/EmployeeAccountTab';
 import { EmployeeComingSoonTab } from '../components/detail/EmployeeComingSoonTab';
 import {
@@ -20,8 +24,12 @@ import {
     type EmployeeTab,
 } from '../components/detail/employee-detail-tabs';
 import { EmployeeProfileTab } from '../components/detail/EmployeeProfileTab';
-import { getEmployee, getEmployeeErrorMessage } from '../api/employees.api';
-import { type Employee } from '../types';
+import {
+    getEmployee,
+    getEmployeeErrorMessage,
+    updateEmployee,
+} from '../api/employees.api';
+import { type Employee, type UpdateEmployeePayload } from '../types';
 
 function fullName(employee: Employee) {
     return `${employee.firstName} ${employee.lastName}`;
@@ -36,6 +44,8 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
     const { showToast } = useToast();
     const { t } = useI18n();
     const [employee, setEmployee] = useState<Employee | null>(null);
+    const [departments, setDepartments] = useState<Department[]>([]);
+    const [positions, setPositions] = useState<Position[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<EmployeeTab>('profile');
 
@@ -72,6 +82,50 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
             active = false;
         };
     }, [id, showToast, t]);
+
+    useEffect(() => {
+        if (userRole !== roles.admin) return;
+
+        let active = true;
+
+        void Promise.all([
+            listDepartments({
+                page: 1,
+                limit: 100,
+                sortBy: 'name',
+                sortOrder: 'ASC',
+            }),
+            listPositions({
+                page: 1,
+                limit: 100,
+                sortBy: 'name',
+                sortOrder: 'ASC',
+            }),
+        ])
+            .then(([departmentResponse, positionResponse]) => {
+                if (!active) return;
+                setDepartments(departmentResponse.data);
+                setPositions(positionResponse.data);
+            })
+            .catch((error) => {
+                showToast({
+                    message: getEmployeeErrorMessage(error),
+                    title: t('employees.filtersLoadError'),
+                    variant: 'error',
+                });
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [showToast, t, userRole]);
+
+    async function handleProfileSave(payload: UpdateEmployeePayload) {
+        if (!employee) return;
+
+        const updatedEmployee = await updateEmployee(employee.id, payload);
+        setEmployee(updatedEmployee);
+    }
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
@@ -131,7 +185,13 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
                 )}
 
                 {employee && activeTab === 'profile' && (
-                    <EmployeeProfileTab employee={employee} />
+                    <EmployeeProfileTab
+                        canManage={userRole === roles.admin}
+                        departments={departments}
+                        employee={employee}
+                        positions={positions}
+                        onSave={handleProfileSave}
+                    />
                 )}
                 {employee && activeTab === 'account' && (
                     <EmployeeAccountTab

@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '@/constants/routes';
 import { logout } from '@/features/auth/api/auth.api';
+import { ChangePasswordPage } from '@/features/auth/pages/ChangePasswordPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { type AuthResponse, type AuthUser } from '@/features/auth/types';
 import {
@@ -60,6 +61,19 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
     if (!authState.user) {
         return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+    }
+
+    if (authState.user.mustChangePassword) {
+        return (
+            <ChangePasswordPage
+                onLogout={() => void handleLogout()}
+                onPasswordChanged={() => {
+                    clearAuthTokens();
+                    setAuthState(getStoredAuthState());
+                    navigate(routes.dashboard, { replace: true });
+                }}
+            />
+        );
     }
 
     return children({

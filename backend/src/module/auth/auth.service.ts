@@ -8,6 +8,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthResponse, AuthUser, JwtPayload } from './types/auth-user.type';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -79,11 +80,31 @@ export class AuthService {
         await this.userService.clearRefreshTokenHash(payload.sub);
     }
 
+    async changePassword(
+        authUser: JwtPayload,
+        payload: ChangePasswordDto,
+    ): Promise<void> {
+        const user = await this.userService.findEntityById(authUser.sub);
+        const isCurrentPasswordValid = await this.passwordService.compare(
+            payload.currentPassword,
+            user.password,
+        );
+
+        if (!isCurrentPasswordValid) {
+            throw new UnauthorizedException('Current password is invalid');
+        }
+
+        await this.userService.changePassword(user.id, payload.newPassword);
+    }
+
     private async createAuthResponse(user: UserResponse): Promise<AuthResponse> {
         const tokenPayload: JwtPayload = {
             sub: user.id,
             email: user.email,
             role: user.role,
+            employeeId: user.employeeId,
+            mustChangePassword: user.mustChangePassword,
+            isMaster: user.isMaster,
         };
         const accessToken = await this.jwtService.signAsync(tokenPayload);
         const refreshToken = await this.signRefreshToken(tokenPayload);
@@ -128,6 +149,9 @@ export class AuthService {
             email: user.email,
             role: user.role,
             isActive: user.isActive,
+            employeeId: user.employeeId,
+            mustChangePassword: user.mustChangePassword,
+            isMaster: user.isMaster,
         };
     }
 }

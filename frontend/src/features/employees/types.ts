@@ -30,14 +30,14 @@ export type EmployeePayload = {
     phoneNumber?: string;
     dateOfBirth?: string;
     gender?: string;
-    departmentIds: string[];
-    positionIds: string[];
-    hireDate: string;
+    departmentIds?: string[];
+    positionIds?: string[];
+    hireDate?: string;
     address?: string;
-    status: EmployeeStatus;
+    status?: EmployeeStatus;
 };
 
-export type UpdateEmployeePayload = Omit<EmployeePayload, 'employeeCode'>;
+export type UpdateEmployeePayload = EmployeePayload;
 export type EmployeeSortField = 'fullName' | 'createdAt' | 'employeeCode';
 export type SortOrder = 'ASC' | 'DESC';
 

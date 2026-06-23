@@ -5,12 +5,18 @@ export type AuthUser = {
     email: string;
     role: UserRole;
     isActive: boolean;
+    employeeId: string | null;
+    mustChangePassword: boolean;
+    isMaster: boolean;
 };
 
 export type JwtPayload = {
     sub: number;
     email: string;
     role: UserRole;
+    employeeId: string | null;
+    mustChangePassword: boolean;
+    isMaster: boolean;
 };
 
 export type AuthResponse = {

@@ -51,23 +51,24 @@ export function SettingsPage() {
                         <label className="text-sm font-semibold text-slate-700">
                             {t('settings.currentLanguage')}
                         </label>
-                        <DropdownSelect
-                            ariaLabel={t('settings.currentLanguage')}
-                            className="w-full"
-                            options={languageOptions.map((option) => ({
-                                value: option.value,
-                                label: t(option.labelKey),
-                                icon: (
-                                    <span className="text-primary-700">
-                                        {option.badge}
-                                    </span>
-                                ),
-                            }))}
-                            size="xs"
-                            triggerIcon={<FontAwesomeIcon icon={faGlobe} />}
-                            value={language}
-                            onChange={setLanguage}
-                        />
+                        <div className="dropdown-select-field">
+                            <DropdownSelect
+                                ariaLabel={t('settings.currentLanguage')}
+                                options={languageOptions.map((option) => ({
+                                    value: option.value,
+                                    label: t(option.labelKey),
+                                    icon: (
+                                        <span className="text-primary-700">
+                                            {option.badge}
+                                        </span>
+                                    ),
+                                }))}
+                                size="xs"
+                                triggerIcon={<FontAwesomeIcon icon={faGlobe} />}
+                                value={language}
+                                onChange={setLanguage}
+                            />
+                        </div>
                     </div>
                 </div>
             </section>

@@ -82,6 +82,17 @@
     max-width: 100%;
 }
 
+.dropdown-select-field {
+    width: 100%;
+    min-width: 0;
+}
+
+.dropdown-select-field .dropdown-select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
 .dropdown-select__trigger {
     display: flex;
     width: 100%;
