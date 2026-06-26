@@ -7,6 +7,7 @@ import { UserModule } from './module/user/user.module';
 import { DepartmentModule } from './module/department/department.module';
 import { PositionModule } from './module/position/position.module';
 import { EmployeeModule } from './module/employee/employee.module';
+import { WorkShiftModule } from './module/work-shift/work-shift.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { EmployeeModule } from './module/employee/employee.module';
     DepartmentModule,
     PositionModule,
     EmployeeModule,
+    WorkShiftModule,
   ]
 })
 export class AppModule { }
