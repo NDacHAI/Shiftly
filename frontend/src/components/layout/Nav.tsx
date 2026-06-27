@@ -22,30 +22,30 @@ const navigation: Array<{
     href: string;
     allowedRoles?: readonly Role[];
 }> = [
-    { labelKey: 'nav.dashboard', icon: faChartColumn, href: routes.dashboard },
-    {
-        labelKey: 'nav.departments',
-        icon: faBuilding,
-        href: routes.departments,
-        allowedRoles: [roles.admin],
-    },
-    {
-        labelKey: 'nav.positions',
-        icon: faBriefcase,
-        href: routes.positions,
-        allowedRoles: [roles.admin, roles.manager],
-    },
-    {
-        labelKey: 'nav.employees',
-        icon: faUsers,
-        href: routes.employees,
-        allowedRoles: [roles.admin, roles.manager, roles.user],
-    },
-    { labelKey: 'nav.workShifts', icon: faCalendarDays, href: '#' },
-    { labelKey: 'nav.attendance', icon: faClock, href: '#' },
-    { labelKey: 'nav.leaveRequests', icon: faFileLines, href: '#' },
-    { labelKey: 'nav.settings', icon: faGear, href: routes.settings },
-];
+        { labelKey: 'nav.dashboard', icon: faChartColumn, href: routes.dashboard },
+        {
+            labelKey: 'nav.departments',
+            icon: faBuilding,
+            href: routes.departments,
+            allowedRoles: [roles.admin],
+        },
+        {
+            labelKey: 'nav.positions',
+            icon: faBriefcase,
+            href: routes.positions,
+            allowedRoles: [roles.admin, roles.manager],
+        },
+        {
+            labelKey: 'nav.employees',
+            icon: faUsers,
+            href: routes.employees,
+            allowedRoles: [roles.admin, roles.manager, roles.user],
+        },
+        { labelKey: 'nav.workShifts', icon: faCalendarDays, href: routes.workShifts, allowedRoles: [roles.admin, roles.manager] },
+        { labelKey: 'nav.attendance', icon: faClock, href: '#' },
+        { labelKey: 'nav.leaveRequests', icon: faFileLines, href: '#' },
+        { labelKey: 'nav.settings', icon: faGear, href: routes.settings },
+    ];
 
 type NavProps = {
     defaultActiveItem?: I18nKey;
@@ -91,54 +91,53 @@ export function Nav({
                             item.allowedRoles.includes(userRole),
                     )
                     .map((item) => {
-                    const label = t(item.labelKey);
-                    const isActive = activeItem === item.labelKey;
-                    const className = `relative flex min-h-11 items-center gap-3.5 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap transition-colors ${
-                        isActive
+                        const label = t(item.labelKey);
+                        const isActive = activeItem === item.labelKey;
+                        const className = `relative flex min-h-11 items-center gap-3.5 rounded-lg px-3.5 text-sm font-medium whitespace-nowrap transition-colors ${isActive
                             ? "bg-primary-50 text-primary-700 before:absolute before:-left-4 before:h-6 before:w-[3px] before:rounded-r before:bg-primary-600 max-sm:before:inset-x-3 max-sm:before:-bottom-1 max-sm:before:top-auto max-sm:before:h-[3px] max-sm:before:w-auto"
                             : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    } max-sm:flex-none`;
-                    const content = (
-                        <>
-                            <FontAwesomeIcon
-                                className="w-[18px] shrink-0"
-                                icon={item.icon}
-                            />
-                            <span>{label}</span>
-                        </>
-                    );
+                            } max-sm:flex-none`;
+                        const content = (
+                            <>
+                                <FontAwesomeIcon
+                                    className="w-[18px] shrink-0"
+                                    icon={item.icon}
+                                />
+                                <span>{label}</span>
+                            </>
+                        );
 
-                    if (item.href !== '#') {
+                        if (item.href !== '#') {
+                            return (
+                                <Link
+                                    aria-current={isActive ? 'page' : undefined}
+                                    className={className}
+                                    key={item.labelKey}
+                                    to={item.href}
+                                    onClick={() => setActiveItem(item.labelKey)}
+                                >
+                                    {content}
+                                </Link>
+                            );
+                        }
+
                         return (
-                            <Link
+                            <a
                                 aria-current={isActive ? 'page' : undefined}
                                 className={className}
+                                href={item.href}
                                 key={item.labelKey}
-                                to={item.href}
-                                onClick={() => setActiveItem(item.labelKey)}
+                                onClick={(event) =>
+                                    handleNavigation(
+                                        event,
+                                        item.labelKey,
+                                        item.href,
+                                    )
+                                }
                             >
                                 {content}
-                            </Link>
+                            </a>
                         );
-                    }
-
-                    return (
-                        <a
-                            aria-current={isActive ? 'page' : undefined}
-                            className={className}
-                            href={item.href}
-                            key={item.labelKey}
-                            onClick={(event) =>
-                                handleNavigation(
-                                    event,
-                                    item.labelKey,
-                                    item.href,
-                                )
-                            }
-                        >
-                            {content}
-                        </a>
-                    );
                     })}
             </nav>
         </aside>

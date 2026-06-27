@@ -5,4 +5,5 @@ export const routes = {
     employees: '/employees',
     employeeDetail: '/employees/:id',
     settings: '/settings',
+    workShifts: '/work-shift',
 } as const;

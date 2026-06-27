@@ -11,6 +11,7 @@ import { SettingsPage } from '@/features/settings/pages/SettingsPage';
 import { PermissionRoute } from '@/guards/PermissionRoute';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import WorkShiftPage from '@/features/work-shifts/pages/WorkShiftPage';
 
 type AppRouterProps = {
     user: AuthUser;
@@ -125,6 +126,20 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                         onLogout={onLogout}
                     >
                         <SettingsPage />
+                    </Layout>
+                }
+            />
+
+            <Route
+                path={routes.workShifts}
+                element={
+                    <Layout
+                        activeNavKey="nav.workShifts"
+                        titleKey="routes.workShifts"
+                        user={user}
+                        onLogout={onLogout}
+                    >
+                        <WorkShiftPage canManage={user.role === roles.admin} />
                     </Layout>
                 }
             />
