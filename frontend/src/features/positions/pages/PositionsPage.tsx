@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faBriefcase,
@@ -17,8 +17,8 @@ import {
     LoadingOverlay,
     Pagination,
 } from '@/components/ui';
-import { listDepartments } from '@/features/departments/api/departments.api';
-import { type Department } from '@/features/departments/types';
+import { listBranches } from '@/features/branches/api/branches.api';
+import { type Branch } from '@/features/branches/types';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useI18n } from '@/i18n';
 import {
@@ -51,11 +51,11 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
     const { showToast } = useToast();
     const { t } = useI18n();
     const [positions, setPositions] = useState<Position[]>([]);
-    const [departments, setDepartments] = useState<Department[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState('');
-    const [departmentId, setDepartmentId] = useState('');
+    const [branchId, setBranchId] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [sortBy, setSortBy] = useState<PositionSortField>('createdAt');
     const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
@@ -76,7 +76,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                 page,
                 limit: pageSize,
                 search: debouncedSearch || undefined,
-                departmentId: departmentId || undefined,
+                branchId: branchId || undefined,
                 status:
                     statusFilter === 'all'
                         ? undefined
@@ -97,7 +97,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
         }
     }, [
         debouncedSearch,
-        departmentId,
+        branchId,
         page,
         showToast,
         sortBy,
@@ -117,18 +117,18 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
     useEffect(() => {
         let active = true;
 
-        void listDepartments({
+        void listBranches({
             page: 1,
             limit: 100,
             sortBy: 'name',
             sortOrder: 'ASC',
         })
             .then((response) => {
-                if (active) setDepartments(response.data);
+                if (active) setBranches(response.data);
             })
             .catch(() => {
                 showToast({
-                    message: t('positions.departmentsLoadError'),
+                    message: t('positions.branchesLoadError'),
                     variant: 'error',
                 });
             });
@@ -258,20 +258,20 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                         />
                     </label>
                     <DropdownSelect
-                        ariaLabel={t('common.department')}
+                        ariaLabel={t('common.branch')}
                         options={[
                             {
                                 value: '',
-                                label: t('common.allDepartments'),
+                                label: t('common.allBranches'),
                             },
-                            ...departments.map((department) => ({
-                                value: department.id,
-                                label: department.name,
+                            ...branches.map((branch) => ({
+                                value: branch.id,
+                                label: branch.name,
                             })),
                         ]}
-                        value={departmentId}
+                        value={branchId}
                         onChange={(value) => {
-                            setDepartmentId(value);
+                            setBranchId(value);
                             setPage(1);
                         }}
                     />
@@ -332,14 +332,14 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                             {label}
                                             {sortBy === field
                                                 ? sortOrder === 'ASC'
-                                                    ? ' ↑'
-                                                    : ' ↓'
+                                                    ? ' ^'
+                                                    : ' v'
                                                 : ''}
                                         </button>
                                     </th>
                                 ))}
                                 <th className="w-[20%] px-4 py-3 text-center text-xs text-slate-600">
-                                    {t('common.department')}
+                                    {t('common.branch')}
                                 </th>
                                 <th className="w-[16%] px-4 py-3 text-center text-xs text-slate-600">
                                     {t('common.status')}
@@ -368,7 +368,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                             ).toLocaleDateString('vi-VN')}
                                         </td>
                                         <td className="px-4 py-3 text-center text-sm">
-                                            {position.department.name}
+                                            {position.branch.name}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <button
@@ -470,7 +470,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
 
             {showForm && (
                 <PositionFormDialog
-                    departments={departments}
+                    branches={branches}
                     editing={editing}
                     onClose={() => setShowForm(false)}
                     onSubmit={handleSave}

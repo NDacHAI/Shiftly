@@ -1,9 +1,9 @@
-import { Route, Routes } from 'react-router-dom';
+﻿import { Route, Routes } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { routes } from '@/constants/routes';
 import { roles } from '@/constants/roles';
 import { type AuthUser } from '@/features/auth/types';
-import { DepartmentsPage } from '@/features/departments/pages/DepartmentsPage';
+import { BranchesPage } from '@/features/branches/pages/BranchesPage';
 import { EmployeeDetailPage } from '@/features/employees/pages/EmployeeDetailPage';
 import { EmployeesPage } from '@/features/employees/pages/EmployeesPage';
 import { PositionsPage } from '@/features/positions/pages/PositionsPage';
@@ -35,19 +35,19 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                 }
             />
             <Route
-                path={routes.departments}
+                path={routes.branches}
                 element={
                     <PermissionRoute
                         allowedRoles={[roles.admin]}
                         userRole={user.role}
                     >
                         <Layout
-                            activeNavKey="nav.departments"
-                            titleKey="routes.departments"
+                            activeNavKey="nav.branches"
+                            titleKey="routes.branches"
                             user={user}
                             onLogout={onLogout}
                         >
-                            <DepartmentsPage />
+                            <BranchesPage />
                         </Layout>
                     </PermissionRoute>
                 }

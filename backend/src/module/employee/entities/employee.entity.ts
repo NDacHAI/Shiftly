@@ -1,4 +1,4 @@
-import {
+﻿import {
     Column,
     CreateDateColumn,
     Entity,
@@ -8,7 +8,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { Department } from '@/module/department/entities/department.entity';
+import { Branch } from '@/module/branch/entities/branch.entity';
 import { Position } from '@/module/position/entities/position.entity';
 import { EmployeeStatus } from './employee-status.enum';
 
@@ -57,20 +57,19 @@ export class Employee {
     })
     status!: EmployeeStatus;
 
-    @ManyToMany(() => Department)
+    @ManyToMany(() => Branch)
     @JoinTable({
-        name: 'employee_departments',
-        synchronize: false,
+        name: 'employee_branches',
         joinColumn: {
             name: 'employee_id',
             referencedColumnName: 'id',
         },
         inverseJoinColumn: {
-            name: 'department_id',
+            name: 'branch_id',
             referencedColumnName: 'id',
         },
     })
-    departments!: Department[];
+    branches!: Branch[];
 
     @ManyToMany(() => Position)
     @JoinTable({

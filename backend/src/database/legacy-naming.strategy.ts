@@ -1,12 +1,12 @@
-import { DefaultNamingStrategy, Table, View } from 'typeorm';
+﻿import { DefaultNamingStrategy, Table, View } from 'typeorm';
 
 type TableName = Table | View | string;
 
 const indexNames = new Map<string, string>([
-    ['departments:code', 'IDX_departments_code'],
-    ['departments:name', 'IDX_departments_name'],
+    ['branches:code', 'IDX_branches_code'],
+    ['branches:name', 'IDX_branches_name'],
     ['positions:code', 'IDX_positions_code'],
-    ['positions:department_id', 'IDX_positions_department_id'],
+    ['positions:branch_id', 'IDX_positions_branch_id'],
     ['positions:status', 'IDX_positions_status'],
     ['employees:employee_code', 'IDX_employees_employee_code'],
     ['employees:email', 'IDX_employees_email'],
@@ -17,15 +17,15 @@ const indexNames = new Map<string, string>([
 ]);
 
 const foreignKeyNames = new Map<string, string>([
-    ['positions:department_id:departments', 'FK_positions_department'],
+    ['positions:branch_id:branches', 'FK_positions_branch'],
     ['users:employee_id:employees', 'FK_users_employee'],
     [
-        'employee_departments:employee_id:employees',
-        'FK_employee_departments_employee',
+        'employee_branches:employee_id:employees',
+        'FK_employee_branches_employee',
     ],
     [
-        'employee_departments:department_id:departments',
-        'FK_employee_departments_department',
+        'employee_branches:branch_id:branches',
+        'FK_employee_branches_branch',
     ],
     [
         'employee_positions:employee_id:employees',

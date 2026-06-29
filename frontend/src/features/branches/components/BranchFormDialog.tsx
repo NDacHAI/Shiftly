@@ -1,33 +1,35 @@
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
+﻿import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
 import { Button } from '@/components/ui';
-import { getDepartmentErrorMessage } from '../api/departments.api';
-import { type Department, type DepartmentPayload } from '../types';
+import { useI18n } from '@/i18n';
+import { getBranchErrorMessage } from '../api/branches.api';
+import { type Branch, type BranchPayload } from '../types';
 
 const fieldClass =
     'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
 
-type DepartmentFormDialogProps = {
-    editing: Department | null;
+type BranchFormDialogProps = {
+    editing: Branch | null;
     onClose: () => void;
-    onSubmit: (form: DepartmentPayload) => Promise<void>;
+    onSubmit: (form: BranchPayload) => Promise<void>;
 };
 
-export function DepartmentFormDialog({
+export function BranchFormDialog({
     editing,
     onClose,
     onSubmit,
-}: DepartmentFormDialogProps) {
+}: BranchFormDialogProps) {
     const { showToast } = useToast();
+    const { t } = useI18n();
     const {
         control,
         formState: { errors, isSubmitting },
         handleSubmit,
         register,
         setError,
-    } = useForm<DepartmentPayload>({
+    } = useForm<BranchPayload>({
         defaultValues: {
             code: editing?.code ?? '',
             name: editing?.name ?? '',
@@ -37,16 +39,16 @@ export function DepartmentFormDialog({
     });
     const status = useWatch({ control, name: 'status' });
 
-    async function handleValidSubmit(form: DepartmentPayload) {
+    async function handleValidSubmit(form: BranchPayload) {
         try {
             await onSubmit(form);
         } catch (submitError) {
-            const message = getDepartmentErrorMessage(submitError);
+            const message = getBranchErrorMessage(submitError);
             const normalizedMessage = message.toLowerCase();
 
             if (normalizedMessage.includes('code')) {
                 setError('code', {
-                    message: 'Mã phòng ban đã tồn tại.',
+                    message: t('branches.codeExists'),
                     type: 'server',
                 });
                 return;
@@ -54,7 +56,7 @@ export function DepartmentFormDialog({
 
             if (normalizedMessage.includes('name')) {
                 setError('name', {
-                    message: 'Tên phòng ban đã tồn tại.',
+                    message: t('branches.nameExists'),
                     type: 'server',
                 });
                 return;
@@ -62,7 +64,7 @@ export function DepartmentFormDialog({
 
             showToast({
                 message,
-                title: 'Không thể lưu phòng ban',
+                title: t('branches.saveError'),
                 variant: 'error',
             });
         }
@@ -77,10 +79,10 @@ export function DepartmentFormDialog({
             >
                 <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-6 py-5">
                     <h2 className="text-xl font-bold text-slate-950">
-                        {editing ? 'Cập nhật phòng ban' : 'Tạo phòng ban'}
+                        {editing ? t('branches.update') : t('branches.add')}
                     </h2>
                     <Button
-                        aria-label="Đóng"
+                        aria-label={t('common.close')}
                         disabled={isSubmitting}
                         onClick={onClose}
                         size="icon"
@@ -96,11 +98,11 @@ export function DepartmentFormDialog({
                     <div className="grid gap-2 overflow-y-auto px-6 py-5">
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             <span>
-                                Mã phòng ban
+                                {t('branches.code')}
                                 <span className="ml-1 text-red-500">*</span>
                             </span>
                             <input
-                                aria-describedby="department-code-error"
+                                aria-describedby="Branch-code-error"
                                 aria-invalid={Boolean(errors.code)}
                                 className={`${fieldClass} ${
                                     errors.code
@@ -110,28 +112,27 @@ export function DepartmentFormDialog({
                                 maxLength={20}
                                 {...register('code', {
                                     maxLength: {
-                                        message:
-                                            'Mã phòng ban tối đa 20 ký tự.',
+                                        message: t('branches.codeMaxLength'),
                                         value: 20,
                                     },
-                                    required: 'Mã phòng ban là bắt buộc.',
+                                    required: t('branches.codeRequired'),
                                 })}
                             />
                             <span
                                 aria-live="polite"
                                 className="min-h-4 text-xs font-normal text-red-400"
-                                id="department-code-error"
+                                id="Branch-code-error"
                             >
                                 {errors.code?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             <span>
-                                Tên phòng ban
+                                {t('branches.name')}
                                 <span className="ml-1 text-red-500">*</span>
                             </span>
                             <input
-                                aria-describedby="department-name-error"
+                                aria-describedby="Branch-name-error"
                                 aria-invalid={Boolean(errors.name)}
                                 className={`${fieldClass} ${
                                     errors.name
@@ -141,23 +142,22 @@ export function DepartmentFormDialog({
                                 maxLength={100}
                                 {...register('name', {
                                     maxLength: {
-                                        message:
-                                            'Tên phòng ban tối đa 100 ký tự.',
+                                        message: t('branches.nameMaxLength'),
                                         value: 100,
                                     },
-                                    required: 'Tên phòng ban là bắt buộc.',
+                                    required: t('branches.nameRequired'),
                                 })}
                             />
                             <span
                                 aria-live="polite"
                                 className="min-h-4 text-xs font-normal text-red-400"
-                                id="department-name-error"
+                                id="Branch-name-error"
                             >
                                 {errors.name?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            Mô tả
+                            {t('common.description')}
                             <textarea
                                 className={`${fieldClass} min-h-28 py-3`}
                                 rows={4}
@@ -165,7 +165,7 @@ export function DepartmentFormDialog({
                             />
                         </label>
                         <label className="mt-2 flex cursor-pointer items-center justify-between gap-4 text-sm font-semibold text-slate-700">
-                            <span>Đang hoạt động</span>
+                            <span>{t('common.active')}</span>
                             <span className="relative inline-flex">
                                 <input
                                     checked={status}
@@ -184,14 +184,14 @@ export function DepartmentFormDialog({
                             onClick={onClose}
                             variant="secondary"
                         >
-                            Hủy
+                            {t('common.cancel')}
                         </Button>
                         <Button
                             loading={isSubmitting}
-                            loadingLabel="Đang lưu..."
+                            loadingLabel={t('common.loadingSave')}
                             type="submit"
                         >
-                            Lưu
+                            {t('common.save')}
                         </Button>
                     </div>
                 </form>

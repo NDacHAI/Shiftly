@@ -1,4 +1,4 @@
-import {
+﻿import {
     Column,
     CreateDateColumn,
     DeleteDateColumn,
@@ -7,8 +7,8 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('departments')
-export class Department {
+@Entity('branches')
+export class Branch {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faArrowLeft,
@@ -13,8 +13,8 @@ import { EmptyState, LoadingOverlay } from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
 import { routes } from '@/constants/routes';
 import { useI18n } from '@/i18n';
-import { listDepartments } from '@/features/departments/api/departments.api';
-import { type Department } from '@/features/departments/types';
+import { listBranches } from '@/features/branches/api/branches.api';
+import { type Branch } from '@/features/branches/types';
 import { listPositions } from '@/features/positions/api/positions.api';
 import { type Position } from '@/features/positions/types';
 import { EmployeeAccountTab } from '../components/detail/EmployeeAccountTab';
@@ -44,7 +44,7 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
     const { showToast } = useToast();
     const { t } = useI18n();
     const [employee, setEmployee] = useState<Employee | null>(null);
-    const [departments, setDepartments] = useState<Department[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
     const [positions, setPositions] = useState<Position[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<EmployeeTab>('profile');
@@ -89,7 +89,7 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
         let active = true;
 
         void Promise.all([
-            listDepartments({
+            listBranches({
                 page: 1,
                 limit: 100,
                 sortBy: 'name',
@@ -102,9 +102,9 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
                 sortOrder: 'ASC',
             }),
         ])
-            .then(([departmentResponse, positionResponse]) => {
+            .then(([BranchResponse, positionResponse]) => {
                 if (!active) return;
-                setDepartments(departmentResponse.data);
+                setBranches(BranchResponse.data);
                 setPositions(positionResponse.data);
             })
             .catch((error) => {
@@ -187,7 +187,7 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
                 {employee && activeTab === 'profile' && (
                     <EmployeeProfileTab
                         canManage={userRole === roles.admin}
-                        departments={departments}
+                        branches={branches}
                         employee={employee}
                         positions={positions}
                         onSave={handleProfileSave}

@@ -1,4 +1,4 @@
-import {
+﻿import {
     IsBoolean,
     IsNotEmpty,
     IsOptional,
@@ -6,7 +6,7 @@ import {
     MaxLength,
 } from 'class-validator';
 
-export class UpdateDepartmentDto {
+export class UpdateBranchDto {
     @IsOptional()
     @IsString()
     @IsNotEmpty()

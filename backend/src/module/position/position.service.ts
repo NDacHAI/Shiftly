@@ -1,4 +1,4 @@
-import {
+﻿import {
     BadRequestException,
     ConflictException,
     Injectable,
@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, QueryFailedError, Repository } from 'typeorm';
-import { Department } from '../department/entities/department.entity';
+import { Branch } from '../branch/entities/branch.entity';
 import { CreatePositionDto } from './dto/create-position.dto';
 import { PositionQueryDto } from './dto/position-query.dto';
 import { UpdatePositionStatusDto } from './dto/update-position-status.dto';
@@ -28,19 +28,19 @@ export class PositionService {
     constructor(
         @InjectRepository(Position)
         private readonly positionRepository: Repository<Position>,
-        @InjectRepository(Department)
-        private readonly departmentRepository: Repository<Department>,
+        @InjectRepository(Branch)
+        private readonly branchRepository: Repository<Branch>,
     ) {}
 
     async create(payload: CreatePositionDto): Promise<Position> {
         const code = payload.code.trim().toUpperCase();
         await this.ensureCodeUnique(code);
-        await this.ensureDepartmentExists(payload.departmentId);
+        await this.ensureBranchExists(payload.branchId);
 
         const position = this.positionRepository.create({
             code,
             name: payload.name.trim(),
-            departmentId: payload.departmentId,
+            branchId: payload.branchId,
             description: this.normalizeDescription(payload.description),
             status: payload.status ?? true,
         });
@@ -57,7 +57,7 @@ export class PositionService {
     async findAll(query: PositionQueryDto): Promise<PaginatedPositions> {
         const queryBuilder = this.positionRepository
             .createQueryBuilder('position')
-            .leftJoinAndSelect('position.department', 'department')
+            .leftJoinAndSelect('position.branch', 'Branch')
             .orderBy(`position.${query.sortBy}`, query.sortOrder)
             .skip((query.page - 1) * query.limit)
             .take(query.limit);
@@ -73,10 +73,10 @@ export class PositionService {
             );
         }
 
-        if (query.departmentId) {
+        if (query.branchId) {
             queryBuilder.andWhere(
-                'position.departmentId = :departmentId',
-                { departmentId: query.departmentId },
+                'position.branchId = :branchId',
+                { branchId: query.branchId },
             );
         }
 
@@ -102,7 +102,7 @@ export class PositionService {
     async findOne(id: string): Promise<Position> {
         const position = await this.positionRepository.findOne({
             where: { id },
-            relations: { department: true },
+            relations: { branch: true },
         });
 
         if (!position) {
@@ -115,7 +115,7 @@ export class PositionService {
     async update(id: string, payload: UpdatePositionDto): Promise<Position> {
         if (
             payload.name === undefined &&
-            payload.departmentId === undefined &&
+            payload.branchId === undefined &&
             payload.description === undefined &&
             payload.status === undefined
         ) {
@@ -124,9 +124,9 @@ export class PositionService {
 
         const position = await this.findOne(id);
 
-        if (payload.departmentId !== undefined) {
-            await this.ensureDepartmentExists(payload.departmentId);
-            position.departmentId = payload.departmentId;
+        if (payload.branchId !== undefined) {
+            await this.ensureBranchExists(payload.branchId);
+            position.branchId = payload.branchId;
         }
 
         if (payload.name !== undefined) {
@@ -185,13 +185,13 @@ export class PositionService {
         }
     }
 
-    private async ensureDepartmentExists(id: string): Promise<void> {
-        const department = await this.departmentRepository.findOne({
+    private async ensureBranchExists(id: string): Promise<void> {
+        const branch = await this.branchRepository.findOne({
             where: { id },
         });
 
-        if (!department) {
-            throw new BadRequestException('Department does not exist');
+        if (!branch) {
+            throw new BadRequestException('Branch does not exist');
         }
     }
 

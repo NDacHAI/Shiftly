@@ -1,4 +1,4 @@
-import {
+﻿import {
     Column,
     CreateDateColumn,
     DeleteDateColumn,
@@ -9,7 +9,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { Department } from '../../department/entities/department.entity';
+import { Branch } from '../../branch/entities/branch.entity';
 
 @Entity('positions')
 export class Position {
@@ -23,12 +23,12 @@ export class Position {
     name!: string;
 
     @Index()
-    @Column({ name: 'department_id', type: 'varchar', length: 36 })
-    departmentId!: string;
+    @Column({ name: 'branch_id', type: 'varchar', length: 36 })
+    branchId!: string;
 
-    @ManyToOne(() => Department, { nullable: false, onDelete: 'RESTRICT' })
-    @JoinColumn({ name: 'department_id' })
-    department!: Department;
+    @ManyToOne(() => Branch, { nullable: false, onDelete: 'RESTRICT' })
+    @JoinColumn({ name: 'branch_id' })
+    branch!: Branch;
 
     @Column({ type: 'text', nullable: true })
     description!: string | null;

@@ -1,9 +1,9 @@
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
+﻿import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
 import { Button, DropdownSelect } from '@/components/ui';
-import { type Department } from '@/features/departments/types';
+import { type Branch } from '@/features/branches/types';
 import { type Position } from '@/features/positions/types';
 import { useI18n } from '@/i18n';
 import { getEmployeeErrorMessage } from '../api/employees.api';
@@ -15,7 +15,7 @@ import {
 } from '../types';
 
 type EmployeeFormDialogProps = {
-    departments: Department[];
+    branches: Branch[];
     positions: Position[];
     editing: Employee | null;
     onClose: () => void;
@@ -26,9 +26,9 @@ type EmployeeFormDialogProps = {
 
 type EmployeeFormValues = Omit<
     EmployeePayload,
-    'departmentIds' | 'positionIds'
+    'branchIds' | 'positionIds'
 > & {
-    departmentId: string;
+    branchId: string;
     positionId: string;
 };
 
@@ -36,7 +36,7 @@ const fieldClass =
     'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
 
 export function EmployeeFormDialog({
-    departments,
+    branches,
     positions,
     editing,
     onClose,
@@ -60,7 +60,7 @@ export function EmployeeFormDialog({
             phoneNumber: editing?.phoneNumber ?? '',
             dateOfBirth: editing?.dateOfBirth ?? '',
             gender: editing?.gender ?? '',
-            departmentId: editing?.departments[0]?.id ?? '',
+            branchId: editing?.branches[0]?.id ?? '',
             positionId: editing?.positions[0]?.id ?? '',
             hireDate: editing?.hireDate ?? '',
             address: editing?.address ?? '',
@@ -69,7 +69,7 @@ export function EmployeeFormDialog({
     });
     const status = useWatch({ control, name: 'status' }) ?? 'Active';
     const gender = useWatch({ control, name: 'gender' }) ?? '';
-    const departmentId = useWatch({ control, name: 'departmentId' });
+    const branchId = useWatch({ control, name: 'branchId' });
     const positionId = useWatch({ control, name: 'positionId' });
 
     async function handleValidSubmit(values: EmployeeFormValues) {
@@ -85,8 +85,8 @@ export function EmployeeFormDialog({
                 hireDate: values.hireDate,
                 address: values.address?.trim() || undefined,
                 status: values.status,
-                departmentIds: values.departmentId
-                    ? [values.departmentId]
+                branchIds: values.branchId
+                    ? [values.branchId]
                     : [],
                 positionIds: values.positionId ? [values.positionId] : [],
             };
@@ -100,7 +100,7 @@ export function EmployeeFormDialog({
                     phoneNumber: employeePayload.phoneNumber,
                     dateOfBirth: employeePayload.dateOfBirth,
                     gender: employeePayload.gender,
-                    departmentIds: employeePayload.departmentIds,
+                    branchIds: employeePayload.branchIds,
                     positionIds: employeePayload.positionIds,
                     hireDate: employeePayload.hireDate,
                     address: employeePayload.address,
@@ -305,27 +305,27 @@ export function EmployeeFormDialog({
                             <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                            {t('common.departments')}
+                            {t('common.branches')}
                             <input
                                 type="hidden"
-                                {...register('departmentId')}
+                                {...register('branchId')}
                             />
                             <div className="dropdown-select-field">
                                 <DropdownSelect
-                                    ariaLabel={t('common.departments')}
+                                    ariaLabel={t('common.branches')}
                                     options={[
                                         {
                                             value: '',
-                                            label: t('employees.selectDepartment'),
+                                            label: t('employees.selectBranch'),
                                         },
-                                        ...departments.map((department) => ({
-                                            value: department.id,
-                                            label: department.name,
+                                        ...branches.map((branch) => ({
+                                            value: branch.id,
+                                            label: branch.name,
                                         })),
                                     ]}
-                                    value={departmentId}
+                                    value={branchId}
                                     onChange={(value) =>
-                                        setValue('departmentId', value, {
+                                        setValue('branchId', value, {
                                             shouldDirty: true,
                                             shouldValidate: true,
                                         })

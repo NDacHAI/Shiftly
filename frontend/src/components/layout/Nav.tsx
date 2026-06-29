@@ -1,4 +1,4 @@
-import { type MouseEvent, useState } from 'react';
+﻿import { type MouseEvent, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import {
@@ -24,9 +24,9 @@ const navigation: Array<{
 }> = [
         { labelKey: 'nav.dashboard', icon: faChartColumn, href: routes.dashboard },
         {
-            labelKey: 'nav.departments',
+            labelKey: 'nav.branches',
             icon: faBuilding,
-            href: routes.departments,
+            href: routes.branches,
             allowedRoles: [roles.admin],
         },
         {

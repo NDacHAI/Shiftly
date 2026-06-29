@@ -1,4 +1,4 @@
-import { type Department } from '@/features/departments/types';
+﻿import { type Branch } from '@/features/branches/types';
 import { type Position } from '@/features/positions/types';
 import { type Role } from '@/constants/roles';
 
@@ -16,7 +16,7 @@ export type Employee = {
     hireDate: string;
     address: string | null;
     status: EmployeeStatus;
-    departments: Department[];
+    branches: Branch[];
     positions: Position[];
     createdAt: string;
     updatedAt: string;
@@ -30,7 +30,7 @@ export type EmployeePayload = {
     phoneNumber?: string;
     dateOfBirth?: string;
     gender?: string;
-    departmentIds?: string[];
+    branchIds?: string[];
     positionIds?: string[];
     hireDate?: string;
     address?: string;

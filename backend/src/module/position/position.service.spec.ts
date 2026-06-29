@@ -1,4 +1,4 @@
-import {
+﻿import {
     BadRequestException,
     ConflictException,
     NotFoundException,
@@ -6,7 +6,7 @@ import {
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
-import { Department } from '../department/entities/department.entity';
+import { Branch } from '../branch/entities/branch.entity';
 import { Position } from './entities/position.entity';
 import { PositionService } from './position.service';
 
@@ -49,7 +49,7 @@ function createQueryBuilderMock(result: Position | null = null) {
 describe('PositionService', () => {
     let service: PositionService;
     let positionRepository: RepositoryMock;
-    let departmentRepository: Pick<RepositoryMock, 'findOne'>;
+    let branchRepository: Pick<RepositoryMock, 'findOne'>;
 
     beforeEach(async () => {
         positionRepository = {
@@ -61,7 +61,7 @@ describe('PositionService', () => {
             delete: jest.fn().mockResolvedValue({ affected: 1 }),
             createQueryBuilder: jest.fn(() => createQueryBuilderMock()),
         };
-        departmentRepository = {
+        branchRepository = {
             findOne: jest.fn(),
         };
 
@@ -74,9 +74,9 @@ describe('PositionService', () => {
                         positionRepository as Partial<Repository<Position>>,
                 },
                 {
-                    provide: getRepositoryToken(Department),
+                    provide: getRepositoryToken(Branch),
                     useValue:
-                        departmentRepository as Partial<Repository<Department>>,
+                        branchRepository as Partial<Repository<Branch>>,
                 },
             ],
         }).compile();
@@ -85,8 +85,8 @@ describe('PositionService', () => {
     });
 
     it('creates a position with normalized values and active status', async () => {
-        departmentRepository.findOne.mockResolvedValue({
-            id: 'department-id',
+        branchRepository.findOne.mockResolvedValue({
+            id: 'Branch-id',
         });
         positionRepository.findOne.mockResolvedValue({
             id: 'position-id',
@@ -95,14 +95,14 @@ describe('PositionService', () => {
         await service.create({
             code: ' dev-be ',
             name: ' Backend Developer ',
-            departmentId: 'department-id',
+            branchId: 'Branch-id',
             description: ' API development ',
         });
 
         expect(positionRepository.create).toHaveBeenCalledWith({
             code: 'DEV-BE',
             name: 'Backend Developer',
-            departmentId: 'department-id',
+            branchId: 'Branch-id',
             description: 'API development',
             status: true,
         });
@@ -117,20 +117,20 @@ describe('PositionService', () => {
             service.create({
                 code: 'DEV-BE',
                 name: 'Backend Developer',
-                departmentId: 'department-id',
+                branchId: 'Branch-id',
             }),
         ).rejects.toBeInstanceOf(ConflictException);
-        expect(departmentRepository.findOne).not.toHaveBeenCalled();
+        expect(branchRepository.findOne).not.toHaveBeenCalled();
     });
 
-    it('rejects creation when the department does not exist', async () => {
-        departmentRepository.findOne.mockResolvedValue(null);
+    it('rejects creation when the Branch does not exist', async () => {
+        branchRepository.findOne.mockResolvedValue(null);
 
         await expect(
             service.create({
                 code: 'DEV-BE',
                 name: 'Backend Developer',
-                departmentId: 'department-id',
+                branchId: 'Branch-id',
             }),
         ).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -141,7 +141,7 @@ describe('PositionService', () => {
                 id: 'position-id',
                 code: 'DEV-BE',
                 name: 'Backend Developer',
-                departmentId: 'department-id',
+                branchId: 'Branch-id',
                 status: true,
             })
             .mockResolvedValueOnce({ id: 'position-id' });

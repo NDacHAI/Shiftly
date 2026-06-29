@@ -1,4 +1,4 @@
-import {
+﻿import {
     IsBoolean,
     IsNotEmpty,
     IsOptional,
@@ -19,7 +19,7 @@ export class CreatePositionDto {
     name!: string;
 
     @IsUUID()
-    departmentId!: string;
+    branchId!: string;
 
     @IsOptional()
     @IsString()

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faBuilding,
@@ -23,19 +23,19 @@ import {
 import { useDebounce } from '@/hooks/useDebounce';
 import { useI18n } from '@/i18n';
 import {
-    createDepartment,
-    deleteDepartment,
-    getDepartment,
-    getDepartmentErrorMessage,
-    listDepartments,
-    updateDepartment,
-} from '../api/departments.api';
-import { DepartmentDetailsDialog } from '../components/DepartmentDetailsDialog';
-import { DepartmentFormDialog } from '../components/DepartmentFormDialog';
+    createBranch,
+    deleteBranch,
+    getBranch,
+    getBranchErrorMessage,
+    listBranches,
+    updateBranch,
+} from '../api/branches.api';
+import { BranchDetailsDialog } from '../components/BranchDetailsDialog';
+import { BranchFormDialog } from '../components/BranchFormDialog';
 import {
-    type Department,
-    type DepartmentPayload,
-    type DepartmentSortField,
+    type Branch,
+    type BranchPayload,
+    type BranchSortField,
     type SortOrder,
 } from '../types';
 
@@ -52,40 +52,40 @@ function formatDate(value: string) {
     }).format(new Date(value));
 }
 
-export function DepartmentsPage() {
+export function BranchesPage() {
     const { showToast } = useToast();
     const { t } = useI18n();
-    const [departments, setDepartments] = useState<Department[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [total, setTotal] = useState(0);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const debouncedSearch = useDebounce(search);
-    const [sortBy, setSortBy] = useState<DepartmentSortField>('createdAt');
+    const [sortBy, setSortBy] = useState<BranchSortField>('createdAt');
     const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [editing, setEditing] = useState<Department | null>(null);
-    const [selected, setSelected] = useState<Department | null>(null);
+    const [editing, setEditing] = useState<Branch | null>(null);
+    const [selected, setSelected] = useState<Branch | null>(null);
     const [showForm, setShowForm] = useState(false);
-    const [departmentToDelete, setDepartmentToDelete] =
-        useState<Department | null>(null);
+    const [branchToDelete, setBranchToDelete] =
+        useState<Branch | null>(null);
     const [deleting, setDeleting] = useState(false);
 
-    const loadDepartments = useCallback(async () => {
+    const loadBranches = useCallback(async () => {
         setLoading(true);
         setError('');
 
         try {
-            const response = await listDepartments({
+            const response = await listBranches({
                 page,
                 limit: pageSize,
                 search: debouncedSearch || undefined,
                 sortBy,
                 sortOrder,
             });
-            setDepartments(response.data);
+            setBranches(response.data);
             setTotal(response.meta.total);
             setTotalPages(response.meta.totalPages);
 
@@ -96,7 +96,7 @@ export function DepartmentsPage() {
                 setPage(response.meta.totalPages);
             }
         } catch (loadError) {
-            setError(getDepartmentErrorMessage(loadError));
+            setError(getBranchErrorMessage(loadError));
         } finally {
             setLoading(false);
         }
@@ -104,37 +104,37 @@ export function DepartmentsPage() {
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
-            void loadDepartments();
+            void loadBranches();
         }, 0);
 
         return () => window.clearTimeout(timeoutId);
-    }, [loadDepartments]);
+    }, [loadBranches]);
 
-    const activeCount = departments.filter(
-        (department) => department.status,
+    const activeCount = branches.filter(
+        (branch) => branch.status,
     ).length;
-    const inactiveCount = departments.length - activeCount;
-    const displayedDepartments = departments.filter((department) => {
-        if (statusFilter === 'active') return department.status;
-        if (statusFilter === 'inactive') return !department.status;
+    const inactiveCount = branches.length - activeCount;
+    const displayedBranches = branches.filter((branch) => {
+        if (statusFilter === 'active') return branch.status;
+        if (statusFilter === 'inactive') return !branch.status;
         return true;
     });
 
-    async function handleSubmit(form: DepartmentPayload) {
+    async function handleSubmit(form: BranchPayload) {
         if (editing) {
-            await updateDepartment(editing.id, form);
+            await updateBranch(editing.id, form);
         } else {
-            await createDepartment(form);
+            await createBranch(form);
         }
 
         const wasEditing = Boolean(editing);
         setShowForm(false);
         setEditing(null);
-        await loadDepartments();
+        await loadBranches();
         showToast({
             message: wasEditing
-                ? t('departments.updated')
-                : t('departments.created'),
+                ? t('branches.updated')
+                : t('branches.created'),
             title: t('common.success'),
             variant: 'success',
         });
@@ -144,44 +144,44 @@ export function DepartmentsPage() {
         setError('');
 
         try {
-            setSelected(await getDepartment(id));
+            setSelected(await getBranch(id));
         } catch (viewError) {
-            const message = getDepartmentErrorMessage(viewError);
+            const message = getBranchErrorMessage(viewError);
             setError(message);
             showToast({
                 message,
-                title: t('departments.viewError'),
+                title: t('branches.viewError'),
                 variant: 'error',
             });
         }
     }
 
     async function handleConfirmDelete() {
-        if (!departmentToDelete) return;
+        if (!branchToDelete) return;
 
         setDeleting(true);
         setError('');
 
         try {
-            await deleteDepartment(departmentToDelete.id);
-            if (selected?.id === departmentToDelete.id) setSelected(null);
-            const deletedDepartmentName = departmentToDelete.name;
-            setDepartmentToDelete(null);
-            await loadDepartments();
+            await deleteBranch(branchToDelete.id);
+            if (selected?.id === branchToDelete.id) setSelected(null);
+            const deletedBranchName = branchToDelete.name;
+            setBranchToDelete(null);
+            await loadBranches();
             showToast({
-                message: t('departments.deleted').replace(
+                message: t('branches.deleted').replace(
                     '{name}',
-                    deletedDepartmentName,
+                    deletedBranchName,
                 ),
                 title: t('common.success'),
                 variant: 'success',
             });
         } catch (deleteError) {
-            const message = getDepartmentErrorMessage(deleteError);
+            const message = getBranchErrorMessage(deleteError);
             setError(message);
             showToast({
                 message,
-                title: t('departments.deleteError'),
+                title: t('branches.deleteError'),
                 variant: 'error',
             });
         } finally {
@@ -189,7 +189,7 @@ export function DepartmentsPage() {
         }
     }
 
-    function changeSort(field: DepartmentSortField) {
+    function changeSort(field: BranchSortField) {
         if (sortBy === field) {
             setSortOrder((current) => (current === 'ASC' ? 'DESC' : 'ASC'));
         } else {
@@ -199,37 +199,37 @@ export function DepartmentsPage() {
         setPage(1);
     }
 
-    function sortLabel(field: DepartmentSortField) {
+    function sortLabel(field: BranchSortField) {
         if (sortBy !== field) return '';
-        return sortOrder === 'ASC' ? ' ↑' : ' ↓';
+        return sortOrder === 'ASC' ? ' ^' : ' v';
     }
 
     const stats = [
         {
-            label: t('departments.total'),
+            label: t('branches.total'),
             value: total,
-            note: t('departments.totalNote'),
+            note: t('branches.totalNote'),
             icon: faUsers,
             color: 'bg-primary-50 text-primary-600',
         },
         {
-            label: t('departments.activeOnPage'),
+            label: t('branches.activeOnPage'),
             value: activeCount,
-            note: t('departments.activeOnPage'),
+            note: t('branches.activeOnPage'),
             icon: faPlus,
             color: 'bg-emerald-50 text-emerald-600',
         },
         {
-            label: t('departments.inactiveOnPage'),
+            label: t('branches.inactiveOnPage'),
             value: inactiveCount,
-            note: t('departments.inactiveOnPage'),
+            note: t('branches.inactiveOnPage'),
             icon: faPause,
             color: 'bg-amber-50 text-amber-500',
         },
         {
-            label: t('departments.employeeTotal'),
+            label: t('branches.employeeTotal'),
             value: 0,
-            note: t('departments.employeeTotalNote'),
+            note: t('branches.employeeTotalNote'),
             icon: faBuilding,
             color: 'bg-sky-50 text-sky-600',
         },
@@ -244,10 +244,10 @@ export function DepartmentsPage() {
                     </span>
                     <div>
                         <h2 className="text-xl font-bold text-slate-950">
-                            {t('departments.title')}
+                            {t('branches.title')}
                         </h2>
                         <p className="mt-1 text-sm text-slate-500">
-                            {t('departments.subtitle')}
+                            {t('branches.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -260,7 +260,7 @@ export function DepartmentsPage() {
                     size="lg"
                 >
                     <FontAwesomeIcon icon={faPlus} />
-                    {t('departments.add')}
+                    {t('branches.add')}
                 </Button>
             </div>
 
@@ -295,7 +295,7 @@ export function DepartmentsPage() {
             )}
 
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <LoadingOverlay label={t('departments.loading')} visible={loading} />
+                <LoadingOverlay label={t('branches.loading')} visible={loading} />
                 <div className="flex items-center justify-between gap-4 border-b border-slate-200 p-4 max-md:items-stretch max-md:flex-col">
                     <label className="relative block w-full max-w-sm">
                         <span className="sr-only">{t('common.search')}</span>
@@ -306,7 +306,7 @@ export function DepartmentsPage() {
                         <input
                             aria-label={t('common.search')}
                             className={`${fieldClass} pl-9`}
-                            placeholder={t('departments.searchPlaceholder')}
+                            placeholder={t('branches.searchPlaceholder')}
                             value={search}
                             onChange={(event) => {
                                 setSearch(event.target.value);
@@ -347,7 +347,7 @@ export function DepartmentsPage() {
                         </label>
                         <Button
                             className="max-sm:w-full"
-                            onClick={() => void loadDepartments()}
+                            onClick={() => void loadBranches()}
                             size="lg"
                             variant="secondary"
                         >
@@ -390,39 +390,39 @@ export function DepartmentsPage() {
                         </thead>
                         <tbody>
                             {!loading &&
-                                displayedDepartments.map((department) => (
+                                displayedBranches.map((branch) => (
                                     <tr
                                         className="border-b border-slate-100 transition hover:bg-slate-50/80 last:border-0"
-                                        key={department.id}
+                                        key={branch.id}
                                     >
                                         <td className="px-5 py-3.5 text-center text-sm font-semibold text-slate-800">
-                                            {department.code}
+                                            {branch.code}
                                         </td>
                                         <td className="px-5 py-3.5 text-center text-sm text-slate-700">
-                                            {department.name}
+                                            {branch.name}
                                         </td>
                                         <td className="px-5 py-3.5 text-center">
                                             <span
                                                 className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                                    department.status
+                                                    branch.status
                                                         ? 'bg-emerald-50 text-emerald-700'
                                                         : 'bg-amber-50 text-amber-700'
                                                 }`}
                                             >
                                                 <span
                                                     className={`size-1.5 rounded-full ${
-                                                        department.status
+                                                        branch.status
                                                             ? 'bg-emerald-500'
                                                             : 'bg-amber-500'
                                                     }`}
                                                 />
-                                                {department.status
+                                                {branch.status
                                                     ? t('common.active')
                                                     : t('common.inactive')}
                                             </span>
                                         </td>
                                         <td className="px-5 py-3.5 text-center text-sm text-slate-600">
-                                            {formatDate(department.createdAt)}
+                                            {formatDate(branch.createdAt)}
                                         </td>
                                         <td className="px-5 py-3.5">
                                             <div className="flex items-center justify-center gap-2">
@@ -430,7 +430,7 @@ export function DepartmentsPage() {
                                                     aria-label={t('common.view')}
                                                     className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
                                                     onClick={() =>
-                                                        void handleView(department.id)
+                                                        void handleView(branch.id)
                                                     }
                                                     title={t('common.view')}
                                                     type="button"
@@ -441,7 +441,7 @@ export function DepartmentsPage() {
                                                     aria-label={t('common.edit')}
                                                     className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
                                                     onClick={() => {
-                                                        setEditing(department);
+                                                        setEditing(branch);
                                                         setShowForm(true);
                                                     }}
                                                     title={t('common.edit')}
@@ -453,8 +453,8 @@ export function DepartmentsPage() {
                                                     aria-label={t('common.delete')}
                                                     className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
                                                     onClick={() =>
-                                                        setDepartmentToDelete(
-                                                            department,
+                                                        setBranchToDelete(
+                                                            branch,
                                                         )
                                                     }
                                                     title={t('common.delete')}
@@ -466,15 +466,15 @@ export function DepartmentsPage() {
                                         </td>
                                     </tr>
                                 ))}
-                            {!loading && displayedDepartments.length === 0 && (
+                            {!loading && displayedBranches.length === 0 && (
                                 <tr>
                                     <td colSpan={5}>
                                         <EmptyState
                                             description={t(
-                                                'departments.noResultsDescription',
+                                                'branches.noResultsDescription',
                                             )}
                                             icon={<FontAwesomeIcon icon={faBuilding} />}
-                                            title={t('departments.noResultsTitle')}
+                                            title={t('branches.noResultsTitle')}
                                         />
                                     </td>
                                 </tr>
@@ -492,7 +492,7 @@ export function DepartmentsPage() {
             </div>
 
             {showForm && (
-                <DepartmentFormDialog
+                <BranchFormDialog
                     editing={editing}
                     onClose={() => setShowForm(false)}
                     onSubmit={handleSubmit}
@@ -500,23 +500,23 @@ export function DepartmentsPage() {
             )}
 
             {selected && (
-                <DepartmentDetailsDialog
-                    department={selected}
+                <BranchDetailsDialog
+                    branch={selected}
                     onClose={() => setSelected(null)}
                 />
             )}
 
             <ConfirmDialog
-                confirmLabel={t('departments.deleteConfirmLabel')}
-                description={t('departments.deleteDescription').replace(
+                confirmLabel={t('branches.deleteConfirmLabel')}
+                description={t('branches.deleteDescription').replace(
                     '{name}',
-                    departmentToDelete?.name ?? '',
+                    branchToDelete?.name ?? '',
                 )}
                 loading={deleting}
-                open={Boolean(departmentToDelete)}
+                open={Boolean(branchToDelete)}
                 title={t('common.confirmDelete')}
                 tone="danger"
-                onCancel={() => setDepartmentToDelete(null)}
+                onCancel={() => setBranchToDelete(null)}
                 onConfirm={() => void handleConfirmDelete()}
             />
         </section>

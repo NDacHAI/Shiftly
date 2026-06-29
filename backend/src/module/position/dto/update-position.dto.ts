@@ -1,4 +1,4 @@
-import {
+﻿import {
     IsBoolean,
     IsNotEmpty,
     IsOptional,
@@ -16,7 +16,7 @@ export class UpdatePositionDto {
 
     @IsOptional()
     @IsUUID()
-    departmentId?: string;
+    branchId?: string;
 
     @IsOptional()
     @IsString()

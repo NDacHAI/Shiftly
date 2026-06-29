@@ -1,11 +1,11 @@
-import { type Department } from '@/features/departments/types';
+﻿import { type Branch } from '@/features/branches/types';
 
 export type Position = {
     id: string;
     code: string;
     name: string;
-    departmentId: string;
-    department: Department;
+    branchId: string;
+    branch: Branch;
     description: string | null;
     status: boolean;
     createdAt: string;
@@ -15,7 +15,7 @@ export type Position = {
 export type PositionPayload = {
     code: string;
     name: string;
-    departmentId: string;
+    branchId: string;
     description?: string;
     status: boolean;
 };

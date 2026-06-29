@@ -1,4 +1,4 @@
-import { getApiErrorMessage } from '@/lib/api-error';
+﻿import { getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
     type CreateEmployeeAccountPayload,
@@ -17,7 +17,7 @@ type ListEmployeesParams = {
     page: number;
     limit: number;
     search?: string;
-    departmentId?: string;
+    branchId?: string;
     positionId?: string;
     status?: EmployeeStatus;
     sortBy: EmployeeSortField;

@@ -1,6 +1,6 @@
-export const routes = {
+﻿export const routes = {
     dashboard: '/',
-    departments: '/departments',
+    branches: '/branches',
     positions: '/positions',
     employees: '/employees',
     employeeDetail: '/employees/:id',

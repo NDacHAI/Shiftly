@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+﻿import { Transform, Type } from 'class-transformer';
 import {
     IsBoolean,
     IsIn,
@@ -36,7 +36,7 @@ export class PositionQueryDto {
 
     @IsOptional()
     @IsUUID()
-    departmentId?: string;
+    branchId?: string;
 
     @IsOptional()
     @Transform(({ value }: { value: unknown }) => {

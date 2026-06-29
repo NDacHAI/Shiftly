@@ -1,4 +1,4 @@
-import { Transform } from 'class-transformer';
+﻿import { Transform } from 'class-transformer';
 import {
     IsArray,
     IsEmail,
@@ -51,7 +51,7 @@ export class CreateEmployeeDto {
     @IsOptional()
     @IsArray()
     @IsUUID('4', { each: true })
-    departmentIds?: string[];
+    branchIds?: string[];
 
     @IsOptional()
     @IsArray()

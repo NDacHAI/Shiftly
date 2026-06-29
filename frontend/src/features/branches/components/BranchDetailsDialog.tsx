@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui';
+﻿import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { type Department } from '../types';
+import { type Branch } from '../types';
 
-type DepartmentDetailsDialogProps = {
-    department: Department;
+type BranchDetailsDialogProps = {
+    branch: Branch;
     onClose: () => void;
 };
 
@@ -14,19 +14,19 @@ function formatDate(value: string) {
     }).format(new Date(value));
 }
 
-export function DepartmentDetailsDialog({
-    department,
+export function BranchDetailsDialog({
+    branch,
     onClose,
-}: DepartmentDetailsDialogProps) {
+}: BranchDetailsDialogProps) {
     const { t } = useI18n();
     const details = [
-        [t('common.description'), department.description || '-'],
+        [t('common.description'), branch.description || '-'],
         [
             t('common.status'),
-            department.status ? t('common.active') : t('common.inactive'),
+            branch.status ? t('common.active') : t('common.inactive'),
         ],
-        [t('common.createdAt'), formatDate(department.createdAt)],
-        [t('common.updatedAt'), formatDate(department.updatedAt)],
+        [t('common.createdAt'), formatDate(branch.createdAt)],
+        [t('common.updatedAt'), formatDate(branch.updatedAt)],
     ];
 
     return (
@@ -39,10 +39,10 @@ export function DepartmentDetailsDialog({
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <p className="text-xs font-bold tracking-wider text-violet-600 uppercase">
-                            {department.code}
+                            {branch.code}
                         </p>
                         <h2 className="mt-1 text-xl font-bold text-slate-950">
-                            {department.name}
+                            {branch.name}
                         </h2>
                     </div>
                     <Button onClick={onClose} size="sm" variant="ghost">

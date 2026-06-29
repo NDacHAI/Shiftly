@@ -1,4 +1,4 @@
-import {
+﻿import {
     BadRequestException,
     ConflictException,
     Injectable,
@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, In, QueryFailedError, Repository } from 'typeorm';
-import { Department } from '@/module/department/entities/department.entity';
+import { Branch } from '@/module/branch/entities/branch.entity';
 import { Position } from '@/module/position/entities/position.entity';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { EmployeeQueryDto } from './dto/employee-query.dto';
@@ -32,8 +32,8 @@ export class EmployeeService {
     constructor(
         @InjectRepository(Employee)
         private readonly employeeRepository: Repository<Employee>,
-        @InjectRepository(Department)
-        private readonly departmentRepository: Repository<Department>,
+        @InjectRepository(Branch)
+        private readonly branchRepository: Repository<Branch>,
         @InjectRepository(Position)
         private readonly positionRepository: Repository<Position>,
         private readonly userService: UserService,
@@ -48,8 +48,8 @@ export class EmployeeService {
         await this.ensureEmployeeCodeUnique(employeeCode);
         await this.ensureEmailUnique(email);
 
-        const [departments, positions] = await Promise.all([
-            this.findDepartments(payload.departmentIds ?? []),
+        const [branches, positions] = await Promise.all([
+            this.findBranches(payload.branchIds ?? []),
             this.findPositions(payload.positionIds ?? []),
         ]);
 
@@ -64,7 +64,7 @@ export class EmployeeService {
             hireDate: payload.hireDate ?? this.today(),
             address: this.normalizeNullable(payload.address),
             status: payload.status ?? EmployeeStatus.Active,
-            departments,
+            branches,
             positions,
         });
 
@@ -80,7 +80,7 @@ export class EmployeeService {
     async findAll(query: EmployeeQueryDto): Promise<PaginatedEmployees> {
         const queryBuilder = this.employeeRepository
             .createQueryBuilder('employee')
-            .leftJoinAndSelect('employee.departments', 'department')
+            .leftJoinAndSelect('employee.branches', 'Branch')
             .leftJoinAndSelect('employee.positions', 'position')
             .skip((query.page - 1) * query.limit)
             .take(query.limit);
@@ -109,11 +109,11 @@ export class EmployeeService {
             );
         }
 
-        if (query.departmentId) {
+        if (query.branchId) {
             queryBuilder
-                .innerJoin('employee.departments', 'filterDepartment')
-                .andWhere('filterDepartment.id = :departmentId', {
-                    departmentId: query.departmentId,
+                .innerJoin('employee.branches', 'filterBranch')
+                .andWhere('filterbranch.id = :branchId', {
+                    branchId: query.branchId,
                 });
         }
 
@@ -147,7 +147,7 @@ export class EmployeeService {
     async findOne(id: string): Promise<Employee> {
         const employee = await this.employeeRepository.findOne({
             where: { id },
-            relations: { departments: true, positions: true },
+            relations: { branches: true, positions: true },
         });
 
         if (!employee) {
@@ -160,7 +160,7 @@ export class EmployeeService {
     async findByEmail(email: string): Promise<Employee> {
         const employee = await this.employeeRepository.findOne({
             where: { email },
-            relations: { departments: true, positions: true },
+            relations: { branches: true, positions: true },
         });
 
         if (!employee) {
@@ -217,9 +217,9 @@ export class EmployeeService {
         if (payload.status !== undefined) {
             employee.status = payload.status;
         }
-        if (payload.departmentIds !== undefined) {
-            employee.departments = await this.findDepartments(
-                payload.departmentIds,
+        if (payload.branchIds !== undefined) {
+            employee.branches = await this.findBranches(
+                payload.branchIds,
             );
         }
         if (payload.positionIds !== undefined) {
@@ -292,7 +292,7 @@ export class EmployeeService {
         );
     }
 
-    //tách ra file riêng
+    //t谩ch ra file ri锚ng
     private async generateEmployeeCode(): Promise<string> {
         const latest = await this.employeeRepository
             .createQueryBuilder('employee')
@@ -312,17 +312,17 @@ export class EmployeeService {
         return `NV${nextNumber.toString().padStart(4, '0')}`;
     }
 
-    private async findDepartments(ids: string[]): Promise<Department[]> {
+    private async findBranches(ids: string[]): Promise<Branch[]> {
         const uniqueIds = [...new Set(ids)];
-        const departments = await this.departmentRepository.find({
+        const branches = await this.branchRepository.find({
             where: { id: In(uniqueIds) },
         });
 
-        if (departments.length !== uniqueIds.length) {
-            throw new BadRequestException('Department does not exist');
+        if (branches.length !== uniqueIds.length) {
+            throw new BadRequestException('Branch does not exist');
         }
 
-        return departments;
+        return branches;
     }
 
     private async findPositions(ids: string[]): Promise<Position[]> {

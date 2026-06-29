@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faEye,
@@ -21,8 +21,8 @@ import {
 import { roles, type Role } from '@/constants/roles';
 import { routes } from '@/constants/routes';
 import { useI18n } from '@/i18n';
-import { listDepartments } from '@/features/departments/api/departments.api';
-import { type Department } from '@/features/departments/types';
+import { listBranches } from '@/features/branches/api/branches.api';
+import { type Branch } from '@/features/branches/types';
 import { listPositions } from '@/features/positions/api/positions.api';
 import { type Position } from '@/features/positions/types';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -65,13 +65,13 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const [employees, setEmployees] = useState<Employee[]>([]);
-    const [departments, setDepartments] = useState<Department[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
     const [positions, setPositions] = useState<Position[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [total, setTotal] = useState(0);
     const [search, setSearch] = useState('');
-    const [departmentId, setDepartmentId] = useState('');
+    const [branchId, setBranchId] = useState('');
     const [positionId, setPositionId] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [sortBy, setSortBy] = useState<EmployeeSortField>('createdAt');
@@ -100,7 +100,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                 page,
                 limit: pageSize,
                 search: debouncedSearch || undefined,
-                departmentId: departmentId || undefined,
+                branchId: branchId || undefined,
                 positionId: positionId || undefined,
                 status:
                     statusFilter === 'all' ? undefined : statusFilter,
@@ -122,7 +122,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
     }, [
         canList,
         debouncedSearch,
-        departmentId,
+        branchId,
         page,
         positionId,
         showToast,
@@ -146,7 +146,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
         let active = true;
 
         void Promise.all([
-            listDepartments({
+            listBranches({
                 page: 1,
                 limit: 100,
                 sortBy: 'name',
@@ -159,9 +159,9 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                 sortOrder: 'ASC',
             }),
         ])
-            .then(([departmentResponse, positionResponse]) => {
+            .then(([BranchResponse, positionResponse]) => {
                 if (!active) return;
-                setDepartments(departmentResponse.data);
+                setBranches(BranchResponse.data);
                 setPositions(positionResponse.data);
             })
             .catch((error) => {
@@ -315,20 +315,20 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                             />
                         </label>
                         <DropdownSelect
-                            ariaLabel={t('common.department')}
+                            ariaLabel={t('common.branch')}
                             options={[
                                 {
                                     value: '',
-                                    label: t('common.allDepartments'),
+                                    label: t('common.allBranches'),
                                 },
-                                ...departments.map((department) => ({
-                                    value: department.id,
-                                    label: department.name,
+                                ...branches.map((branch) => ({
+                                    value: branch.id,
+                                    label: branch.name,
                                 })),
                             ]}
-                            value={departmentId}
+                            value={branchId}
                             onChange={(value) => {
-                                setDepartmentId(value);
+                                setBranchId(value);
                                 setPage(1);
                             }}
                         />
@@ -523,7 +523,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
 
             {showForm && (
                 <EmployeeFormDialog
-                    departments={departments}
+                    branches={branches}
                     editing={editing}
                     positions={positions}
                     onClose={() => setShowForm(false)}

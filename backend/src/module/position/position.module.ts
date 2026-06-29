@@ -1,14 +1,14 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '@/module/auth/auth.module';
-import { Department } from '@/module/department/entities/department.entity';
+import { Branch } from '@/module/branch/entities/branch.entity';
 import { Position } from './entities/position.entity';
 import { PositionController } from './position.controller';
 import { PositionService } from './position.service';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Position, Department]),
+        TypeOrmModule.forFeature([Position, Branch]),
         AuthModule,
     ],
     controllers: [PositionController],

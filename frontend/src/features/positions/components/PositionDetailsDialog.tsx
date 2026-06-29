@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui';
+﻿import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { type Position } from '../types';
 
@@ -20,7 +20,7 @@ export function PositionDetailsDialog({
 }: PositionDetailsDialogProps) {
     const { t } = useI18n();
     const details = [
-        [t('common.department'), position.department.name],
+        [t('common.branch'), position.branch.name],
         [t('common.description'), position.description || '-'],
         [
             t('common.status'),

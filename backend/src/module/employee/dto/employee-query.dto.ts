@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+﻿import { Transform, Type } from 'class-transformer';
 import {
     IsEnum,
     IsIn,
@@ -41,7 +41,7 @@ export class EmployeeQueryDto {
 
     @IsOptional()
     @IsUUID()
-    departmentId?: string;
+    branchId?: string;
 
     @IsOptional()
     @IsUUID()

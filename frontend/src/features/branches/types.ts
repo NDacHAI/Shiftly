@@ -1,4 +1,4 @@
-export type Department = {
+﻿export type Branch = {
     id: string;
     code: string;
     name: string;
@@ -8,20 +8,20 @@ export type Department = {
     updatedAt: string;
 };
 
-export type DepartmentPayload = {
+export type BranchPayload = {
     code: string;
     name: string;
     description?: string;
     status: boolean;
 };
 
-export type UpdateDepartmentPayload = DepartmentPayload;
+export type UpdateBranchPayload = BranchPayload;
 
-export type DepartmentSortField = 'code' | 'name' | 'status' | 'createdAt';
+export type BranchSortField = 'code' | 'name' | 'status' | 'createdAt';
 export type SortOrder = 'ASC' | 'DESC';
 
-export type DepartmentListResponse = {
-    data: Department[];
+export type BranchListResponse = {
+    data: Branch[];
     meta: {
         page: number;
         limit: number;

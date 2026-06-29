@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+﻿import { Transform, Type } from 'class-transformer';
 import {
     IsIn,
     IsInt,
@@ -8,16 +8,16 @@ import {
     Min,
 } from 'class-validator';
 
-export const departmentSortFields = [
+export const branchSortFields = [
     'code',
     'name',
     'status',
     'createdAt',
 ] as const;
 
-export type DepartmentSortField = (typeof departmentSortFields)[number];
+export type BranchSortField = (typeof branchSortFields)[number];
 
-export class DepartmentQueryDto {
+export class BranchQueryDto {
     @IsOptional()
     @Type(() => Number)
     @IsInt()
@@ -39,8 +39,8 @@ export class DepartmentQueryDto {
     search?: string;
 
     @IsOptional()
-    @IsIn(departmentSortFields)
-    sortBy: DepartmentSortField = 'createdAt';
+    @IsIn(branchSortFields)
+    sortBy: BranchSortField = 'createdAt';
 
     @IsOptional()
     @Transform(({ value }: { value: unknown }) =>

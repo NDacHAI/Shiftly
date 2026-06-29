@@ -1,9 +1,9 @@
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
+﻿import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
 import { Button, DropdownSelect } from '@/components/ui';
-import { type Department } from '@/features/departments/types';
+import { type Branch } from '@/features/branches/types';
 import { useI18n } from '@/i18n';
 import { getPositionErrorMessage } from '../api/positions.api';
 import {
@@ -13,7 +13,7 @@ import {
 } from '../types';
 
 type PositionFormDialogProps = {
-    departments: Department[];
+    branches: Branch[];
     editing: Position | null;
     onClose: () => void;
     onSubmit: (
@@ -25,7 +25,7 @@ const fieldClass =
     'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
 
 export function PositionFormDialog({
-    departments,
+    branches,
     editing,
     onClose,
     onSubmit,
@@ -43,13 +43,13 @@ export function PositionFormDialog({
         defaultValues: {
             code: editing?.code ?? '',
             name: editing?.name ?? '',
-            departmentId: editing?.departmentId ?? '',
+            branchId: editing?.branchId ?? '',
             description: editing?.description ?? '',
             status: editing?.status ?? true,
         },
     });
     const status = useWatch({ control, name: 'status' });
-    const departmentId = useWatch({ control, name: 'departmentId' });
+    const branchId = useWatch({ control, name: 'branchId' });
 
     async function handleValidSubmit(values: PositionPayload) {
         try {
@@ -57,7 +57,7 @@ export function PositionFormDialog({
                 editing
                     ? {
                           name: values.name,
-                          departmentId: values.departmentId,
+                          branchId: values.branchId,
                           description: values.description,
                           status: values.status,
                       }
@@ -155,38 +155,38 @@ export function PositionFormDialog({
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             <span>
-                                {t('common.department')}
+                                {t('common.branch')}
                                 <span className="ml-1 text-red-500">*</span>
                             </span>
                             <input
                                 type="hidden"
-                                {...register('departmentId', {
+                                {...register('branchId', {
                                     required: t('common.required'),
                                 })}
                             />
                             <div className="dropdown-select-field">
                                 <DropdownSelect
-                                    ariaLabel={t('common.department')}
+                                    ariaLabel={t('common.branch')}
                                     options={[
                                         {
                                             value: '',
-                                            label: t('employees.selectDepartment'),
+                                            label: t('employees.selectBranch'),
                                         },
-                                        ...departments
+                                        ...branches
                                             .filter(
-                                                (department) =>
-                                                    department.status ||
-                                                    department.id ===
-                                                        editing?.departmentId,
+                                                (branch) =>
+                                                    branch.status ||
+                                                    branch.id ===
+                                                        editing?.branchId,
                                             )
-                                            .map((department) => ({
-                                                value: department.id,
-                                                label: department.name,
+                                            .map((branch) => ({
+                                                value: branch.id,
+                                                label: branch.name,
                                             })),
                                     ]}
-                                    value={departmentId}
+                                    value={branchId}
                                     onChange={(value) =>
-                                        setValue('departmentId', value, {
+                                        setValue('branchId', value, {
                                             shouldDirty: true,
                                             shouldValidate: true,
                                         })
@@ -194,7 +194,7 @@ export function PositionFormDialog({
                                 />
                             </div>
                             <span className="min-h-4 text-xs font-normal text-red-400">
-                                {errors.departmentId?.message}
+                                {errors.branchId?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">

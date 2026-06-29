@@ -1,8 +1,8 @@
-import { type ReactNode } from 'react';
+﻿import { type ReactNode } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
 import { Button, DropdownSelect } from '@/components/ui';
-import { type Department } from '@/features/departments/types';
+import { type Branch } from '@/features/branches/types';
 import { type Position } from '@/features/positions/types';
 import { useI18n } from '@/i18n';
 import { getEmployeeErrorMessage } from '../../api/employees.api';
@@ -15,7 +15,7 @@ import {
 
 type EmployeeProfileTabProps = {
     canManage: boolean;
-    departments: Department[];
+    branches: Branch[];
     employee: Employee;
     onSave: (payload: UpdateEmployeePayload) => Promise<void>;
     positions: Position[];
@@ -23,9 +23,9 @@ type EmployeeProfileTabProps = {
 
 type EmployeeProfileFormValues = Omit<
     EmployeePayload,
-    'departmentIds' | 'positionIds'
+    'branchIds' | 'positionIds'
 > & {
-    departmentId: string;
+    branchId: string;
     positionId: string;
 };
 
@@ -94,8 +94,8 @@ function ReadonlyProfile({ employee }: { employee: Employee }) {
             title: t('employees.workInfo'),
             items: [
                 {
-                    label: t('common.departments'),
-                    value: joinNames(employee.departments),
+                    label: t('common.branches'),
+                    value: joinNames(employee.branches),
                 },
                 { label: t('common.positions'), value: joinNames(employee.positions) },
                 {
@@ -153,7 +153,7 @@ function FieldLabel({
 
 export function EmployeeProfileTab({
     canManage,
-    departments,
+    branches,
     employee,
     onSave,
     positions,
@@ -176,7 +176,7 @@ export function EmployeeProfileTab({
             phoneNumber: employee.phoneNumber ?? '',
             dateOfBirth: employee.dateOfBirth ?? '',
             gender: employee.gender ?? '',
-            departmentId: employee.departments[0]?.id ?? '',
+            branchId: employee.branches[0]?.id ?? '',
             positionId: employee.positions[0]?.id ?? '',
             hireDate: employee.hireDate,
             address: employee.address ?? '',
@@ -185,7 +185,7 @@ export function EmployeeProfileTab({
     });
     const status = useWatch({ control, name: 'status' }) ?? 'Active';
     const gender = useWatch({ control, name: 'gender' }) ?? '';
-    const departmentId = useWatch({ control, name: 'departmentId' });
+    const branchId = useWatch({ control, name: 'branchId' });
     const positionId = useWatch({ control, name: 'positionId' });
 
     async function handleValidSubmit(values: EmployeeProfileFormValues) {
@@ -198,7 +198,7 @@ export function EmployeeProfileTab({
                 phoneNumber: values.phoneNumber?.trim() || undefined,
                 dateOfBirth: values.dateOfBirth || undefined,
                 gender: values.gender?.trim() || undefined,
-                departmentIds: values.departmentId ? [values.departmentId] : [],
+                branchIds: values.branchId ? [values.branchId] : [],
                 positionIds: values.positionId ? [values.positionId] : [],
                 hireDate: values.hireDate || undefined,
                 address: values.address?.trim() || undefined,
@@ -369,24 +369,24 @@ export function EmployeeProfileTab({
                     {t('employees.workInfo')}
                 </h3>
                 <div className={gridClass}>
-                    <FieldLabel label={t('common.departments')}>
-                        <input type="hidden" {...register('departmentId')} />
+                    <FieldLabel label={t('common.branches')}>
+                        <input type="hidden" {...register('branchId')} />
                         <div className="dropdown-select-field">
                             <DropdownSelect
-                                ariaLabel={t('common.departments')}
+                                ariaLabel={t('common.branches')}
                                 options={[
                                     {
                                         value: '',
-                                        label: t('employees.selectDepartment'),
+                                        label: t('employees.selectBranch'),
                                     },
-                                    ...departments.map((department) => ({
-                                        value: department.id,
-                                        label: department.name,
+                                    ...branches.map((branch) => ({
+                                        value: branch.id,
+                                        label: branch.name,
                                     })),
                                 ]}
-                                value={departmentId}
+                                value={branchId}
                                 onChange={(value) =>
-                                    setValue('departmentId', value, {
+                                    setValue('branchId', value, {
                                         shouldDirty: true,
                                         shouldValidate: true,
                                     })
