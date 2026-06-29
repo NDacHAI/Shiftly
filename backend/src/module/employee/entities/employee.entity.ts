@@ -60,6 +60,7 @@ export class Employee {
     @ManyToMany(() => Department)
     @JoinTable({
         name: 'employee_departments',
+        synchronize: false,
         joinColumn: {
             name: 'employee_id',
             referencedColumnName: 'id',
@@ -74,6 +75,7 @@ export class Employee {
     @ManyToMany(() => Position)
     @JoinTable({
         name: 'employee_positions',
+        synchronize: false,
         joinColumn: {
             name: 'employee_id',
             referencedColumnName: 'id',

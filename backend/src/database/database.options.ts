@@ -1,3 +1,5 @@
+import { LegacyNamingStrategy } from './legacy-naming.strategy';
+
 type DatabaseEnvGetter = (key: string, required?: boolean) => string | undefined;
 
 export const createDatabaseOptions = (getEnv: DatabaseEnvGetter) => {
@@ -13,6 +15,7 @@ export const createDatabaseOptions = (getEnv: DatabaseEnvGetter) => {
         database: getEnv('DB_NAME'),
         synchronize: false,
         timezone: '+07:00',
+        namingStrategy: new LegacyNamingStrategy(),
         ...(sslEnabled && {
             ssl: {
                 ...(sslCa && { ca: sslCa.replace(/\\n/g, '\n') }),

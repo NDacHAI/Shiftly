@@ -1,4 +1,5 @@
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import { type AuthResponse } from '../types';
 
@@ -18,10 +19,11 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 
         return response.data;
     } catch (error) {
-        if (error instanceof AxiosError) {
-            throw new Error('Email or password is invalid', {
-                cause: error,
-            });
+        if (isAxiosError(error)) {
+            throw new Error(
+                getApiErrorMessage(error, 'Email or password is invalid'),
+                { cause: error },
+            );
         }
 
         throw error;
@@ -38,10 +40,11 @@ export async function changePassword(
     try {
         await api.post('/auth/change-password', payload);
     } catch (error) {
-        if (error instanceof AxiosError) {
-            throw new Error('Current password is invalid', {
-                cause: error,
-            });
+        if (isAxiosError(error)) {
+            throw new Error(
+                getApiErrorMessage(error, 'Current password is invalid'),
+                { cause: error },
+            );
         }
 
         throw error;

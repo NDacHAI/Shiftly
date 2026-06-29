@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
     type UpdateWorkShiftPayload,
@@ -54,15 +54,8 @@ export async function deleteWorkShift(id: string): Promise<void> {
 }
 
 export function getWorkShiftErrorMessage(error: unknown): string {
-    if (error instanceof AxiosError) {
-        const data = error.response?.data as
-            | { message?: string | string[] }
-            | undefined;
-        const message = data?.message;
-
-        if (Array.isArray(message)) return message.join(', ');
-        if (message) return message;
-    }
-
-    return 'Unable to process the request. Please try again.';
+    return getApiErrorMessage(
+        error,
+        'Unable to process the request. Please try again.',
+    );
 }

@@ -1,14 +1,14 @@
-import { AxiosError } from 'axios';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
+    type CreateEmployeeAccountPayload,
     type Employee,
     type EmployeeAccount,
     type EmployeeListResponse,
     type EmployeePayload,
-    type CreateEmployeeAccountPayload,
-    type ResetEmployeePasswordPayload,
     type EmployeeSortField,
     type EmployeeStatus,
+    type ResetEmployeePasswordPayload,
     type SortOrder,
     type UpdateEmployeePayload,
 } from '../types';
@@ -94,15 +94,8 @@ export async function resetEmployeePassword(
 }
 
 export function getEmployeeErrorMessage(error: unknown): string {
-    if (error instanceof AxiosError) {
-        const data = error.response?.data as
-            | { message?: string | string[] }
-            | undefined;
-        const message = data?.message;
-
-        if (Array.isArray(message)) return message.join(', ');
-        if (message) return message;
-    }
-
-    return 'Could not process the employee request. Please try again.';
+    return getApiErrorMessage(
+        error,
+        'Could not process the employee request. Please try again.',
+    );
 }

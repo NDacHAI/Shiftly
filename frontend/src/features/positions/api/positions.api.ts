@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
     type Position,
@@ -63,15 +63,5 @@ export async function deletePosition(id: string): Promise<void> {
 }
 
 export function getPositionErrorMessage(error: unknown): string {
-    if (error instanceof AxiosError) {
-        const data = error.response?.data as
-            | { message?: string | string[] }
-            | undefined;
-        const message = data?.message;
-
-        if (Array.isArray(message)) return message.join(', ');
-        if (message) return message;
-    }
-
-    return 'Không thể xử lý yêu cầu. Vui lòng thử lại.';
+    return getApiErrorMessage(error);
 }

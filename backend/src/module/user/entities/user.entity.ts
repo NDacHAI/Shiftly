@@ -50,16 +50,10 @@ export class User {
     })
     mustChangePassword!: boolean;
 
-    @Column({
-        name: 'employee_id',
-        type: 'varchar',
-        length: 36,
-        nullable: true,
-        unique: true,
-    })
+    @Column({ name: 'employee_id', type: 'varchar', length: 36, nullable: true })
     employeeId!: string | null;
 
-    @OneToOne(() => Employee, { nullable: true })
+    @OneToOne(() => Employee, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({
         name: 'employee_id',
         referencedColumnName: 'id',
