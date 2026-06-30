@@ -38,7 +38,7 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                 path={routes.branches}
                 element={
                     <PermissionRoute
-                        allowedRoles={[roles.admin]}
+                        allowedRoles={[roles.admin, roles.manager]}
                         userRole={user.role}
                     >
                         <Layout
@@ -47,7 +47,7 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                             user={user}
                             onLogout={onLogout}
                         >
-                            <BranchesPage />
+                            <BranchesPage canManage={user.role === roles.admin} />
                         </Layout>
                     </PermissionRoute>
                 }
@@ -119,28 +119,38 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
             <Route
                 path={routes.settings}
                 element={
-                    <Layout
-                        activeNavKey="nav.settings"
-                        titleKey="routes.settings"
-                        user={user}
-                        onLogout={onLogout}
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager, roles.user]}
+                        userRole={user.role}
                     >
-                        <SettingsPage />
-                    </Layout>
+                        <Layout
+                            activeNavKey="nav.settings"
+                            titleKey="routes.settings"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <SettingsPage />
+                        </Layout>
+                    </PermissionRoute>
                 }
             />
 
             <Route
                 path={routes.workShifts}
                 element={
-                    <Layout
-                        activeNavKey="nav.workShifts"
-                        titleKey="routes.workShifts"
-                        user={user}
-                        onLogout={onLogout}
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager]}
+                        userRole={user.role}
                     >
-                        <WorkShiftPage canManage={user.role === roles.admin} />
-                    </Layout>
+                        <Layout
+                            activeNavKey="nav.workShifts"
+                            titleKey="routes.workShifts"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <WorkShiftPage canManage={user.role === roles.admin} />
+                        </Layout>
+                    </PermissionRoute>
                 }
             />
             <Route path="*" element={<NotFoundPage />} />

@@ -77,13 +77,29 @@ export class EmployeeService {
         }
     }
 
-    async findAll(query: EmployeeQueryDto): Promise<PaginatedEmployees> {
+    async findAll(
+        query: EmployeeQueryDto,
+        allowedBranchIds?: string[],
+    ): Promise<PaginatedEmployees> {
         const queryBuilder = this.employeeRepository
             .createQueryBuilder('employee')
+            .distinct(true)
             .leftJoinAndSelect('employee.branches', 'Branch')
             .leftJoinAndSelect('employee.positions', 'position')
             .skip((query.page - 1) * query.limit)
             .take(query.limit);
+
+        if (allowedBranchIds) {
+            if (allowedBranchIds.length === 0) {
+                queryBuilder.andWhere('1 = 0');
+            } else {
+                queryBuilder
+                    .innerJoin('employee.branches', 'scopeBranch')
+                    .andWhere('scopeBranch.id IN (:...allowedBranchIds)', {
+                        allowedBranchIds,
+                    });
+            }
+        }
 
         if (query.sortBy === 'fullName') {
             queryBuilder
@@ -112,7 +128,7 @@ export class EmployeeService {
         if (query.branchId) {
             queryBuilder
                 .innerJoin('employee.branches', 'filterBranch')
-                .andWhere('filterbranch.id = :branchId', {
+                .andWhere('filterBranch.id = :branchId', {
                     branchId: query.branchId,
                 });
         }
@@ -168,6 +184,10 @@ export class EmployeeService {
         }
 
         return employee;
+    }
+
+    findManagedBranchIds(userId: number): Promise<string[]> {
+        return this.userService.findManagedBranchIds(userId);
     }
 
     async update(id: string, payload: UpdateEmployeeDto): Promise<Employee> {

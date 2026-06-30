@@ -1,10 +1,13 @@
-﻿import {
+import { Type } from 'class-transformer';
+import {
     IsBoolean,
     IsNotEmpty,
+    IsNumber,
     IsOptional,
     IsString,
     IsUUID,
     MaxLength,
+    Min,
 } from 'class-validator';
 
 export class UpdatePositionDto {
@@ -21,6 +24,12 @@ export class UpdatePositionDto {
     @IsOptional()
     @IsString()
     description?: string;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber({ maxDecimalPlaces: 2 })
+    @Min(0)
+    hourlyRate?: number;
 
     @IsOptional()
     @IsBoolean()

@@ -27,7 +27,7 @@ const navigation: Array<{
             labelKey: 'nav.branches',
             icon: faBuilding,
             href: routes.branches,
-            allowedRoles: [roles.admin],
+            allowedRoles: [roles.admin, roles.manager],
         },
         {
             labelKey: 'nav.positions',

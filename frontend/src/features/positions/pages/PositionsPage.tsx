@@ -68,6 +68,13 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
     const [deleting, setDeleting] = useState(false);
     const debouncedSearch = useDebounce(search);
 
+    function formatCurrency(value: string) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(Number(value));
+    }
+
     const loadPositions = useCallback(async () => {
         setLoading(true);
 
@@ -308,7 +315,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[900px] table-fixed">
+                    <table className="w-full min-w-[980px] table-fixed">
                         <thead className="bg-slate-50">
                             <tr className="border-b border-slate-200">
                                 <th className="w-[16%] px-4 py-3 text-center text-xs text-slate-600">
@@ -341,6 +348,9 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                 <th className="w-[20%] px-4 py-3 text-center text-xs text-slate-600">
                                     {t('common.branch')}
                                 </th>
+                                <th className="w-[14%] px-4 py-3 text-center text-xs text-slate-600">
+                                    {t('positions.hourlyRate')}
+                                </th>
                                 <th className="w-[16%] px-4 py-3 text-center text-xs text-slate-600">
                                     {t('common.status')}
                                 </th>
@@ -369,6 +379,9 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                         </td>
                                         <td className="px-4 py-3 text-center text-sm">
                                             {position.branch.name}
+                                        </td>
+                                        <td className="px-4 py-3 text-center text-sm font-medium">
+                                            {formatCurrency(position.hourlyRate)}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <button
@@ -446,7 +459,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                 ))}
                             {!loading && positions.length === 0 && (
                                 <tr>
-                                    <td colSpan={6}>
+                                    <td colSpan={7}>
                                         <EmptyState
                                             description={t(
                                                 'positions.noResultsDescription',

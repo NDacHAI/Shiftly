@@ -143,6 +143,19 @@ export class UserService {
         });
     }
 
+    async findManagedBranchIds(userId: number): Promise<string[]> {
+        const user = await this.userRepository.findOne({
+            where: { id: userId },
+            relations: {
+                employee: {
+                    branches: true,
+                },
+            },
+        });
+
+        return user?.employee?.branches.map((branch) => branch.id) ?? [];
+    }
+
     async ensureEmployeeHasNoAccount(employeeId: string): Promise<void> {
         const hasAccount = await this.findByEmployeeId(employeeId);
 

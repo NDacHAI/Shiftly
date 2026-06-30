@@ -7,6 +7,7 @@ export type Position = {
     branchId: string;
     branch: Branch;
     description: string | null;
+    hourlyRate: string;
     status: boolean;
     createdAt: string;
     updatedAt: string;
@@ -17,6 +18,7 @@ export type PositionPayload = {
     name: string;
     branchId: string;
     description?: string;
+    hourlyRate?: number;
     status: boolean;
 };
 

@@ -42,6 +42,7 @@ export class PositionService {
             name: payload.name.trim(),
             branchId: payload.branchId,
             description: this.normalizeDescription(payload.description),
+            hourlyRate: this.normalizeHourlyRate(payload.hourlyRate),
             status: payload.status ?? true,
         });
 
@@ -54,13 +55,27 @@ export class PositionService {
         }
     }
 
-    async findAll(query: PositionQueryDto): Promise<PaginatedPositions> {
+    async findAll(
+        query: PositionQueryDto,
+        allowedBranchIds?: string[],
+    ): Promise<PaginatedPositions> {
         const queryBuilder = this.positionRepository
             .createQueryBuilder('position')
             .leftJoinAndSelect('position.branch', 'Branch')
             .orderBy(`position.${query.sortBy}`, query.sortOrder)
             .skip((query.page - 1) * query.limit)
             .take(query.limit);
+
+        if (allowedBranchIds) {
+            if (allowedBranchIds.length === 0) {
+                queryBuilder.andWhere('1 = 0');
+            } else {
+                queryBuilder.andWhere(
+                    'position.branchId IN (:...allowedBranchIds)',
+                    { allowedBranchIds },
+                );
+            }
+        }
 
         if (query.search) {
             queryBuilder.andWhere(
@@ -99,13 +114,19 @@ export class PositionService {
         };
     }
 
-    async findOne(id: string): Promise<Position> {
+    async findOne(
+        id: string,
+        allowedBranchIds?: string[],
+    ): Promise<Position> {
         const position = await this.positionRepository.findOne({
             where: { id },
             relations: { branch: true },
         });
 
-        if (!position) {
+        if (
+            !position ||
+            (allowedBranchIds && !allowedBranchIds.includes(position.branchId))
+        ) {
             throw new NotFoundException('Position not found');
         }
 
@@ -117,6 +138,7 @@ export class PositionService {
             payload.name === undefined &&
             payload.branchId === undefined &&
             payload.description === undefined &&
+            payload.hourlyRate === undefined &&
             payload.status === undefined
         ) {
             throw new BadRequestException('At least one field must be provided');
@@ -137,6 +159,10 @@ export class PositionService {
             position.description = this.normalizeDescription(
                 payload.description,
             );
+        }
+
+        if (payload.hourlyRate !== undefined) {
+            position.hourlyRate = this.normalizeHourlyRate(payload.hourlyRate);
         }
 
         if (payload.status !== undefined) {
@@ -198,6 +224,10 @@ export class PositionService {
     private normalizeDescription(value?: string | null): string | null {
         const description = value?.trim();
         return description ? description : null;
+    }
+
+    private normalizeHourlyRate(value?: number): string {
+        return Number(value ?? 0).toFixed(2);
     }
 
     private handleDuplicateError(error: unknown): void {

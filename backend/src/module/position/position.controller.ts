@@ -11,12 +11,15 @@ import {
     Post,
     Put,
     Query,
+    Req,
     UseGuards,
 } from '@nestjs/common';
 import { UserRole } from '@/common/enum/role.enum';
 import { Roles } from '@/module/auth/decorators/roles.decorator';
+import { AuthenticatedRequest } from '@/module/auth/guards/jwt-auth.guard';
 import { JwtAuthGuard } from '@/module/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/module/auth/guards/roles.guard';
+import { UserService } from '@/module/user/user.service';
 import { CreatePositionDto } from './dto/create-position.dto';
 import { PositionQueryDto } from './dto/position-query.dto';
 import { UpdatePositionStatusDto } from './dto/update-position-status.dto';
@@ -28,16 +31,31 @@ import { PaginatedPositions, PositionService } from './position.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.Admin, UserRole.Manager)
 export class PositionController {
-    constructor(private readonly positionService: PositionService) {}
+    constructor(
+        private readonly positionService: PositionService,
+        private readonly userService: UserService,
+    ) {}
 
     @Get()
-    findAll(@Query() query: PositionQueryDto): Promise<PaginatedPositions> {
-        return this.positionService.findAll(query);
+    async findAll(
+        @Query() query: PositionQueryDto,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<PaginatedPositions> {
+        return this.positionService.findAll(
+            query,
+            await this.resolveAllowedBranchIds(request),
+        );
     }
 
     @Get(':id')
-    findOne(@Param('id', new ParseUUIDPipe()) id: string): Promise<Position> {
-        return this.positionService.findOne(id);
+    async findOne(
+        @Param('id', new ParseUUIDPipe()) id: string,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<Position> {
+        return this.positionService.findOne(
+            id,
+            await this.resolveAllowedBranchIds(request),
+        );
     }
 
     @Post()
@@ -69,5 +87,15 @@ export class PositionController {
     @HttpCode(HttpStatus.NO_CONTENT)
     remove(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
         return this.positionService.remove(id);
+    }
+
+    private resolveAllowedBranchIds(
+        request: AuthenticatedRequest,
+    ): Promise<string[] | undefined> {
+        if (request.user.role !== UserRole.Manager) {
+            return Promise.resolve(undefined);
+        }
+
+        return this.userService.findManagedBranchIds(request.user.sub);
     }
 }

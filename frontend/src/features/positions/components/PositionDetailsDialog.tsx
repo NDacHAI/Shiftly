@@ -14,6 +14,13 @@ function formatDate(value: string) {
     }).format(new Date(value));
 }
 
+function formatCurrency(value: string) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+    }).format(Number(value));
+}
+
 export function PositionDetailsDialog({
     position,
     onClose,
@@ -21,6 +28,7 @@ export function PositionDetailsDialog({
     const { t } = useI18n();
     const details = [
         [t('common.branch'), position.branch.name],
+        [t('positions.hourlyRate'), formatCurrency(position.hourlyRate)],
         [t('common.description'), position.description || '-'],
         [
             t('common.status'),

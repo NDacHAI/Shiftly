@@ -45,11 +45,23 @@ export function PositionFormDialog({
             name: editing?.name ?? '',
             branchId: editing?.branchId ?? '',
             description: editing?.description ?? '',
+            hourlyRate: Number(editing?.hourlyRate ?? 0),
             status: editing?.status ?? true,
         },
     });
     const status = useWatch({ control, name: 'status' });
     const branchId = useWatch({ control, name: 'branchId' });
+    const hourlyRate = useWatch({ control, name: 'hourlyRate' });
+
+    function formatCurrency(value: number | undefined) {
+        const numericValue =
+            typeof value === 'number' && Number.isFinite(value) ? value : 0;
+
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(numericValue);
+    }
 
     async function handleValidSubmit(values: PositionPayload) {
         try {
@@ -59,9 +71,13 @@ export function PositionFormDialog({
                           name: values.name,
                           branchId: values.branchId,
                           description: values.description,
+                          hourlyRate: Number(values.hourlyRate ?? 0),
                           status: values.status,
                       }
-                    : values,
+                    : {
+                          ...values,
+                          hourlyRate: Number(values.hourlyRate ?? 0),
+                      },
             );
         } catch (error) {
             const message = getPositionErrorMessage(error);
@@ -195,6 +211,28 @@ export function PositionFormDialog({
                             </div>
                             <span className="min-h-4 text-xs font-normal text-red-400">
                                 {errors.branchId?.message}
+                            </span>
+                        </label>
+                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            {t('positions.hourlyRate')}
+                            <input
+                                className={fieldClass}
+                                min={0}
+                                step="1000"
+                                type="number"
+                                {...register('hourlyRate', {
+                                    min: {
+                                        message: t('common.required'),
+                                        value: 0,
+                                    },
+                                    valueAsNumber: true,
+                                })}
+                            />
+                            <span className="text-xs font-medium text-slate-500">
+                                {formatCurrency(hourlyRate)}
+                            </span>
+                            <span className="min-h-4 text-xs font-normal text-red-400">
+                                {errors.hourlyRate?.message}
                             </span>
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">

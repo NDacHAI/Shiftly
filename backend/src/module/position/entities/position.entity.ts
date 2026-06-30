@@ -33,6 +33,15 @@ export class Position {
     @Column({ type: 'text', nullable: true })
     description!: string | null;
 
+    @Column({
+        name: 'hourly_rate',
+        type: 'decimal',
+        precision: 12,
+        scale: 2,
+        default: 0,
+    })
+    hourlyRate!: string;
+
     @Index()
     @Column({ default: true })
     status!: boolean;

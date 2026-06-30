@@ -35,8 +35,14 @@ export class EmployeeController {
 
     @Get()
     @Roles(UserRole.Admin, UserRole.Manager)
-    findAll(@Query() query: EmployeeQueryDto): Promise<PaginatedEmployees> {
-        return this.employeeService.findAll(query);
+    async findAll(
+        @Query() query: EmployeeQueryDto,
+        @Req() request: AuthenticatedRequest,
+    ): Promise<PaginatedEmployees> {
+        return this.employeeService.findAll(
+            query,
+            await this.resolveAllowedBranchIds(request),
+        );
     }
 
     @Get('me')
@@ -58,6 +64,19 @@ export class EmployeeController {
             throw new ForbiddenException(
                 'You can only view your own employee profile',
             );
+        }
+
+        if (request.user.role === UserRole.Manager) {
+            const allowedBranchIds = await this.resolveAllowedBranchIds(request);
+            const canView = employee.branches.some((branch) =>
+                allowedBranchIds?.includes(branch.id),
+            );
+
+            if (!canView) {
+                throw new ForbiddenException(
+                    'You can only view employees in your branches',
+                );
+            }
         }
 
         return employee;
@@ -107,5 +126,15 @@ export class EmployeeController {
     @HttpCode(HttpStatus.NO_CONTENT)
     remove(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
         return this.employeeService.remove(id);
+    }
+
+    private resolveAllowedBranchIds(
+        request: AuthenticatedRequest,
+    ): Promise<string[] | undefined> {
+        if (request.user.role !== UserRole.Manager) {
+            return Promise.resolve(undefined);
+        }
+
+        return this.employeeService.findManagedBranchIds(request.user.sub);
     }
 }

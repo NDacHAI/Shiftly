@@ -104,6 +104,7 @@ describe('PositionService', () => {
             name: 'Backend Developer',
             branchId: 'Branch-id',
             description: 'API development',
+            hourlyRate: '0.00',
             status: true,
         });
     });

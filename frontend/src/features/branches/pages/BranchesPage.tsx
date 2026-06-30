@@ -52,7 +52,11 @@ function formatDate(value: string) {
     }).format(new Date(value));
 }
 
-export function BranchesPage() {
+type BranchesPageProps = {
+    canManage: boolean;
+};
+
+export function BranchesPage({ canManage }: BranchesPageProps) {
     const { showToast } = useToast();
     const { t } = useI18n();
     const [branches, setBranches] = useState<Branch[]>([]);
@@ -251,17 +255,19 @@ export function BranchesPage() {
                         </p>
                     </div>
                 </div>
-                <Button
-                    className="shadow-sm"
-                    onClick={() => {
-                        setEditing(null);
-                        setShowForm(true);
-                    }}
-                    size="lg"
-                >
-                    <FontAwesomeIcon icon={faPlus} />
-                    {t('branches.add')}
-                </Button>
+                {canManage && (
+                    <Button
+                        className="shadow-sm"
+                        onClick={() => {
+                            setEditing(null);
+                            setShowForm(true);
+                        }}
+                        size="lg"
+                    >
+                        <FontAwesomeIcon icon={faPlus} />
+                        {t('branches.add')}
+                    </Button>
+                )}
             </div>
 
             <div className="grid grid-cols-4 gap-4 max-xl:grid-cols-2 max-sm:grid-cols-1">
@@ -437,31 +443,35 @@ export function BranchesPage() {
                                                 >
                                                     <FontAwesomeIcon icon={faEye} />
                                                 </button>
-                                                <button
-                                                    aria-label={t('common.edit')}
-                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
-                                                    onClick={() => {
-                                                        setEditing(branch);
-                                                        setShowForm(true);
-                                                    }}
-                                                    title={t('common.edit')}
-                                                    type="button"
-                                                >
-                                                    <FontAwesomeIcon icon={faPen} />
-                                                </button>
-                                                <button
-                                                    aria-label={t('common.delete')}
-                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
-                                                    onClick={() =>
-                                                        setBranchToDelete(
-                                                            branch,
-                                                        )
-                                                    }
-                                                    title={t('common.delete')}
-                                                    type="button"
-                                                >
-                                                    <FontAwesomeIcon icon={faTrash} />
-                                                </button>
+                                                {canManage && (
+                                                    <>
+                                                        <button
+                                                            aria-label={t('common.edit')}
+                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
+                                                            onClick={() => {
+                                                                setEditing(branch);
+                                                                setShowForm(true);
+                                                            }}
+                                                            title={t('common.edit')}
+                                                            type="button"
+                                                        >
+                                                            <FontAwesomeIcon icon={faPen} />
+                                                        </button>
+                                                        <button
+                                                            aria-label={t('common.delete')}
+                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
+                                                            onClick={() =>
+                                                                setBranchToDelete(
+                                                                    branch,
+                                                                )
+                                                            }
+                                                            title={t('common.delete')}
+                                                            type="button"
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} />
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

@@ -28,7 +28,7 @@ type EmployeeFormValues = Omit<
     EmployeePayload,
     'branchIds' | 'positionIds'
 > & {
-    branchId: string;
+    branchIds: string[];
     positionId: string;
 };
 
@@ -60,7 +60,7 @@ export function EmployeeFormDialog({
             phoneNumber: editing?.phoneNumber ?? '',
             dateOfBirth: editing?.dateOfBirth ?? '',
             gender: editing?.gender ?? '',
-            branchId: editing?.branches[0]?.id ?? '',
+            branchIds: editing?.branches.map((branch) => branch.id) ?? [],
             positionId: editing?.positions[0]?.id ?? '',
             hireDate: editing?.hireDate ?? '',
             address: editing?.address ?? '',
@@ -69,8 +69,19 @@ export function EmployeeFormDialog({
     });
     const status = useWatch({ control, name: 'status' }) ?? 'Active';
     const gender = useWatch({ control, name: 'gender' }) ?? '';
-    const branchId = useWatch({ control, name: 'branchId' });
+    const branchIds = useWatch({ control, name: 'branchIds' }) ?? [];
     const positionId = useWatch({ control, name: 'positionId' });
+
+    function toggleBranch(branchId: string, checked: boolean) {
+        const nextBranchIds = checked
+            ? [...new Set([...branchIds, branchId])]
+            : branchIds.filter((id) => id !== branchId);
+
+        setValue('branchIds', nextBranchIds, {
+            shouldDirty: true,
+            shouldValidate: true,
+        });
+    }
 
     async function handleValidSubmit(values: EmployeeFormValues) {
         try {
@@ -85,9 +96,7 @@ export function EmployeeFormDialog({
                 hireDate: values.hireDate,
                 address: values.address?.trim() || undefined,
                 status: values.status,
-                branchIds: values.branchId
-                    ? [values.branchId]
-                    : [],
+                branchIds: values.branchIds ?? [],
                 positionIds: values.positionId ? [values.positionId] : [],
             };
 
@@ -306,31 +315,26 @@ export function EmployeeFormDialog({
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             {t('common.branches')}
-                            <input
-                                type="hidden"
-                                {...register('branchId')}
-                            />
-                            <div className="dropdown-select-field">
-                                <DropdownSelect
-                                    ariaLabel={t('common.branches')}
-                                    options={[
-                                        {
-                                            value: '',
-                                            label: t('employees.selectBranch'),
-                                        },
-                                        ...branches.map((branch) => ({
-                                            value: branch.id,
-                                            label: branch.name,
-                                        })),
-                                    ]}
-                                    value={branchId}
-                                    onChange={(value) =>
-                                        setValue('branchId', value, {
-                                            shouldDirty: true,
-                                            shouldValidate: true,
-                                        })
-                                    }
-                                />
+                            <div className="grid max-h-36 gap-2 overflow-y-auto rounded-lg border border-slate-200 bg-white p-3">
+                                {branches.map((branch) => (
+                                    <label
+                                        className="flex items-center gap-2 text-sm font-medium text-slate-700"
+                                        key={branch.id}
+                                    >
+                                        <input
+                                            checked={branchIds.includes(branch.id)}
+                                            className="size-4 accent-primary-600"
+                                            type="checkbox"
+                                            onChange={(event) =>
+                                                toggleBranch(
+                                                    branch.id,
+                                                    event.target.checked,
+                                                )
+                                            }
+                                        />
+                                        <span>{branch.name}</span>
+                                    </label>
+                                ))}
                             </div>
                             <span className="min-h-4 text-xs font-normal text-red-400">
                             </span>

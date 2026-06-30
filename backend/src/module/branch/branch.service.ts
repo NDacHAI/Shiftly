@@ -49,12 +49,25 @@ export class BranchService {
         }
     }
 
-    async findAll(query: BranchQueryDto): Promise<PaginatedBranches> {
+    async findAll(
+        query: BranchQueryDto,
+        allowedBranchIds?: string[],
+    ): Promise<PaginatedBranches> {
         const queryBuilder = this.branchRepository
             .createQueryBuilder('branch')
             .orderBy(`branch.${query.sortBy}`, query.sortOrder)
             .skip((query.page - 1) * query.limit)
             .take(query.limit);
+
+        if (allowedBranchIds) {
+            if (allowedBranchIds.length === 0) {
+                queryBuilder.andWhere('1 = 0');
+            } else {
+                queryBuilder.andWhere('branch.id IN (:...allowedBranchIds)', {
+                    allowedBranchIds,
+                });
+            }
+        }
 
         if (query.search) {
             queryBuilder.andWhere(
@@ -80,7 +93,11 @@ export class BranchService {
         };
     }
 
-    async findOne(id: string): Promise<Branch> {
+    async findOne(id: string, allowedBranchIds?: string[]): Promise<Branch> {
+        if (allowedBranchIds && !allowedBranchIds.includes(id)) {
+            throw new NotFoundException('Branch not found');
+        }
+
         return this.findEntityById(id);
     }
 
