@@ -17,6 +17,7 @@ import { UserRole } from '@/common/enum/role.enum';
 import { UserService, UserResponse } from '@/module/user/user.service';
 import { CreateEmployeeAccountDto } from './dto/create_account_dto';
 import { ResetEmployeePasswordDto } from './dto/reset_employee_password.dto';
+import { UpdateEmployeeAccountDto } from './dto/update_employee_account.dto';
 export type PaginatedEmployees = {
     data: Employee[];
     meta: {
@@ -309,6 +310,18 @@ export class EmployeeService {
         return this.userService.resetEmployeePassword(
             employee.id,
             payload.temporaryPassword,
+        );
+    }
+
+    async updateAccount(
+        employeeId: string,
+        payload: UpdateEmployeeAccountDto,
+    ): Promise<UserResponse> {
+        const employee = await this.findOne(employeeId);
+
+        return this.userService.updateEmployeeAccountRole(
+            employee.id,
+            payload.role,
         );
     }
 

@@ -190,6 +190,22 @@ export class UserService {
         return this.toResponse(savedUser);
     }
 
+    async updateEmployeeAccountRole(
+        employeeId: string,
+        role: UserRole,
+    ): Promise<UserResponse> {
+        const user = await this.findByEmployeeId(employeeId);
+
+        if (!user) {
+            throw new NotFoundException('Employee account not found');
+        }
+
+        user.role = role;
+
+        const savedUser = await this.userRepository.save(user);
+        return this.toResponse(savedUser);
+    }
+
     async changePassword(id: number, newPassword: string): Promise<UserResponse> {
         const user = await this.findUserById(id);
 

@@ -1,13 +1,19 @@
-﻿import { type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
 import { Button, DropdownSelect } from '@/components/ui';
+import { roles, type Role } from '@/constants/roles';
 import { type Branch } from '@/features/branches/types';
 import { type Position } from '@/features/positions/types';
 import { useI18n } from '@/i18n';
-import { getEmployeeErrorMessage } from '../../api/employees.api';
+import {
+    getEmployeeAccount,
+    getEmployeeErrorMessage,
+    updateEmployeeAccount,
+} from '../../api/employees.api';
 import {
     type Employee,
+    type EmployeeAccount,
     type EmployeePayload,
     type EmployeeStatus,
     type UpdateEmployeePayload,
@@ -160,6 +166,9 @@ export function EmployeeProfileTab({
 }: EmployeeProfileTabProps) {
     const { showToast } = useToast();
     const { t } = useI18n();
+    const [account, setAccount] = useState<EmployeeAccount | null>(null);
+    const [accountRole, setAccountRole] = useState<Role>(roles.user);
+    const [accountLoading, setAccountLoading] = useState(canManage);
     const {
         control,
         formState: { errors, isSubmitting },
@@ -188,6 +197,41 @@ export function EmployeeProfileTab({
     const branchIds = useWatch({ control, name: 'branchIds' }) ?? [];
     const positionId = useWatch({ control, name: 'positionId' });
 
+    useEffect(() => {
+        if (!canManage) return;
+
+        let active = true;
+
+        async function loadAccount() {
+            setAccountLoading(true);
+
+            try {
+                const accountResponse = await getEmployeeAccount(employee.id);
+
+                if (!active) return;
+
+                setAccount(accountResponse);
+                setAccountRole(accountResponse?.role ?? roles.user);
+            } catch (error) {
+                if (active) {
+                    showToast({
+                        message: getEmployeeErrorMessage(error),
+                        title: t('employees.accountLoadError'),
+                        variant: 'error',
+                    });
+                }
+            } finally {
+                if (active) setAccountLoading(false);
+            }
+        }
+
+        void loadAccount();
+
+        return () => {
+            active = false;
+        };
+    }, [canManage, employee.id, showToast, t]);
+
     function toggleBranch(branchId: string, checked: boolean) {
         const nextBranchIds = checked
             ? [...new Set([...branchIds, branchId])]
@@ -215,6 +259,15 @@ export function EmployeeProfileTab({
                 address: values.address?.trim() || undefined,
                 status: values.status,
             });
+
+            if (account && account.role !== accountRole) {
+                const updatedAccount = await updateEmployeeAccount(employee.id, {
+                    role: accountRole,
+                });
+                setAccount(updatedAccount);
+                setAccountRole(updatedAccount.role);
+            }
+
             showToast({
                 message: t('employees.updated'),
                 variant: 'success',
@@ -431,6 +484,39 @@ export function EmployeeProfileTab({
                             type="date"
                             {...register('hireDate')}
                         />
+                    </FieldLabel>
+                    <FieldLabel label={t('employees.accountRole')}>
+                        {account ? (
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel={t('employees.accountRoleAria')}
+                                    options={[
+                                        {
+                                            value: roles.user,
+                                            label: t('employees.employeeRole'),
+                                        },
+                                        {
+                                            value: roles.manager,
+                                            label: t('employees.managerRole'),
+                                        },
+                                    ]}
+                                    value={accountRole}
+                                    onChange={(value) =>
+                                        setAccountRole(value as Role)
+                                    }
+                                />
+                            </div>
+                        ) : (
+                            <input
+                                className={fieldClass}
+                                disabled
+                                value={
+                                    accountLoading
+                                        ? t('employees.accountLoading')
+                                        : t('employees.noAccountTitle')
+                                }
+                            />
+                        )}
                     </FieldLabel>
                 </div>
             </section>

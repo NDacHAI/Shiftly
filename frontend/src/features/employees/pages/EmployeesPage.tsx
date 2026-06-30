@@ -2,7 +2,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faEye,
-    faPen,
     faPlus,
     faRotateRight,
     faSearch,
@@ -27,21 +26,23 @@ import { listPositions } from '@/features/positions/api/positions.api';
 import { type Position } from '@/features/positions/types';
 import { useDebounce } from '@/hooks/useDebounce';
 import {
+    createEmployeeAccount,
     createEmployee,
     deleteEmployee,
     getEmployeeErrorMessage,
     getMyEmployee,
     listEmployees,
-    updateEmployee,
 } from '../api/employees.api';
-import { EmployeeFormDialog } from '../components/EmployeeFormDialog';
+import {
+    EmployeeFormDialog,
+    type EmployeeFormSubmit,
+} from '../components/EmployeeFormDialog';
 import {
     type Employee,
     type EmployeePayload,
     type EmployeeSortField,
     type EmployeeStatus,
     type SortOrder,
-    type UpdateEmployeePayload,
 } from '../types';
 
 const pageSize = 10;
@@ -77,7 +78,6 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
     const [sortBy, setSortBy] = useState<EmployeeSortField>('createdAt');
     const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
     const [loading, setLoading] = useState(true);
-    const [editing, setEditing] = useState<Employee | null>(null);
     const [showForm, setShowForm] = useState(false);
     const [employeeToDelete, setEmployeeToDelete] =
         useState<Employee | null>(null);
@@ -187,23 +187,22 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
         setPage(1);
     }
 
-    async function handleSave(
-        payload: EmployeePayload | UpdateEmployeePayload,
-    ) {
-        if (editing) {
-            await updateEmployee(editing.id, payload as UpdateEmployeePayload);
-        } else {
-            await createEmployee(payload as EmployeePayload);
+    async function handleSave(payload: EmployeeFormSubmit) {
+        const employee = await createEmployee(
+            payload.employee as EmployeePayload,
+        );
+
+        if (payload.account?.action === 'create') {
+            await createEmployeeAccount(employee.id, {
+                role: payload.account.role,
+                temporaryPassword: payload.account.temporaryPassword,
+            });
         }
 
-        const wasEditing = Boolean(editing);
         setShowForm(false);
-        setEditing(null);
         await loadEmployees();
         showToast({
-            message: wasEditing
-                ? t('employees.updated')
-                : t('employees.created'),
+            message: t('employees.created'),
             variant: 'success',
         });
     }
@@ -255,7 +254,6 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                 {canManage && (
                     <Button
                         onClick={() => {
-                            setEditing(null);
                             setShowForm(true);
                         }}
                         size="lg"
@@ -461,37 +459,21 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                                     <FontAwesomeIcon icon={faEye} />
                                                 </button>
                                                 {canManage && (
-                                                    <>
-                                                        <button
-                                                            aria-label={t('common.edit')}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
-                                                            onClick={() => {
-                                                                setEditing(employee);
-                                                                setShowForm(true);
-                                                            }}
-                                                            title={t('common.edit')}
-                                                            type="button"
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faPen}
-                                                            />
-                                                        </button>
-                                                        <button
-                                                            aria-label={t('common.delete')}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
-                                                            onClick={() =>
-                                                                setEmployeeToDelete(
-                                                                    employee,
-                                                                )
-                                                            }
-                                                            title={t('common.delete')}
-                                                            type="button"
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faTrash}
-                                                            />
-                                                        </button>
-                                                    </>
+                                                    <button
+                                                        aria-label={t('common.delete')}
+                                                        className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
+                                                        onClick={() =>
+                                                            setEmployeeToDelete(
+                                                                employee,
+                                                            )
+                                                        }
+                                                        title={t('common.delete')}
+                                                        type="button"
+                                                    >
+                                                        <FontAwesomeIcon
+                                                            icon={faTrash}
+                                                        />
+                                                    </button>
                                                 )}
                                             </div>
                                         </td>
@@ -524,7 +506,6 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             {showForm && (
                 <EmployeeFormDialog
                     branches={branches}
-                    editing={editing}
                     positions={positions}
                     onClose={() => setShowForm(false)}
                     onSubmit={handleSave}

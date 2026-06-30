@@ -26,6 +26,7 @@ import { Employee } from './entities/employee.entity';
 import { EmployeeService, PaginatedEmployees } from './employee.service';
 import { CreateEmployeeAccountDto } from './dto/create_account_dto';
 import { ResetEmployeePasswordDto } from './dto/reset_employee_password.dto';
+import { UpdateEmployeeAccountDto } from './dto/update_employee_account.dto';
 
 @Controller('employees')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -101,6 +102,15 @@ export class EmployeeController {
     @Roles(UserRole.Admin)
     findAccount(@Param('id', new ParseUUIDPipe()) id: string) {
         return this.employeeService.findAccount(id);
+    }
+
+    @Put(':id/account')
+    @Roles(UserRole.Admin)
+    updateAccount(
+        @Param('id', new ParseUUIDPipe()) id: string,
+        @Body() payload: UpdateEmployeeAccountDto,
+    ) {
+        return this.employeeService.updateAccount(id, payload);
     }
 
     @Post(':id/account/reset-password')

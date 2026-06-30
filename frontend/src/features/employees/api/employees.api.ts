@@ -10,6 +10,7 @@ import {
     type EmployeeStatus,
     type ResetEmployeePasswordPayload,
     type SortOrder,
+    type UpdateEmployeeAccountPayload,
     type UpdateEmployeePayload,
 } from '../types';
 
@@ -78,6 +79,17 @@ export async function getEmployeeAccount(
 ): Promise<EmployeeAccount | null> {
     const response = await api.get<EmployeeAccount | null>(
         `/employees/${id}/account`,
+    );
+    return response.data;
+}
+
+export async function updateEmployeeAccount(
+    id: string,
+    payload: UpdateEmployeeAccountPayload,
+): Promise<EmployeeAccount> {
+    const response = await api.put<EmployeeAccount>(
+        `/employees/${id}/account`,
+        payload,
     );
     return response.data;
 }

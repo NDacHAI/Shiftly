@@ -1,27 +1,32 @@
-﻿import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
 import { Button, DropdownSelect } from '@/components/ui';
+import { roles, type Role } from '@/constants/roles';
 import { type Branch } from '@/features/branches/types';
 import { type Position } from '@/features/positions/types';
 import { useI18n } from '@/i18n';
 import { getEmployeeErrorMessage } from '../api/employees.api';
 import {
-    type Employee,
     type EmployeePayload,
     type EmployeeStatus,
-    type UpdateEmployeePayload,
 } from '../types';
+
+export type EmployeeFormSubmit = {
+    employee: EmployeePayload;
+    account?: {
+        action: 'create';
+        role: Role;
+        temporaryPassword: string;
+    };
+};
 
 type EmployeeFormDialogProps = {
     branches: Branch[];
     positions: Position[];
-    editing: Employee | null;
     onClose: () => void;
-    onSubmit: (
-        payload: EmployeePayload | UpdateEmployeePayload,
-    ) => Promise<void>;
+    onSubmit: (payload: EmployeeFormSubmit) => Promise<void>;
 };
 
 type EmployeeFormValues = Omit<
@@ -30,6 +35,9 @@ type EmployeeFormValues = Omit<
 > & {
     branchIds: string[];
     positionId: string;
+    accountRole: Role;
+    createAccount: boolean;
+    temporaryPassword: string;
 };
 
 const fieldClass =
@@ -38,7 +46,6 @@ const fieldClass =
 export function EmployeeFormDialog({
     branches,
     positions,
-    editing,
     onClose,
     onSubmit,
 }: EmployeeFormDialogProps) {
@@ -53,24 +60,29 @@ export function EmployeeFormDialog({
         setValue,
     } = useForm<EmployeeFormValues>({
         defaultValues: {
-            employeeCode: editing?.employeeCode ?? '',
-            firstName: editing?.firstName ?? '',
-            lastName: editing?.lastName ?? '',
-            email: editing?.email ?? '',
-            phoneNumber: editing?.phoneNumber ?? '',
-            dateOfBirth: editing?.dateOfBirth ?? '',
-            gender: editing?.gender ?? '',
-            branchIds: editing?.branches.map((branch) => branch.id) ?? [],
-            positionId: editing?.positions[0]?.id ?? '',
-            hireDate: editing?.hireDate ?? '',
-            address: editing?.address ?? '',
-            status: editing?.status ?? 'Active',
+            employeeCode: '',
+            firstName: '',
+            lastName: '',
+            email: '',
+            phoneNumber: '',
+            dateOfBirth: '',
+            gender: '',
+            branchIds: [],
+            positionId: '',
+            hireDate: '',
+            address: '',
+            status: 'Active',
+            accountRole: roles.user,
+            createAccount: false,
+            temporaryPassword: '',
         },
     });
     const status = useWatch({ control, name: 'status' }) ?? 'Active';
     const gender = useWatch({ control, name: 'gender' }) ?? '';
     const branchIds = useWatch({ control, name: 'branchIds' }) ?? [];
     const positionId = useWatch({ control, name: 'positionId' });
+    const accountRole = useWatch({ control, name: 'accountRole' }) ?? roles.user;
+    const createAccount = useWatch({ control, name: 'createAccount' }) ?? false;
 
     function toggleBranch(branchId: string, checked: boolean) {
         const nextBranchIds = checked
@@ -81,6 +93,18 @@ export function EmployeeFormDialog({
             shouldDirty: true,
             shouldValidate: true,
         });
+    }
+
+    function buildAccountPayload(values: EmployeeFormValues) {
+        if (values.createAccount) {
+            return {
+                action: 'create' as const,
+                role: values.accountRole,
+                temporaryPassword: values.temporaryPassword,
+            };
+        }
+
+        return undefined;
     }
 
     async function handleValidSubmit(values: EmployeeFormValues) {
@@ -100,24 +124,10 @@ export function EmployeeFormDialog({
                 positionIds: values.positionId ? [values.positionId] : [],
             };
 
-            if (editing) {
-                await onSubmit({
-                    employeeCode: employeePayload.employeeCode,
-                    firstName: employeePayload.firstName,
-                    lastName: employeePayload.lastName,
-                    email: employeePayload.email,
-                    phoneNumber: employeePayload.phoneNumber,
-                    dateOfBirth: employeePayload.dateOfBirth,
-                    gender: employeePayload.gender,
-                    branchIds: employeePayload.branchIds,
-                    positionIds: employeePayload.positionIds,
-                    hireDate: employeePayload.hireDate,
-                    address: employeePayload.address,
-                    status: employeePayload.status,
-                });
-            } else {
-                await onSubmit(employeePayload);
-            }
+            await onSubmit({
+                employee: employeePayload,
+                account: buildAccountPayload(values),
+            });
         } catch (error) {
             const message = getEmployeeErrorMessage(error);
 
@@ -148,10 +158,10 @@ export function EmployeeFormDialog({
             >
                 <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
                     <h2 className="text-xl font-bold text-slate-950">
-                        {editing ? t('employees.update') : t('employees.add')}
+                        {t('employees.add')}
                     </h2>
                     <Button
-                        aria-label="Close"
+                        aria-label={t('common.close')}
                         disabled={isSubmitting}
                         onClick={onClose}
                         size="icon"
@@ -336,15 +346,11 @@ export function EmployeeFormDialog({
                                     </label>
                                 ))}
                             </div>
-                            <span className="min-h-4 text-xs font-normal text-red-400">
-                            </span>
+                            <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             {t('common.positions')}
-                            <input
-                                type="hidden"
-                                {...register('positionId')}
-                            />
+                            <input type="hidden" {...register('positionId')} />
                             <div className="dropdown-select-field">
                                 <DropdownSelect
                                     ariaLabel={t('common.positions')}
@@ -367,9 +373,87 @@ export function EmployeeFormDialog({
                                     }
                                 />
                             </div>
-                            <span className="min-h-4 text-xs font-normal text-red-400">
-                            </span>
+                            <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
+                        <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:col-span-2">
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-900">
+                                    {t('employees.accountInfo')}
+                                </h3>
+                                <p className="mt-1 text-xs text-slate-500">
+                                    {t('employees.noAccountDescription')}
+                                </p>
+                            </div>
+                            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <input
+                                    className="size-4 accent-primary-600"
+                                    type="checkbox"
+                                    {...register('createAccount')}
+                                />
+                                <span>{t('employees.createLoginAccount')}</span>
+                            </label>
+                            {createAccount && (
+                                <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                                    {t('employees.accountRole')}
+                                    <input
+                                        type="hidden"
+                                        {...register('accountRole')}
+                                    />
+                                    <div className="dropdown-select-field">
+                                        <DropdownSelect
+                                            ariaLabel={t(
+                                                'employees.accountRoleAria',
+                                            )}
+                                            options={[
+                                                {
+                                                    value: roles.user,
+                                                    label: t(
+                                                        'employees.employeeRole',
+                                                    ),
+                                                },
+                                                {
+                                                    value: roles.manager,
+                                                    label: t(
+                                                        'employees.managerRole',
+                                                    ),
+                                                },
+                                            ]}
+                                            value={accountRole}
+                                            onChange={(value) =>
+                                                setValue(
+                                                    'accountRole',
+                                                    value as Role,
+                                                    {
+                                                        shouldDirty: true,
+                                                        shouldValidate: true,
+                                                    },
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                </label>
+                            )}
+                            {createAccount && (
+                                <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                                    {t('employees.temporaryPassword')}
+                                    <input
+                                        className={fieldClass}
+                                        minLength={6}
+                                        type="password"
+                                        {...register('temporaryPassword', {
+                                            minLength: {
+                                                message: t('common.required'),
+                                                value: 6,
+                                            },
+                                            required: t('common.required'),
+                                        })}
+                                    />
+                                    <span className="min-h-4 text-xs font-normal text-red-400">
+                                        {errors.temporaryPassword?.message}
+                                    </span>
+                                </label>
+                            )}
+                        </div>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700">
                             {t('employees.hireDate')}
                             <input
@@ -377,8 +461,7 @@ export function EmployeeFormDialog({
                                 type="date"
                                 {...register('hireDate')}
                             />
-                            <span className="min-h-4 text-xs font-normal text-red-400">
-                            </span>
+                            <span className="min-h-4 text-xs font-normal text-red-400" />
                         </label>
                         <label className="grid gap-2 text-sm font-semibold text-slate-700 md:col-span-2">
                             {t('employees.address')}
