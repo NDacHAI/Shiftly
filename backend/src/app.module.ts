@@ -8,6 +8,7 @@ import { BranchModule } from './module/branch/branch.module';
 import { PositionModule } from './module/position/position.module';
 import { EmployeeModule } from './module/employee/employee.module';
 import { WorkShiftModule } from './module/work-shift/work-shift.module';
+import { WorkScheduleModule } from './module/work-schedule/work-schedule.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { WorkShiftModule } from './module/work-shift/work-shift.module';
     PositionModule,
     EmployeeModule,
     WorkShiftModule,
+    WorkScheduleModule,
   ]
 })
 export class AppModule { }

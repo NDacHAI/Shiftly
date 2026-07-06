@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import {
     faBriefcase,
+    faCalendarCheck,
     faBuilding,
     faCalendarDays,
     faChartColumn,
@@ -42,6 +43,7 @@ const navigation: Array<{
             allowedRoles: [roles.admin, roles.manager, roles.user],
         },
         { labelKey: 'nav.workShifts', icon: faCalendarDays, href: routes.workShifts, allowedRoles: [roles.admin, roles.manager] },
+        { labelKey: 'nav.workSchedules', icon: faCalendarCheck, href: routes.workSchedules, allowedRoles: [roles.admin, roles.manager, roles.user] },
         { labelKey: 'nav.attendance', icon: faClock, href: '#' },
         { labelKey: 'nav.leaveRequests', icon: faFileLines, href: '#' },
         { labelKey: 'nav.settings', icon: faGear, href: routes.settings },

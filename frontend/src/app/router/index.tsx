@@ -12,6 +12,7 @@ import { PermissionRoute } from '@/guards/PermissionRoute';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import WorkShiftPage from '@/features/work-shifts/pages/WorkShiftPage';
+import { WorkSchedulesPage } from '@/features/work-schedules/pages/WorkSchedulesPage';
 
 type AppRouterProps = {
     user: AuthUser;
@@ -149,6 +150,24 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                             onLogout={onLogout}
                         >
                             <WorkShiftPage canManage={user.role === roles.admin} />
+                        </Layout>
+                    </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.workSchedules}
+                element={
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager, roles.user]}
+                        userRole={user.role}
+                    >
+                        <Layout
+                            activeNavKey="nav.workSchedules"
+                            titleKey="routes.workSchedules"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <WorkSchedulesPage userRole={user.role} />
                         </Layout>
                     </PermissionRoute>
                 }

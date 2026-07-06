@@ -6,4 +6,5 @@
     employeeDetail: '/employees/:id',
     settings: '/settings',
     workShifts: '/work-shift',
+    workSchedules: '/work-schedules',
 } as const;

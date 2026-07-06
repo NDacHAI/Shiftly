@@ -328,6 +328,121 @@
     letter-spacing: 0;
 }
 
+.work-schedule-calendar .rbc-calendar {
+    min-height: 640px;
+    color: #0f172a;
+    font-family: inherit;
+}
+
+.work-schedule-calendar .rbc-month-view,
+.work-schedule-calendar .rbc-time-view {
+    overflow: hidden;
+    border-color: #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.work-schedule-calendar .rbc-header {
+    min-height: 44px;
+    border-color: #e2e8f0;
+    background: #f8fafc;
+    padding: 12px 8px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.work-schedule-calendar .rbc-month-row,
+.work-schedule-calendar .rbc-day-bg,
+.work-schedule-calendar .rbc-date-cell,
+.work-schedule-calendar .rbc-time-content,
+.work-schedule-calendar .rbc-timeslot-group {
+    border-color: #e2e8f0;
+}
+
+.work-schedule-calendar .rbc-date-cell {
+    padding: 8px 10px 4px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.work-schedule-calendar .rbc-off-range-bg {
+    background: #f8fafc;
+}
+
+.work-schedule-calendar .rbc-today {
+    background: #fafaff;
+}
+
+.work-schedule-calendar .rbc-event,
+.work-schedule-calendar .rbc-day-slot .rbc-event {
+    border: 1px solid #ddd6fe;
+    border-radius: 8px;
+    background: #f5f3ff;
+    padding: 0;
+    color: #4c1d95;
+    box-shadow: none;
+}
+
+.work-schedule-calendar .rbc-event:focus {
+    outline: 2px solid var(--color-primary-400);
+    outline-offset: 1px;
+}
+
+.work-schedule-calendar .rbc-event-content {
+    min-width: 0;
+}
+
+.work-schedule-calendar__event-content {
+    min-width: 0;
+    padding: 6px 8px;
+    line-height: 1.2;
+}
+
+.work-schedule-calendar__event--enough {
+    border-color: #a7f3d0 !important;
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+}
+
+.work-schedule-calendar__event--understaffed {
+    border-color: #fde68a !important;
+    background: #fffbeb !important;
+    color: #b45309 !important;
+}
+
+.work-schedule-calendar__event--pending {
+    border-color: #bae6fd !important;
+    background: #f0f9ff !important;
+    color: #0369a1 !important;
+}
+
+.work-schedule-calendar__event--conflict {
+    border-color: #fecaca !important;
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+}
+
+.work-schedule-calendar__event--cancelled {
+    border-color: #e2e8f0 !important;
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+}
+
+.work-schedule-calendar .rbc-show-more {
+    margin-top: 4px;
+    color: var(--color-primary-700);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.work-schedule-calendar .rbc-current-time-indicator {
+    background: var(--color-primary-600);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .dialog-backdrop,
     .dialog-panel,
