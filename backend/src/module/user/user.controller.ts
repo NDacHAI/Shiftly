@@ -9,12 +9,19 @@ import {
     ParseIntPipe,
     Patch,
     Post,
+    UseGuards,
 } from '@nestjs/common';
+import { UserRole } from '@/common/enum/role.enum';
+import { Roles } from '@/module/auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '@/module/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '@/module/auth/guards/roles.guard';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponse, UserService } from './user.service';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.Admin)
 export class UserController {
     constructor(private readonly userService: UserService) {}
 

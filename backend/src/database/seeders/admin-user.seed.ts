@@ -6,8 +6,19 @@ import { User } from '@/module/user/entities/user.entity';
 import dataSource from '../data-source';
 
 const scrypt = promisify(scryptCallback);
-const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@admin.com';
-const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin123';
+
+function getRequiredEnv(key: string): string {
+    const value = process.env[key]?.trim();
+
+    if (!value) {
+        throw new Error(`${key} must be set before seeding the admin user`);
+    }
+
+    return value;
+}
+
+const adminEmail = getRequiredEnv('ADMIN_EMAIL');
+const adminPassword = getRequiredEnv('ADMIN_PASSWORD');
 
 async function hashPassword(password: string): Promise<string> {
     const salt = randomBytes(16).toString('hex');
