@@ -9,6 +9,7 @@ import { PositionModule } from './module/position/position.module';
 import { EmployeeModule } from './module/employee/employee.module';
 import { WorkShiftModule } from './module/work-shift/work-shift.module';
 import { WorkScheduleModule } from './module/work-schedule/work-schedule.module';
+import { ShiftRequestModule } from './module/shift-request/shift-request.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { WorkScheduleModule } from './module/work-schedule/work-schedule.module'
     EmployeeModule,
     WorkShiftModule,
     WorkScheduleModule,
+    ShiftRequestModule,
   ]
 })
 export class AppModule { }

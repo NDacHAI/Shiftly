@@ -7,4 +7,5 @@
     settings: '/settings',
     workShifts: '/work-shift',
     workSchedules: '/work-schedules',
+    shiftRequests: '/shift-requests',
 } as const;

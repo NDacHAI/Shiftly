@@ -11,18 +11,26 @@ import {
 import { Branch } from '@/module/branch/entities/branch.entity';
 import { Employee } from '@/module/employee/entities/employee.entity';
 import { Position } from '@/module/position/entities/position.entity';
-import { ShiftRequest } from '@/module/shift-request/entities/shift-request.entity';
+import { User } from '@/module/user/entities/user.entity';
 import { WorkShift } from '@/module/work-shift/entities/work-shift.entity';
-import { WorkScheduleSource } from './work-schedule-source.enum';
+import { ShiftRequestStatus } from './shift-request-status.enum';
 
-@Entity('work_schedules')
-@Index(['employeeId', 'workDate'], { unique: true })
+@Entity('shift_requests')
+@Index(['employeeId', 'workDate'])
 @Index(['branchId', 'workDate'])
-@Index(['positionId', 'workDate'])
-export class WorkSchedule {
+@Index([
+    'employeeId',
+    'branchId',
+    'positionId',
+    'workShiftId',
+    'workDate',
+    'status',
+])
+export class ShiftRequest {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
+    @Index()
     @Column({ name: 'employee_id', type: 'varchar', length: 36 })
     employeeId!: string;
 
@@ -30,6 +38,7 @@ export class WorkSchedule {
     @JoinColumn({ name: 'employee_id' })
     employee!: Employee;
 
+    @Index()
     @Column({ name: 'branch_id', type: 'varchar', length: 36 })
     branchId!: string;
 
@@ -37,6 +46,7 @@ export class WorkSchedule {
     @JoinColumn({ name: 'branch_id' })
     branch!: Branch;
 
+    @Index()
     @Column({ name: 'position_id', type: 'varchar', length: 36 })
     positionId!: string;
 
@@ -56,43 +66,40 @@ export class WorkSchedule {
     @Column({ name: 'work_date', type: 'date' })
     workDate!: string;
 
-    @Column({ name: 'shift_code_snapshot', type: 'varchar', length: 50 })
-    shiftCodeSnapshot!: string;
-
-    @Column({ name: 'shift_name_snapshot', type: 'varchar', length: 50 })
-    shiftNameSnapshot!: string;
-
-    @Column({ name: 'start_time_snapshot', type: 'time' })
-    startTimeSnapshot!: string;
-
-    @Column({ name: 'end_time_snapshot', type: 'time' })
-    endTimeSnapshot!: string;
-
-    @Column({ name: 'break_minutes_snapshot', type: 'int' })
-    breakMinutesSnapshot!: number;
-
-    @Column({ type: 'text', nullable: true })
-    note!: string | null;
-
     @Index()
     @Column({
         type: 'tinyint',
-        default: WorkScheduleSource.Manual,
+        default: ShiftRequestStatus.Pending,
     })
-    source!: WorkScheduleSource;
+    status!: ShiftRequestStatus;
 
-    @Index({ unique: true })
-    @Column({
-        name: 'shift_request_id',
-        type: 'varchar',
-        length: 36,
-        nullable: true,
-    })
-    shiftRequestId!: string | null;
+    @Column({ name: 'employee_note', type: 'text', nullable: true })
+    employeeNote!: string | null;
 
-    @ManyToOne(() => ShiftRequest, { nullable: true, onDelete: 'RESTRICT' })
-    @JoinColumn({ name: 'shift_request_id' })
-    shiftRequest!: ShiftRequest | null;
+    @Column({ name: 'manager_note', type: 'text', nullable: true })
+    managerNote!: string | null;
+
+    @Index()
+    @Column({ name: 'reviewed_by', type: 'int', nullable: true })
+    reviewedById!: number | null;
+
+    @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'reviewed_by' })
+    reviewedBy!: User | null;
+
+    @Column({ name: 'reviewed_at', type: 'datetime', nullable: true })
+    reviewedAt!: Date | null;
+
+    @Index()
+    @Column({ name: 'cancelled_by', type: 'int', nullable: true })
+    cancelledById!: number | null;
+
+    @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'cancelled_by' })
+    cancelledBy!: User | null;
+
+    @Column({ name: 'cancelled_at', type: 'datetime', nullable: true })
+    cancelledAt!: Date | null;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt!: Date;

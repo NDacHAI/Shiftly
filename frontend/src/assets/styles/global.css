@@ -396,6 +396,10 @@
     min-width: 0;
 }
 
+.work-schedule-calendar__event--employee .rbc-event-label {
+    display: none;
+}
+
 .work-schedule-calendar__event-content {
     min-width: 0;
     padding: 6px 8px;

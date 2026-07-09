@@ -5,6 +5,7 @@ type DialogShellProps = {
     children: ReactNode;
     description: string;
     open: boolean;
+    panelClassName?: string;
     title: string;
     onClose: () => void;
 };
@@ -13,6 +14,7 @@ export function DialogShell({
     children,
     description,
     open,
+    panelClassName = '',
     title,
     onClose,
 }: DialogShellProps) {
@@ -51,7 +53,7 @@ export function DialogShell({
                 aria-describedby={descriptionId}
                 aria-labelledby={titleId}
                 aria-modal="true"
-                className="dialog-panel w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+                className={`dialog-panel w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ${panelClassName}`}
                 role="dialog"
             >
                 <h2

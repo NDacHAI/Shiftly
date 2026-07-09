@@ -111,6 +111,7 @@ type WorkScheduleCalendarEvent = {
           }
         | {
               kind: 'schedule';
+              canManage: boolean;
               date: string;
               schedule: WorkSchedule;
               status: ScheduleOperationalStatus;
@@ -390,8 +391,9 @@ function getScheduleStatus(
 function buildCalendarEvents(
     schedulesByDate: Record<string, WorkSchedule[]>,
     viewMode: WorkScheduleViewMode,
+    canManage: boolean,
 ): WorkScheduleCalendarEvent[] {
-    if (viewMode === 'month') {
+    if (viewMode === 'month' && canManage) {
         return Object.entries(schedulesByDate).flatMap(([date, daySchedules]) =>
             groupSchedulesForDay(daySchedules).map((group) => ({
                 id: `group:${date}:${group.key}`,
@@ -417,9 +419,12 @@ function buildCalendarEvents(
                 end,
                 resource: {
                     kind: 'schedule',
+                    canManage,
                     date,
                     schedule,
-                    status: getScheduleStatus(schedule, daySchedules),
+                    status: canManage
+                        ? getScheduleStatus(schedule, daySchedules)
+                        : 'pending',
                 },
             };
         }),
@@ -792,7 +797,13 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
                 )}
             </div>
 
-            <div className="grid grid-cols-[minmax(0,1fr)_340px] gap-5 max-xl:grid-cols-1">
+            <div
+                className={`grid gap-5 ${
+                    canManage
+                        ? 'grid-cols-[minmax(0,1fr)_340px] max-xl:grid-cols-1'
+                        : 'grid-cols-1'
+                }`}
+            >
                 <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                     <LoadingOverlay label={t('workSchedules.loading')} visible={loading} />
                     <div className="grid gap-3 border-b border-slate-200 p-4">
@@ -978,56 +989,58 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
                     />
                 </div>
 
-                <aside className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                    <div className="border-b border-slate-200 px-5 py-4">
-                        <p className="text-xs font-bold uppercase tracking-wide text-primary-600">
-                            {t('workSchedules.date')}
-                        </p>
-                        <h3 className="mt-1 text-lg font-bold text-slate-950">
-                            {selectedDayTitle}
-                        </h3>
-                        <p className="mt-1 text-sm font-semibold text-slate-500">
-                            {interpolate(t('workSchedules.selectedDayCount'), {
-                                count: selectedDaySchedules.length,
-                            })}{' '}
-                            {' / '}
-                            {interpolate(t('workSchedules.selectedDayPeople'), {
-                                count: new Set(
-                                    selectedDaySchedules.map(
-                                        (schedule) => schedule.employeeId,
-                                    ),
-                                ).size,
-                            })}
-                        </p>
-                    </div>
-                    <div className="max-h-[760px] overflow-y-auto">
-                        {selectedDaySchedules.length === 0 && !loading ? (
-                            <EmptyState
-                                description={t('workSchedules.noResultsDescription')}
-                                icon={<FontAwesomeIcon icon={faCalendarCheck} />}
-                                title={t('workSchedules.noResultsTitle')}
-                            />
-                        ) : (
-                            <div className="divide-y divide-slate-100">
-                                {selectedDaySchedules.map((schedule) => (
-                                    <ScheduleListItem
-                                        canManage={canManage}
-                                        daySchedules={selectedDaySchedules}
-                                        key={schedule.id}
-                                        locale={locale}
-                                        schedule={schedule}
-                                        onDelete={setScheduleToDelete}
-                                        onEdit={(value) => {
-                                            setEditing(value);
-                                            setShowForm(true);
-                                        }}
-                                        onView={setSelected}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </aside>
+                {canManage && (
+                    <aside className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                        <div className="border-b border-slate-200 px-5 py-4">
+                            <p className="text-xs font-bold uppercase tracking-wide text-primary-600">
+                                {t('workSchedules.date')}
+                            </p>
+                            <h3 className="mt-1 text-lg font-bold text-slate-950">
+                                {selectedDayTitle}
+                            </h3>
+                            <p className="mt-1 text-sm font-semibold text-slate-500">
+                                {interpolate(t('workSchedules.selectedDayCount'), {
+                                    count: selectedDaySchedules.length,
+                                })}{' '}
+                                {' / '}
+                                {interpolate(t('workSchedules.selectedDayPeople'), {
+                                    count: new Set(
+                                        selectedDaySchedules.map(
+                                            (schedule) => schedule.employeeId,
+                                        ),
+                                    ).size,
+                                })}
+                            </p>
+                        </div>
+                        <div className="max-h-[760px] overflow-y-auto">
+                            {selectedDaySchedules.length === 0 && !loading ? (
+                                <EmptyState
+                                    description={t('workSchedules.noResultsDescription')}
+                                    icon={<FontAwesomeIcon icon={faCalendarCheck} />}
+                                    title={t('workSchedules.noResultsTitle')}
+                                />
+                            ) : (
+                                <div className="divide-y divide-slate-100">
+                                    {selectedDaySchedules.map((schedule) => (
+                                        <ScheduleListItem
+                                            canManage={canManage}
+                                            daySchedules={selectedDaySchedules}
+                                            key={schedule.id}
+                                            locale={locale}
+                                            schedule={schedule}
+                                            onDelete={setScheduleToDelete}
+                                            onEdit={(value) => {
+                                                setEditing(value);
+                                                setShowForm(true);
+                                            }}
+                                            onView={setSelected}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </aside>
+                )}
             </div>
 
             {showForm && (
@@ -1141,8 +1154,8 @@ function ScheduleCalendar({
 }) {
     const { t } = useI18n();
     const calendarEvents = useMemo(
-        () => buildCalendarEvents(schedulesByDate, viewMode),
-        [schedulesByDate, viewMode],
+        () => buildCalendarEvents(schedulesByDate, viewMode, canManage),
+        [canManage, schedulesByDate, viewMode],
     );
     const culture = locale === 'vi-VN' ? 'vi' : 'en';
 
@@ -1153,7 +1166,12 @@ function ScheduleCalendar({
                 date={toCalendarDate(anchorDate)}
                 endAccessor={(event) => event.end}
                 eventPropGetter={(event) => ({
-                    className: `work-schedule-calendar__event work-schedule-calendar__event--${event.resource.kind === 'group' ? event.resource.group.status : event.resource.status}`,
+                    className: `work-schedule-calendar__event work-schedule-calendar__event--${event.resource.kind === 'group' ? event.resource.group.status : event.resource.status}${
+                        event.resource.kind === 'schedule' &&
+                        !event.resource.canManage
+                            ? ' work-schedule-calendar__event--employee'
+                            : ''
+                    }`,
                 })}
                 events={calendarEvents}
                 formats={{
@@ -1240,7 +1258,26 @@ function CalendarEvent({ event }: EventProps<WorkScheduleCalendarEvent>) {
         );
     }
 
-    const { schedule } = event.resource;
+    const { canManage, schedule } = event.resource;
+
+    if (!canManage) {
+        return (
+            <div className="work-schedule-calendar__event-content grid gap-1 text-[13px] leading-5">
+                <div className="truncate font-semibold">
+                    {formatTime(schedule.startTimeSnapshot)} -{' '}
+                    {formatTime(schedule.endTimeSnapshot)} ·{' '}
+                    {formatDuration(schedule.workingDurationMinutes)}
+                </div>
+                <div className="truncate font-bold">
+                    {schedule.shiftNameSnapshot}
+                </div>
+                <div className="truncate font-semibold opacity-80">
+                    {schedule.branch.name} ·{' '}
+                    {schedule.position.name}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="work-schedule-calendar__event-content">

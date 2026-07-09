@@ -15,6 +15,7 @@ export class WorkShiftController {
     constructor(private readonly workShiftService: WorkShiftService) { }
 
     @Get()
+    @Roles(UserRole.Admin, UserRole.Manager, UserRole.User)
     findAll(@Query() query: WorkShiftQueryDto): Promise<PaginatedWorkShifts> {
         return this.workShiftService.findAll(query)
     }

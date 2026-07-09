@@ -13,6 +13,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import WorkShiftPage from '@/features/work-shifts/pages/WorkShiftPage';
 import { WorkSchedulesPage } from '@/features/work-schedules/pages/WorkSchedulesPage';
+import { ShiftRequestsPage } from '@/features/shift-requests/pages/ShiftRequestsPage';
 
 type AppRouterProps = {
     user: AuthUser;
@@ -80,7 +81,6 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                         allowedRoles={[
                             roles.admin,
                             roles.manager,
-                            roles.user,
                         ]}
                         userRole={user.role}
                     >
@@ -102,7 +102,6 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                         allowedRoles={[
                             roles.admin,
                             roles.manager,
-                            roles.user,
                         ]}
                         userRole={user.role}
                     >
@@ -168,6 +167,24 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                             onLogout={onLogout}
                         >
                             <WorkSchedulesPage userRole={user.role} />
+                        </Layout>
+                    </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.shiftRequests}
+                element={
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager, roles.user]}
+                        userRole={user.role}
+                    >
+                        <Layout
+                            activeNavKey="nav.shiftRequests"
+                            titleKey="routes.shiftRequests"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <ShiftRequestsPage userRole={user.role} />
                         </Layout>
                     </PermissionRoute>
                 }

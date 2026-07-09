@@ -42,6 +42,7 @@ export const vi = {
         employees: 'Nhân viên',
         workShifts: 'Mẫu ca',
         workSchedules: 'Lịch làm việc',
+        shiftRequests: 'Đăng kí ca',
         attendance: 'Chấm công',
         leaveRequests: 'Đơn nghỉ phép',
         settings: 'Cài đặt',
@@ -60,6 +61,7 @@ export const vi = {
         employeeDetails: 'Chi tiết nhân viên',
         workShifts: 'Mẫu ca',
         workSchedules: 'Lịch làm việc',
+        shiftRequests: 'Đăng kí ca',
         settings: 'Cài đặt',
     },
     settings: {
@@ -319,5 +321,55 @@ export const vi = {
         friday: 'T6',
         saturday: 'T7',
         sunday: 'CN',
+    },
+    shiftRequests: {
+        title: 'Yêu cầu đăng kí ca',
+        subtitle: 'Theo dõi và xử lý các yêu cầu đăng kí ca làm của nhân viên.',
+        employeeTitle: 'Đăng kí ca',
+        employeeSubtitle: 'Gửi yêu cầu đăng kí ca làm và theo dõi trạng thái duyệt của bạn.',
+
+        add: 'Đăng kí ca',
+        approve: 'Duyệt',
+        reject: 'Từ chối',
+        cancelRequest: 'Hủy yêu cầu',
+
+        pending: 'Chờ duyệt',
+        approvedStatus: 'Đã duyệt',
+        rejectedStatus: 'Đã từ chối',
+        cancelledStatus: 'Đã hủy',
+
+        employee: 'Nhân viên',
+        detailsTitle: 'Chi tiết yêu cầu đăng kí ca',
+        detailsDescription: 'Xem đầy đủ thông tin yêu cầu đăng kí ca của nhân viên.',
+        workDate: 'Ngày làm việc',
+        shift: 'Ca làm',
+        note: 'Ghi chú',
+        employeeNote: 'Ghi chú của nhân viên',
+        managerNote: 'Ghi chú của quản lý',
+
+        selectBranch: 'Chọn chi nhánh',
+        selectPosition: 'Chọn vị trí',
+        selectShift: 'Chọn ca làm',
+
+        formDescription: 'Chọn chi nhánh, vị trí, ca làm và ngày bạn muốn đăng kí.',
+        reviewDescription: 'Thêm ghi chú phản hồi nếu cần trước khi xử lý yêu cầu.',
+        requiredMessage: 'Vui lòng chọn đầy đủ chi nhánh, vị trí, ca làm và ngày làm việc.',
+
+        loading: 'Đang tải danh sách đăng kí ca...',
+        loadError: 'Không thể tải danh sách đăng kí ca.',
+        filtersLoadError: 'Không thể tải dữ liệu bộ lọc.',
+        saveError: 'Không thể gửi yêu cầu đăng kí ca.',
+        reviewError: 'Không thể xử lý yêu cầu đăng kí ca.',
+        cancelError: 'Không thể hủy yêu cầu đăng kí ca.',
+        created: 'Đã gửi yêu cầu đăng kí ca.',
+        approved: 'Đã duyệt yêu cầu đăng kí ca.',
+        rejected: 'Đã từ chối yêu cầu đăng kí ca.',
+        cancelled: 'Đã hủy yêu cầu đăng kí ca.',
+
+        noResultsTitle: 'Chưa có yêu cầu đăng kí ca phù hợp',
+        noResultsDescription: 'Thử thay đổi khoảng ngày, trạng thái hoặc chi nhánh.',
+        employeeNoResultsDescription: 'Thử thay đổi khoảng ngày hoặc trạng thái.',
+
+        cancelDescription: 'Bạn có chắc muốn hủy yêu cầu đang chờ duyệt này không?',
     },
 } as const;
