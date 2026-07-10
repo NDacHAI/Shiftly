@@ -10,6 +10,7 @@ import { EmployeeModule } from './module/employee/employee.module';
 import { WorkShiftModule } from './module/work-shift/work-shift.module';
 import { WorkScheduleModule } from './module/work-schedule/work-schedule.module';
 import { ShiftRequestModule } from './module/shift-request/shift-request.module';
+import { AttendanceModule } from './module/attendance/attendance.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ShiftRequestModule } from './module/shift-request/shift-request.module'
     WorkShiftModule,
     WorkScheduleModule,
     ShiftRequestModule,
+    AttendanceModule,
   ]
 })
 export class AppModule { }

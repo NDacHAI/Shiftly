@@ -8,4 +8,5 @@
     workShifts: '/work-shift',
     workSchedules: '/work-schedules',
     shiftRequests: '/shift-requests',
+    attendance: '/attendance',
 } as const;
