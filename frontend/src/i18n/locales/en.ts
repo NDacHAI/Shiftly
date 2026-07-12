@@ -62,6 +62,7 @@
         workShifts: 'Shift Templates',
         workSchedules: 'Work Schedules',
         shiftRequests: 'Shift Requests',
+        leaveRequests: 'Leave Requests',
         attendance: 'Attendance',
         settings: 'Settings',
     },

@@ -14,6 +14,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage';
 import WorkShiftPage from '@/features/work-shifts/pages/WorkShiftPage';
 import { WorkSchedulesPage } from '@/features/work-schedules/pages/WorkSchedulesPage';
 import { ShiftRequestsPage } from '@/features/shift-requests/pages/ShiftRequestsPage';
+import { LeaveRequestsPage } from '@/features/leave-requests/pages/LeaveRequestsPage';
 import { AttendancePage } from '@/features/attendance/pages/AttendancePage';
 
 type AppRouterProps = {
@@ -186,6 +187,24 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                             onLogout={onLogout}
                         >
                             <ShiftRequestsPage userRole={user.role} />
+                        </Layout>
+                    </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.leaveRequests}
+                element={
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager, roles.user]}
+                        userRole={user.role}
+                    >
+                        <Layout
+                            activeNavKey="nav.leaveRequests"
+                            titleKey="routes.leaveRequests"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <LeaveRequestsPage userRole={user.role} />
                         </Layout>
                     </PermissionRoute>
                 }

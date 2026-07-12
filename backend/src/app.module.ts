@@ -11,6 +11,7 @@ import { WorkShiftModule } from './module/work-shift/work-shift.module';
 import { WorkScheduleModule } from './module/work-schedule/work-schedule.module';
 import { ShiftRequestModule } from './module/shift-request/shift-request.module';
 import { AttendanceModule } from './module/attendance/attendance.module';
+import { LeaveRequestModule } from './module/leave-request/leave-request.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AttendanceModule } from './module/attendance/attendance.module';
     WorkScheduleModule,
     ShiftRequestModule,
     AttendanceModule,
+    LeaveRequestModule,
   ]
 })
 export class AppModule { }
