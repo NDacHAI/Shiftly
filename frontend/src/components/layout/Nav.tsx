@@ -50,6 +50,7 @@ const navigation: Array<{
         { labelKey: 'nav.leaveRequests', icon: faFileLines, href: routes.leaveRequests, allowedRoles: [roles.admin, roles.manager, roles.user] },
         { labelKey: 'nav.holidays', icon: faCalendarDay, href: routes.holidays, allowedRoles: [roles.admin, roles.manager, roles.user] },
         { labelKey: 'nav.salaryRules', icon: faCoins, href: routes.salaryRules, allowedRoles: [roles.admin, roles.manager] },
+        { labelKey: 'nav.rewardPenaltyCatalogs', icon: faCoins, href: routes.rewardPenaltyCatalogs, allowedRoles: [roles.admin, roles.manager] },
         { labelKey: 'nav.attendance', icon: faClock, href: routes.attendance, allowedRoles: [roles.admin, roles.manager, roles.user] },
         { labelKey: 'nav.settings', icon: faGear, href: routes.settings },
     ];

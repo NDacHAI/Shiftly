@@ -18,6 +18,7 @@ import { LeaveRequestsPage } from '@/features/leave-requests/pages/LeaveRequests
 import { AttendancePage } from '@/features/attendance/pages/AttendancePage';
 import { HolidaysPage } from '@/features/holidays/pages/HolidaysPage';
 import { SalaryRulesPage } from '@/features/salary-rules/pages/SalaryRulesPage';
+import { RewardPenaltyCatalogsPage } from '@/features/reward-penalty-catalogs/pages/RewardPenaltyCatalogsPage';
 
 type AppRouterProps = {
     user: AuthUser;
@@ -261,6 +262,26 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                             onLogout={onLogout}
                         >
                             <SalaryRulesPage canManage={user.role === roles.admin} />
+                        </Layout>
+                    </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.rewardPenaltyCatalogs}
+                element={
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager]}
+                        userRole={user.role}
+                    >
+                        <Layout
+                            activeNavKey="nav.rewardPenaltyCatalogs"
+                            titleKey="routes.rewardPenaltyCatalogs"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <RewardPenaltyCatalogsPage
+                                canManage={user.role === roles.admin}
+                            />
                         </Layout>
                     </PermissionRoute>
                 }

@@ -11,5 +11,6 @@
     leaveRequests: '/leave-requests',
     holidays: '/holidays',
     salaryRules: '/salary-rules',
+    rewardPenaltyCatalogs: '/reward-penalty-catalogs',
     attendance: '/attendance',
 } as const;
