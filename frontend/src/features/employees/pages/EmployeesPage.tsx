@@ -70,7 +70,6 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
     const [positions, setPositions] = useState<Position[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const [total, setTotal] = useState(0);
     const [search, setSearch] = useState('');
     const [branchId, setBranchId] = useState('');
     const [positionId, setPositionId] = useState('');
@@ -91,7 +90,6 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             if (!canList) {
                 const employee = await getMyEmployee();
                 setEmployees([employee]);
-                setTotal(1);
                 setTotalPages(1);
                 return;
             }
@@ -108,7 +106,6 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                 sortOrder,
             });
             setEmployees(response.data);
-            setTotal(response.meta.total);
             setTotalPages(response.meta.totalPages);
         } catch (error) {
             showToast({
@@ -231,10 +228,6 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
         }
     }
 
-    const activeCount = employees.filter(
-        (employee) => employee.status === 'Active',
-    ).length;
-
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
             <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-sm:flex-col max-sm:items-stretch">
@@ -263,35 +256,6 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                     </Button>
                 )}
             </div>
-
-            {canList && (
-                <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
-                    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p className="text-sm text-slate-500">
-                            {t('employees.total')}
-                        </p>
-                        <strong className="mt-1 block text-2xl text-slate-950">
-                            {total}
-                        </strong>
-                    </article>
-                    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p className="text-sm text-slate-500">
-                            {t('employees.activeOnPage')}
-                        </p>
-                        <strong className="mt-1 block text-2xl text-emerald-700">
-                            {activeCount}
-                        </strong>
-                    </article>
-                    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <p className="text-sm text-slate-500">
-                            {t('employees.inactiveOnPage')}
-                        </p>
-                        <strong className="mt-1 block text-2xl text-amber-700">
-                            {employees.length - activeCount}
-                        </strong>
-                    </article>
-                </div>
-            )}
 
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <LoadingOverlay label={t('employees.loading')} visible={loading} />

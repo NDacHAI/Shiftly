@@ -9,5 +9,6 @@
     workSchedules: '/work-schedules',
     shiftRequests: '/shift-requests',
     leaveRequests: '/leave-requests',
+    holidays: '/holidays',
     attendance: '/attendance',
 } as const;

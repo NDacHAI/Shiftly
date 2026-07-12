@@ -1,7 +1,7 @@
-﻿import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faBuilding,
+    faCalendarDay,
     faEye,
     faFilter,
     faPen,
@@ -21,72 +21,89 @@ import {
 import { useDebounce } from '@/hooks/useDebounce';
 import { useI18n } from '@/i18n';
 import {
-    createBranch,
-    deleteBranch,
-    getBranch,
-    getBranchErrorMessage,
-    listBranches,
-    updateBranch,
-} from '../api/branches.api';
-import { BranchDetailsDialog } from '../components/BranchDetailsDialog';
-import { BranchFormDialog } from '../components/BranchFormDialog';
+    createHoliday,
+    deleteHoliday,
+    getHoliday,
+    getHolidayErrorMessage,
+    listHolidays,
+    updateHoliday,
+} from '../api/holidays.api';
+import { HolidayDetailsDialog } from '../components/HolidayDetailsDialog';
+import { HolidayFormDialog } from '../components/HolidayFormDialog';
 import {
-    type Branch,
-    type BranchPayload,
-    type BranchSortField,
+    type Holiday,
+    type HolidayPayload,
+    type HolidaySortField,
+    type HolidayStatusFilter,
+    HolidayStatus,
     type SortOrder,
+    type UpdateHolidayPayload,
 } from '../types';
 
 const pageSize = 10;
-type StatusFilter = 'all' | 'active' | 'inactive';
 
 const fieldClass =
     'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
 
-function formatDate(value: string) {
-    return new Intl.DateTimeFormat('vi-VN', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-    }).format(new Date(value));
-}
-
-type BranchesPageProps = {
+type HolidaysPageProps = {
     canManage: boolean;
 };
 
-export function BranchesPage({ canManage }: BranchesPageProps) {
+function formatDate(value: string) {
+    return new Intl.DateTimeFormat('vi-VN', {
+        dateStyle: 'short',
+    }).format(new Date(`${value}T00:00:00`));
+}
+
+function statusFromFilter(filter: HolidayStatusFilter) {
+    if (filter === 'active') return HolidayStatus.Active;
+    if (filter === 'inactive') return HolidayStatus.Inactive;
+    return undefined;
+}
+
+export function HolidaysPage({ canManage }: HolidaysPageProps) {
     const { showToast } = useToast();
     const { t } = useI18n();
-    const [branches, setBranches] = useState<Branch[]>([]);
+    const [holidays, setHolidays] = useState<Holiday[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const debouncedSearch = useDebounce(search);
-    const [sortBy, setSortBy] = useState<BranchSortField>('createdAt');
+    const [year, setYear] = useState('');
+    const [statusFilter, setStatusFilter] =
+        useState<HolidayStatusFilter>('all');
+    const [sortBy, setSortBy] = useState<HolidaySortField>('holidayDate');
     const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [editing, setEditing] = useState<Branch | null>(null);
-    const [selected, setSelected] = useState<Branch | null>(null);
-    const [showForm, setShowForm] = useState(false);
-    const [branchToDelete, setBranchToDelete] =
-        useState<Branch | null>(null);
+    const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [error, setError] = useState('');
+    const [editing, setEditing] = useState<Holiday | null>(null);
+    const [selected, setSelected] = useState<Holiday | null>(null);
+    const [showForm, setShowForm] = useState(false);
+    const [holidayToDelete, setHolidayToDelete] = useState<Holiday | null>(null);
 
-    const loadBranches = useCallback(async () => {
+    const parsedYear = useMemo(() => {
+        if (!year.trim()) return undefined;
+        const value = Number(year);
+        return Number.isInteger(value) ? value : undefined;
+    }, [year]);
+
+    const loadHolidays = useCallback(async () => {
         setLoading(true);
         setError('');
 
         try {
-            const response = await listBranches({
+            const response = await listHolidays({
                 page,
                 limit: pageSize,
                 search: debouncedSearch || undefined,
+                year: parsedYear,
+                status: canManage ? statusFromFilter(statusFilter) : undefined,
                 sortBy,
                 sortOrder,
             });
-            setBranches(response.data);
+            setHolidays(response.data);
             setTotalPages(response.meta.totalPages);
 
             if (
@@ -96,88 +113,94 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                 setPage(response.meta.totalPages);
             }
         } catch (loadError) {
-            setError(getBranchErrorMessage(loadError));
+            setError(getHolidayErrorMessage(loadError));
         } finally {
             setLoading(false);
         }
-    }, [debouncedSearch, page, sortBy, sortOrder]);
+    }, [
+        canManage,
+        debouncedSearch,
+        page,
+        parsedYear,
+        sortBy,
+        sortOrder,
+        statusFilter,
+    ]);
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
-            void loadBranches();
+            void loadHolidays();
         }, 0);
 
         return () => window.clearTimeout(timeoutId);
-    }, [loadBranches]);
+    }, [loadHolidays]);
 
-    const displayedBranches = branches.filter((branch) => {
-        if (statusFilter === 'active') return branch.status;
-        if (statusFilter === 'inactive') return !branch.status;
-        return true;
-    });
+    async function handleSubmit(
+        payload: HolidayPayload | UpdateHolidayPayload,
+    ) {
+        setSaving(true);
+        try {
+            if (editing) {
+                await updateHoliday(editing.id, payload);
+            } else {
+                await createHoliday(payload as HolidayPayload);
+            }
 
-    async function handleSubmit(form: BranchPayload) {
-        if (editing) {
-            await updateBranch(editing.id, form);
-        } else {
-            await createBranch(form);
+            const wasEditing = Boolean(editing);
+            setShowForm(false);
+            setEditing(null);
+            await loadHolidays();
+            showToast({
+                message: wasEditing
+                    ? t('holidays.updated')
+                    : t('holidays.created'),
+                title: t('common.success'),
+                variant: 'success',
+            });
+        } finally {
+            setSaving(false);
         }
-
-        const wasEditing = Boolean(editing);
-        setShowForm(false);
-        setEditing(null);
-        await loadBranches();
-        showToast({
-            message: wasEditing
-                ? t('branches.updated')
-                : t('branches.created'),
-            title: t('common.success'),
-            variant: 'success',
-        });
     }
 
     async function handleView(id: string) {
         setError('');
 
         try {
-            setSelected(await getBranch(id));
+            setSelected(await getHoliday(id));
         } catch (viewError) {
-            const message = getBranchErrorMessage(viewError);
+            const message = getHolidayErrorMessage(viewError);
             setError(message);
             showToast({
                 message,
-                title: t('branches.viewError'),
+                title: t('holidays.viewError'),
                 variant: 'error',
             });
         }
     }
 
     async function handleConfirmDelete() {
-        if (!branchToDelete) return;
+        if (!holidayToDelete) return;
 
         setDeleting(true);
         setError('');
 
         try {
-            await deleteBranch(branchToDelete.id);
-            if (selected?.id === branchToDelete.id) setSelected(null);
-            const deletedBranchName = branchToDelete.name;
-            setBranchToDelete(null);
-            await loadBranches();
+            await deleteHoliday(holidayToDelete.id);
+            if (selected?.id === holidayToDelete.id) setSelected(null);
+            const deletedName = holidayToDelete.name;
+            setHolidayToDelete(null);
+            await loadHolidays();
             showToast({
-                message: t('branches.deleted').replace(
-                    '{name}',
-                    deletedBranchName,
-                ),
+                message: t('holidays.deleted').replace('{name}', deletedName),
                 title: t('common.success'),
                 variant: 'success',
             });
         } catch (deleteError) {
-            const message = getBranchErrorMessage(deleteError);
+            const message = getHolidayErrorMessage(deleteError);
             setError(message);
             showToast({
                 message,
-                title: t('branches.deleteError'),
+                title: t('holidays.deleteError'),
                 variant: 'error',
             });
         } finally {
@@ -185,7 +208,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
         }
     }
 
-    function changeSort(field: BranchSortField) {
+    function changeSort(field: HolidaySortField) {
         if (sortBy === field) {
             setSortOrder((current) => (current === 'ASC' ? 'DESC' : 'ASC'));
         } else {
@@ -195,7 +218,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
         setPage(1);
     }
 
-    function sortLabel(field: BranchSortField) {
+    function sortLabel(field: HolidaySortField) {
         if (sortBy !== field) return '';
         return sortOrder === 'ASC' ? ' ^' : ' v';
     }
@@ -205,14 +228,14 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
             <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-sm:items-stretch max-sm:flex-col">
                 <div className="flex items-center gap-4">
                     <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl text-primary-600">
-                        <FontAwesomeIcon icon={faBuilding} />
+                        <FontAwesomeIcon icon={faCalendarDay} />
                     </span>
                     <div>
                         <h2 className="text-xl font-bold text-slate-950">
-                            {t('branches.title')}
+                            {t('holidays.title')}
                         </h2>
                         <p className="mt-1 text-sm text-slate-500">
-                            {t('branches.subtitle')}
+                            {t('holidays.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -226,7 +249,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                         size="lg"
                     >
                         <FontAwesomeIcon icon={faPlus} />
-                        {t('branches.add')}
+                        {t('holidays.add')}
                     </Button>
                 )}
             </div>
@@ -238,8 +261,8 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
             )}
 
             <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                <LoadingOverlay label={t('branches.loading')} visible={loading} />
-                <div className="flex items-center justify-between gap-4 border-b border-slate-200 p-4 max-md:items-stretch max-md:flex-col">
+                <LoadingOverlay label={t('holidays.loading')} visible={loading} />
+                <div className="flex items-center justify-between gap-4 border-b border-slate-200 p-4 max-lg:items-stretch max-lg:flex-col">
                     <label className="relative block w-full max-w-sm">
                         <span className="sr-only">{t('common.search')}</span>
                         <FontAwesomeIcon
@@ -249,7 +272,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                         <input
                             aria-label={t('common.search')}
                             className={`${fieldClass} pl-9`}
-                            placeholder={t('branches.searchPlaceholder')}
+                            placeholder={t('holidays.searchPlaceholder')}
                             value={search}
                             onChange={(event) => {
                                 setSearch(event.target.value);
@@ -259,38 +282,58 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                     </label>
 
                     <div className="flex items-center gap-3 max-sm:flex-col">
-                        <label className="relative">
-                            <span className="sr-only">{t('common.status')}</span>
-                            <FontAwesomeIcon
-                                className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-slate-500"
-                                icon={faFilter}
-                            />
-                            <DropdownSelect
-                                ariaLabel={t('common.status')}
-                                className="max-sm:w-full"
-                                options={[
-                                    {
-                                        value: 'all',
-                                        label: t('common.allStatuses'),
-                                    },
-                                    {
-                                        value: 'active',
-                                        label: t('common.active'),
-                                    },
-                                    {
-                                        value: 'inactive',
-                                        label: t('common.inactive'),
-                                    },
-                                ]}
-                                value={statusFilter}
-                                onChange={(value) =>
-                                    setStatusFilter(value as StatusFilter)
-                                }
-                            />
-                        </label>
+                        <input
+                            aria-label={t('holidays.year')}
+                            className={`${fieldClass} w-32 max-sm:w-full`}
+                            max={2100}
+                            min={1900}
+                            placeholder={t('holidays.year')}
+                            type="number"
+                            value={year}
+                            onChange={(event) => {
+                                setYear(event.target.value);
+                                setPage(1);
+                            }}
+                        />
+                        {canManage && (
+                            <label className="relative">
+                                <span className="sr-only">
+                                    {t('common.status')}
+                                </span>
+                                <FontAwesomeIcon
+                                    className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-slate-500"
+                                    icon={faFilter}
+                                />
+                                <DropdownSelect
+                                    ariaLabel={t('common.status')}
+                                    className="max-sm:w-full"
+                                    options={[
+                                        {
+                                            value: 'all',
+                                            label: t('common.allStatuses'),
+                                        },
+                                        {
+                                            value: 'active',
+                                            label: t('common.active'),
+                                        },
+                                        {
+                                            value: 'inactive',
+                                            label: t('common.inactive'),
+                                        },
+                                    ]}
+                                    value={statusFilter}
+                                    onChange={(value) => {
+                                        setStatusFilter(
+                                            value as HolidayStatusFilter,
+                                        );
+                                        setPage(1);
+                                    }}
+                                />
+                            </label>
+                        )}
                         <Button
                             className="max-sm:w-full"
-                            onClick={() => void loadBranches()}
+                            onClick={() => void loadHolidays()}
                             size="lg"
                             variant="secondary"
                         >
@@ -306,8 +349,8 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                             <tr className="border-b border-slate-200 bg-slate-50">
                                 {(
                                     [
-                                        ['code', t('common.code')],
-                                        ['name', t('common.name')],
+                                        ['name', t('holidays.name')],
+                                        ['holidayDate', t('holidays.holidayDate')],
                                         ['status', t('common.status')],
                                         ['createdAt', t('common.createdAt')],
                                     ] as const
@@ -333,39 +376,42 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                         </thead>
                         <tbody>
                             {!loading &&
-                                displayedBranches.map((branch) => (
+                                holidays.map((holiday) => (
                                     <tr
                                         className="border-b border-slate-100 transition hover:bg-slate-50/80 last:border-0"
-                                        key={branch.id}
+                                        key={holiday.id}
                                     >
                                         <td className="px-5 py-3.5 text-center text-sm font-semibold text-slate-800">
-                                            {branch.code}
+                                            {holiday.name}
                                         </td>
                                         <td className="px-5 py-3.5 text-center text-sm text-slate-700">
-                                            {branch.name}
+                                            {formatDate(holiday.holidayDate)}
                                         </td>
                                         <td className="px-5 py-3.5 text-center">
                                             <span
                                                 className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                                    branch.status
+                                                    holiday.status ===
+                                                    HolidayStatus.Active
                                                         ? 'bg-emerald-50 text-emerald-700'
                                                         : 'bg-amber-50 text-amber-700'
                                                 }`}
                                             >
                                                 <span
                                                     className={`size-1.5 rounded-full ${
-                                                        branch.status
+                                                        holiday.status ===
+                                                        HolidayStatus.Active
                                                             ? 'bg-emerald-500'
                                                             : 'bg-amber-500'
                                                     }`}
                                                 />
-                                                {branch.status
+                                                {holiday.status ===
+                                                HolidayStatus.Active
                                                     ? t('common.active')
                                                     : t('common.inactive')}
                                             </span>
                                         </td>
                                         <td className="px-5 py-3.5 text-center text-sm text-slate-600">
-                                            {formatDate(branch.createdAt)}
+                                            {formatDate(holiday.createdAt.slice(0, 10))}
                                         </td>
                                         <td className="px-5 py-3.5">
                                             <div className="flex items-center justify-center gap-2">
@@ -373,7 +419,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                                                     aria-label={t('common.view')}
                                                     className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
                                                     onClick={() =>
-                                                        void handleView(branch.id)
+                                                        void handleView(holiday.id)
                                                     }
                                                     title={t('common.view')}
                                                     type="button"
@@ -383,29 +429,43 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                                                 {canManage && (
                                                     <>
                                                         <button
-                                                            aria-label={t('common.edit')}
+                                                            aria-label={t(
+                                                                'common.edit',
+                                                            )}
                                                             className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
                                                             onClick={() => {
-                                                                setEditing(branch);
+                                                                setEditing(
+                                                                    holiday,
+                                                                );
                                                                 setShowForm(true);
                                                             }}
-                                                            title={t('common.edit')}
+                                                            title={t(
+                                                                'common.edit',
+                                                            )}
                                                             type="button"
                                                         >
-                                                            <FontAwesomeIcon icon={faPen} />
+                                                            <FontAwesomeIcon
+                                                                icon={faPen}
+                                                            />
                                                         </button>
                                                         <button
-                                                            aria-label={t('common.delete')}
+                                                            aria-label={t(
+                                                                'common.delete',
+                                                            )}
                                                             className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
                                                             onClick={() =>
-                                                                setBranchToDelete(
-                                                                    branch,
+                                                                setHolidayToDelete(
+                                                                    holiday,
                                                                 )
                                                             }
-                                                            title={t('common.delete')}
+                                                            title={t(
+                                                                'common.delete',
+                                                            )}
                                                             type="button"
                                                         >
-                                                            <FontAwesomeIcon icon={faTrash} />
+                                                            <FontAwesomeIcon
+                                                                icon={faTrash}
+                                                            />
                                                         </button>
                                                     </>
                                                 )}
@@ -413,15 +473,19 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                                         </td>
                                     </tr>
                                 ))}
-                            {!loading && displayedBranches.length === 0 && (
+                            {!loading && holidays.length === 0 && (
                                 <tr>
                                     <td colSpan={5}>
                                         <EmptyState
                                             description={t(
-                                                'branches.noResultsDescription',
+                                                'holidays.noResultsDescription',
                                             )}
-                                            icon={<FontAwesomeIcon icon={faBuilding} />}
-                                            title={t('branches.noResultsTitle')}
+                                            icon={
+                                                <FontAwesomeIcon
+                                                    icon={faCalendarDay}
+                                                />
+                                            }
+                                            title={t('holidays.noResultsTitle')}
                                         />
                                     </td>
                                 </tr>
@@ -439,31 +503,32 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
             </div>
 
             {showForm && (
-                <BranchFormDialog
+                <HolidayFormDialog
                     editing={editing}
+                    saving={saving}
                     onClose={() => setShowForm(false)}
                     onSubmit={handleSubmit}
                 />
             )}
 
             {selected && (
-                <BranchDetailsDialog
-                    branch={selected}
+                <HolidayDetailsDialog
+                    holiday={selected}
                     onClose={() => setSelected(null)}
                 />
             )}
 
             <ConfirmDialog
-                confirmLabel={t('branches.deleteConfirmLabel')}
-                description={t('branches.deleteDescription').replace(
+                confirmLabel={t('holidays.deleteConfirmLabel')}
+                description={t('holidays.deleteDescription').replace(
                     '{name}',
-                    branchToDelete?.name ?? '',
+                    holidayToDelete?.name ?? '',
                 )}
                 loading={deleting}
-                open={Boolean(branchToDelete)}
+                open={Boolean(holidayToDelete)}
                 title={t('common.confirmDelete')}
                 tone="danger"
-                onCancel={() => setBranchToDelete(null)}
+                onCancel={() => setHolidayToDelete(null)}
                 onConfirm={() => void handleConfirmDelete()}
             />
         </section>

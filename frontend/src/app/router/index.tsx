@@ -16,6 +16,7 @@ import { WorkSchedulesPage } from '@/features/work-schedules/pages/WorkSchedules
 import { ShiftRequestsPage } from '@/features/shift-requests/pages/ShiftRequestsPage';
 import { LeaveRequestsPage } from '@/features/leave-requests/pages/LeaveRequestsPage';
 import { AttendancePage } from '@/features/attendance/pages/AttendancePage';
+import { HolidaysPage } from '@/features/holidays/pages/HolidaysPage';
 
 type AppRouterProps = {
     user: AuthUser;
@@ -223,6 +224,24 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                             onLogout={onLogout}
                         >
                             <AttendancePage userRole={user.role} />
+                        </Layout>
+                    </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.holidays}
+                element={
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager, roles.user]}
+                        userRole={user.role}
+                    >
+                        <Layout
+                            activeNavKey="nav.holidays"
+                            titleKey="routes.holidays"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <HolidaysPage canManage={user.role === roles.admin} />
                         </Layout>
                     </PermissionRoute>
                 }
