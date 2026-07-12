@@ -17,6 +17,7 @@ import { ShiftRequestsPage } from '@/features/shift-requests/pages/ShiftRequests
 import { LeaveRequestsPage } from '@/features/leave-requests/pages/LeaveRequestsPage';
 import { AttendancePage } from '@/features/attendance/pages/AttendancePage';
 import { HolidaysPage } from '@/features/holidays/pages/HolidaysPage';
+import { SalaryRulesPage } from '@/features/salary-rules/pages/SalaryRulesPage';
 
 type AppRouterProps = {
     user: AuthUser;
@@ -242,6 +243,24 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                             onLogout={onLogout}
                         >
                             <HolidaysPage canManage={user.role === roles.admin} />
+                        </Layout>
+                    </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.salaryRules}
+                element={
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager]}
+                        userRole={user.role}
+                    >
+                        <Layout
+                            activeNavKey="nav.salaryRules"
+                            titleKey="routes.salaryRules"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <SalaryRulesPage canManage={user.role === roles.admin} />
                         </Layout>
                     </PermissionRoute>
                 }

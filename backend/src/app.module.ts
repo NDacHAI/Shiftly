@@ -13,6 +13,7 @@ import { ShiftRequestModule } from './module/shift-request/shift-request.module'
 import { AttendanceModule } from './module/attendance/attendance.module';
 import { LeaveRequestModule } from './module/leave-request/leave-request.module';
 import { HolidayModule } from './module/holiday/holiday.module';
+import { SalaryRuleModule } from './module/salary-rule/salary-rule.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { HolidayModule } from './module/holiday/holiday.module';
     AttendanceModule,
     LeaveRequestModule,
     HolidayModule,
+    SalaryRuleModule,
   ]
 })
 export class AppModule { }

@@ -10,5 +10,6 @@
     shiftRequests: '/shift-requests',
     leaveRequests: '/leave-requests',
     holidays: '/holidays',
+    salaryRules: '/salary-rules',
     attendance: '/attendance',
 } as const;
