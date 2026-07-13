@@ -10,6 +10,7 @@
     shiftRequests: '/shift-requests',
     leaveRequests: '/leave-requests',
     holidays: '/holidays',
+    payrollPeriods: '/payroll-periods',
     salaryRules: '/salary-rules',
     rewardPenaltyCatalogs: '/reward-penalty-catalogs',
     attendance: '/attendance',

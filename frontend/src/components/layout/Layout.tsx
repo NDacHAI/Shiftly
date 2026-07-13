@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { type AuthUser } from '@/features/auth/types';
 import { type I18nKey, useI18n } from '@/i18n';
 import { Header } from './Header';
@@ -21,13 +21,21 @@ export function Layout({
 }: LayoutProps) {
     const { t } = useI18n();
     const title = t(titleKey);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     return (
-        <main className="grid min-h-screen grid-cols-[248px_minmax(0,1fr)] max-sm:block">
+        <main
+            className={`grid min-h-screen transition-[grid-template-columns] duration-200 max-sm:block ${
+                sidebarCollapsed
+                    ? 'grid-cols-[80px_minmax(0,1fr)]'
+                    : 'grid-cols-[288px_minmax(0,1fr)]'
+            }`}
+        >
             <Nav
-                key={activeNavKey ?? titleKey}
+                collapsed={sidebarCollapsed}
                 defaultActiveItem={activeNavKey ?? titleKey}
                 userRole={user.role}
+                onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
             />
             <div className="min-w-0">
                 <Header title={title} user={user} onLogout={onLogout} />

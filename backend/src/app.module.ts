@@ -15,6 +15,7 @@ import { LeaveRequestModule } from './module/leave-request/leave-request.module'
 import { HolidayModule } from './module/holiday/holiday.module';
 import { SalaryRuleModule } from './module/salary-rule/salary-rule.module';
 import { RewardPenaltyCatalogModule } from './module/reward-penalty-catalog/reward-penalty-catalog.module';
+import { PayrollPeriodModule } from './module/payroll-period/payroll-period.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { RewardPenaltyCatalogModule } from './module/reward-penalty-catalog/rewa
     HolidayModule,
     SalaryRuleModule,
     RewardPenaltyCatalogModule,
+    PayrollPeriodModule,
   ]
 })
 export class AppModule { }

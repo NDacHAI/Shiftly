@@ -19,6 +19,7 @@ import { AttendancePage } from '@/features/attendance/pages/AttendancePage';
 import { HolidaysPage } from '@/features/holidays/pages/HolidaysPage';
 import { SalaryRulesPage } from '@/features/salary-rules/pages/SalaryRulesPage';
 import { RewardPenaltyCatalogsPage } from '@/features/reward-penalty-catalogs/pages/RewardPenaltyCatalogsPage';
+import { PayrollPeriodsPage } from '@/features/payroll-periods/pages/PayrollPeriodsPage';
 
 type AppRouterProps = {
     user: AuthUser;
@@ -244,6 +245,24 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                             onLogout={onLogout}
                         >
                             <HolidaysPage canManage={user.role === roles.admin} />
+                        </Layout>
+                    </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.payrollPeriods}
+                element={
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager]}
+                        userRole={user.role}
+                    >
+                        <Layout
+                            activeNavKey="nav.payrollPeriods"
+                            titleKey="routes.payrollPeriods"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <PayrollPeriodsPage canManage={user.role === roles.admin} />
                         </Layout>
                     </PermissionRoute>
                 }
