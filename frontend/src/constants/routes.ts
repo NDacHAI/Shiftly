@@ -14,4 +14,5 @@
     salaryRules: '/salary-rules',
     rewardPenaltyCatalogs: '/reward-penalty-catalogs',
     attendance: '/attendance',
+    payrollAdjustments: '/payroll-adjustments',
 } as const;

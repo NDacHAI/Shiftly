@@ -16,6 +16,7 @@ import { HolidayModule } from './module/holiday/holiday.module';
 import { SalaryRuleModule } from './module/salary-rule/salary-rule.module';
 import { RewardPenaltyCatalogModule } from './module/reward-penalty-catalog/reward-penalty-catalog.module';
 import { PayrollPeriodModule } from './module/payroll-period/payroll-period.module';
+import { PayrollAdjustmentModule } from './module/payroll-adjustment/payroll-adjustment.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { PayrollPeriodModule } from './module/payroll-period/payroll-period.modu
     SalaryRuleModule,
     RewardPenaltyCatalogModule,
     PayrollPeriodModule,
+    PayrollAdjustmentModule,
   ]
 })
 export class AppModule { }

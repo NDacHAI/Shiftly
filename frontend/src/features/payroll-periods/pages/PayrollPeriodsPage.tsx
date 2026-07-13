@@ -26,7 +26,7 @@ import {
     createPayrollPeriod,
     deletePayrollPeriod,
     getPayrollPeriod,
-    getPayrollPeriodErrorMessage,
+    getPayrollPeriodErrorKey,
     listPayrollPeriods,
     openPayrollPeriod,
     updatePayrollPeriod,
@@ -122,7 +122,7 @@ export function PayrollPeriodsPage({ canManage }: PayrollPeriodsPageProps) {
                 setPage(response.meta.totalPages);
             }
         } catch (loadError) {
-            setError(getPayrollPeriodErrorMessage(loadError));
+            setError(t(getPayrollPeriodErrorKey(loadError)));
         } finally {
             setLoading(false);
         }
@@ -169,7 +169,7 @@ export function PayrollPeriodsPage({ canManage }: PayrollPeriodsPageProps) {
         try {
             setSelected(await getPayrollPeriod(id));
         } catch (viewError) {
-            const message = getPayrollPeriodErrorMessage(viewError);
+            const message = t(getPayrollPeriodErrorKey(viewError));
             setError(message);
             showToast({
                 message,
@@ -192,7 +192,7 @@ export function PayrollPeriodsPage({ canManage }: PayrollPeriodsPageProps) {
                 variant: 'success',
             });
         } catch (actionError) {
-            const message = getPayrollPeriodErrorMessage(actionError);
+            const message = t(getPayrollPeriodErrorKey(actionError));
             setError(message);
             showToast({
                 message,
@@ -217,7 +217,7 @@ export function PayrollPeriodsPage({ canManage }: PayrollPeriodsPageProps) {
                 variant: 'success',
             });
         } catch (actionError) {
-            const message = getPayrollPeriodErrorMessage(actionError);
+            const message = t(getPayrollPeriodErrorKey(actionError));
             setError(message);
             showToast({
                 message,
@@ -250,7 +250,7 @@ export function PayrollPeriodsPage({ canManage }: PayrollPeriodsPageProps) {
                 variant: 'success',
             });
         } catch (deleteError) {
-            const message = getPayrollPeriodErrorMessage(deleteError);
+            const message = t(getPayrollPeriodErrorKey(deleteError));
             setError(message);
             showToast({
                 message,

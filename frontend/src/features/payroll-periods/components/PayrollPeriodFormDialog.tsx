@@ -4,7 +4,7 @@ import { type FormEvent, useState } from 'react';
 import { useToast } from '@/components/feedback';
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { getPayrollPeriodErrorMessage } from '../api/payroll-periods.api';
+import { getPayrollPeriodErrorKey } from '../api/payroll-periods.api';
 import {
     type PayrollPeriod,
     type PayrollPeriodPayload,
@@ -93,7 +93,7 @@ export function PayrollPeriodFormDialog({
                 endDate: values.endDate,
             });
         } catch (submitError) {
-            const message = getPayrollPeriodErrorMessage(submitError);
+            const message = t(getPayrollPeriodErrorKey(submitError));
             showToast({
                 message,
                 title: t('payrollPeriods.saveError'),

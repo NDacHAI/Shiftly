@@ -117,6 +117,12 @@ const navigationGroups: Array<{
                 allowedRoles: [roles.admin, roles.manager],
             },
             {
+                labelKey: 'nav.payrollAdjustments',
+                icon: faCoins,
+                href: routes.payrollAdjustments,
+                allowedRoles: [roles.admin, roles.manager],
+            },
+            {
                 labelKey: 'nav.salaryRules',
                 icon: faCoins,
                 href: routes.salaryRules,

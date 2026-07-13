@@ -1,5 +1,6 @@
 import { getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
+import { type I18nKey } from '@/i18n';
 import {
     type PayrollPeriod,
     type PayrollPeriodListResponse,
@@ -79,4 +80,22 @@ export function getPayrollPeriodErrorMessage(error: unknown): string {
         error,
         'Unable to process the payroll period request. Please try again.',
     );
+}
+
+export function getPayrollPeriodErrorKey(error: unknown): I18nKey {
+    const message = getPayrollPeriodErrorMessage(error);
+    const errorKeys: Record<string, I18nKey> = {
+        'At least one field must be provided': 'payrollPeriods.errors.emptyPayload',
+        'Only draft payroll periods can be opened': 'payrollPeriods.errors.onlyDraftCanOpen',
+        'Only open payroll periods can be closed': 'payrollPeriods.errors.onlyOpenCanClose',
+        'Payroll period not found': 'payrollPeriods.errors.notFound',
+        'Only draft payroll periods can be changed': 'payrollPeriods.errors.onlyDraftCanChange',
+        'Start date must be before end date': 'payrollPeriods.errors.invalidDateRange',
+        'Payroll period already exists for this month': 'payrollPeriods.errors.monthExists',
+        'Payroll period date range overlaps another period': 'payrollPeriods.errors.dateRangeOverlap',
+        'Payroll period already exists': 'payrollPeriods.errors.exists',
+        'Payroll period cannot be deleted because related data exists': 'payrollPeriods.errors.deleteRelated',
+    };
+
+    return errorKeys[message] ?? 'payrollPeriods.errors.generic';
 }
