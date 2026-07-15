@@ -21,6 +21,8 @@ import { SalaryRulesPage } from '@/features/salary-rules/pages/SalaryRulesPage';
 import { RewardPenaltyCatalogsPage } from '@/features/reward-penalty-catalogs/pages/RewardPenaltyCatalogsPage';
 import { PayrollPeriodsPage } from '@/features/payroll-periods/pages/PayrollPeriodsPage';
 import { PayrollAdjustmentsPage } from '@/features/payroll-adjustments/pages/PayrollAdjustmentsPage';
+import { PayrollProcessingsPage } from '@/features/payroll-processings/pages/PayrollProcessingsPage';
+import { PayslipsPage } from '@/features/payslips/pages/PayslipsPage';
 
 type AppRouterProps = {
     user: AuthUser;
@@ -287,6 +289,47 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                                     user.role === roles.manager
                                 }
                             />
+                        </Layout>
+                    </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.payrollProcessings}
+                element={
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager]}
+                        userRole={user.role}
+                    >
+                        <Layout
+                            activeNavKey="nav.payrollProcessings"
+                            titleKey="routes.payrollProcessings"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <PayrollProcessingsPage
+                                canManage={
+                                    user.role === roles.admin ||
+                                    user.role === roles.manager
+                                }
+                            />
+                        </Layout>
+                    </PermissionRoute>
+                }
+            />
+            <Route
+                path={routes.payslips}
+                element={
+                    <PermissionRoute
+                        allowedRoles={[roles.admin, roles.manager, roles.user]}
+                        userRole={user.role}
+                    >
+                        <Layout
+                            activeNavKey="nav.payslips"
+                            titleKey="routes.payslips"
+                            user={user}
+                            onLogout={onLogout}
+                        >
+                            <PayslipsPage userRole={user.role} />
                         </Layout>
                     </PermissionRoute>
                 }

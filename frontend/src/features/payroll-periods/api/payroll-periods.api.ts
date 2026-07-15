@@ -95,6 +95,7 @@ export function getPayrollPeriodErrorKey(error: unknown): I18nKey {
         'Payroll period date range overlaps another period': 'payrollPeriods.errors.dateRangeOverlap',
         'Payroll period already exists': 'payrollPeriods.errors.exists',
         'Payroll period cannot be deleted because related data exists': 'payrollPeriods.errors.deleteRelated',
+        'Payroll processing must be closed before closing payroll period': 'payrollPeriods.errors.processingMustBeClosed',
     };
 
     return errorKeys[message] ?? 'payrollPeriods.errors.generic';

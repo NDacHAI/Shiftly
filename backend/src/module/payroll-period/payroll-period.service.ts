@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, QueryFailedError, Repository } from 'typeorm';
+import { PayrollProcessingStatus } from '@/module/payroll-processing/entities/payroll-processing-status.enum';
+import { PayrollProcessing } from '@/module/payroll-processing/entities/payroll-processing.entity';
 import { CreatePayrollPeriodDto } from './dto/create-payroll-period.dto';
 import { PayrollPeriodQueryDto } from './dto/payroll-period-query.dto';
 import { UpdatePayrollPeriodDto } from './dto/update-payroll-period.dto';
@@ -27,6 +29,8 @@ export class PayrollPeriodService {
     constructor(
         @InjectRepository(PayrollPeriod)
         private readonly payrollPeriodRepository: Repository<PayrollPeriod>,
+        @InjectRepository(PayrollProcessing)
+        private readonly payrollProcessingRepository: Repository<PayrollProcessing>,
     ) {}
 
     async create(
@@ -275,8 +279,19 @@ export class PayrollPeriodService {
         }
     }
 
-    private async ensureCanClosePeriod(_period: PayrollPeriod): Promise<void> {
-        // Payroll Processing will add finalized employee payroll checks here.
+    private async ensureCanClosePeriod(period: PayrollPeriod): Promise<void> {
+        const closedProcessing = await this.payrollProcessingRepository.findOne({
+            where: {
+                payrollPeriodId: period.id,
+                status: PayrollProcessingStatus.Closed,
+            },
+        });
+
+        if (!closedProcessing) {
+            throw new BadRequestException(
+                'Payroll processing must be closed before closing payroll period',
+            );
+        }
     }
 
     private buildGeneratedFields(

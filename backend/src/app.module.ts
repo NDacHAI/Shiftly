@@ -17,6 +17,8 @@ import { SalaryRuleModule } from './module/salary-rule/salary-rule.module';
 import { RewardPenaltyCatalogModule } from './module/reward-penalty-catalog/reward-penalty-catalog.module';
 import { PayrollPeriodModule } from './module/payroll-period/payroll-period.module';
 import { PayrollAdjustmentModule } from './module/payroll-adjustment/payroll-adjustment.module';
+import { PayrollProcessingModule } from './module/payroll-processing/payroll-processing.module';
+import { PayslipModule } from './module/payslip/payslip.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { PayrollAdjustmentModule } from './module/payroll-adjustment/payroll-adj
     RewardPenaltyCatalogModule,
     PayrollPeriodModule,
     PayrollAdjustmentModule,
+    PayrollProcessingModule,
+    PayslipModule,
   ]
 })
 export class AppModule { }

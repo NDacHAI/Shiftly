@@ -98,6 +98,8 @@ export function PayrollPeriodsPage({ canManage }: PayrollPeriodsPageProps) {
     const [showForm, setShowForm] = useState(false);
     const [periodToDelete, setPeriodToDelete] =
         useState<PayrollPeriod | null>(null);
+    const [periodToClose, setPeriodToClose] =
+        useState<PayrollPeriod | null>(null);
 
     const loadPeriods = useCallback(async () => {
         setLoading(true);
@@ -204,12 +206,15 @@ export function PayrollPeriodsPage({ canManage }: PayrollPeriodsPageProps) {
         }
     }
 
-    async function handleClose(period: PayrollPeriod) {
+    async function handleConfirmClose() {
+        if (!periodToClose) return;
+
         setActing(true);
         setError('');
 
         try {
-            await closePayrollPeriod(period.id);
+            await closePayrollPeriod(periodToClose.id);
+            setPeriodToClose(null);
             await loadPeriods();
             showToast({
                 message: t('payrollPeriods.closedMessage'),
@@ -512,7 +517,7 @@ export function PayrollPeriodsPage({ canManage }: PayrollPeriodsPageProps) {
                                                                 )}
                                                                 type="button"
                                                                 onClick={() =>
-                                                                    void handleClose(
+                                                                    setPeriodToClose(
                                                                         period,
                                                                     )
                                                                 }
@@ -608,6 +613,17 @@ export function PayrollPeriodsPage({ canManage }: PayrollPeriodsPageProps) {
                 tone="danger"
                 onCancel={() => setPeriodToDelete(null)}
                 onConfirm={() => void handleConfirmDelete()}
+            />
+
+            <ConfirmDialog
+                confirmLabel={t('payrollPeriods.closeConfirmLabel')}
+                description={t('payrollPeriods.closeDescription')}
+                loading={acting}
+                open={Boolean(periodToClose)}
+                title={t('payrollPeriods.closeAction')}
+                tone="primary"
+                onCancel={() => setPeriodToClose(null)}
+                onConfirm={() => void handleConfirmClose()}
             />
         </section>
     );

@@ -15,4 +15,6 @@
     rewardPenaltyCatalogs: '/reward-penalty-catalogs',
     attendance: '/attendance',
     payrollAdjustments: '/payroll-adjustments',
+    payrollProcessings: '/payroll-processings',
+    payslips: '/payslips',
 } as const;
