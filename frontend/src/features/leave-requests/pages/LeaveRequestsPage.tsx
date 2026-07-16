@@ -29,6 +29,7 @@ import { listBranches } from '@/features/branches/api/branches.api';
 import { type Branch } from '@/features/branches/types';
 import { getMyEmployee, listEmployees } from '@/features/employees/api/employees.api';
 import { type Employee } from '@/features/employees/types';
+import { useI18n } from '@/i18n';
 import {
     listMyWorkSchedules,
     listWorkSchedules,
@@ -38,7 +39,7 @@ import {
     approveLeaveRequest,
     cancelLeaveRequest,
     createLeaveRequest,
-    getLeaveRequestErrorMessage,
+    getLeaveRequestErrorKey,
     listLeaveRequests,
     listMyLeaveRequests,
     rejectLeaveRequest,
@@ -145,6 +146,7 @@ const initialFormValues: FormValues = {
 
 export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
     const { showToast } = useToast();
+    const { t } = useI18n();
     const employeeMode = userRole === roles.user;
     const [requests, setRequests] = useState<LeaveRequest[]>([]);
     const [branches, setBranches] = useState<Branch[]>([]);
@@ -200,7 +202,7 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
         } catch (error) {
             showToast({
                 title: 'Không thể tải đơn nghỉ',
-                message: getLeaveRequestErrorMessage(error),
+                message: t(getLeaveRequestErrorKey(error)),
                 variant: 'error',
             });
         } finally {
@@ -244,7 +246,7 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
         } catch (error) {
             showToast({
                 title: 'Không thể tải bộ lọc',
-                message: getLeaveRequestErrorMessage(error),
+                message: t(getLeaveRequestErrorKey(error)),
                 variant: 'error',
             });
         } finally {
@@ -281,7 +283,7 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
         } catch (error) {
             showToast({
                 title: 'Không thể tải ca làm',
-                message: getLeaveRequestErrorMessage(error),
+                message: t(getLeaveRequestErrorKey(error)),
                 variant: 'error',
             });
         }
@@ -408,7 +410,7 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
         } catch (error) {
             showToast({
                 title: 'Không thể tạo đơn nghỉ',
-                message: getLeaveRequestErrorMessage(error),
+                message: t(getLeaveRequestErrorKey(error)),
                 variant: 'error',
             });
         } finally {
@@ -445,7 +447,7 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
         } catch (error) {
             showToast({
                 title: 'Không thể xử lý đơn nghỉ',
-                message: getLeaveRequestErrorMessage(error),
+                message: t(getLeaveRequestErrorKey(error)),
                 variant: 'error',
             });
         } finally {
@@ -472,7 +474,7 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
         } catch (error) {
             showToast({
                 title: 'Không thể hủy đơn nghỉ',
-                message: getLeaveRequestErrorMessage(error),
+                message: t(getLeaveRequestErrorKey(error)),
                 variant: 'error',
             });
         } finally {

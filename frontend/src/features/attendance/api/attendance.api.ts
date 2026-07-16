@@ -1,4 +1,5 @@
-import { getApiErrorMessage } from '@/lib/api-error';
+import { type I18nKey } from '@/i18n';
+import { getApiErrorKey, getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
     type AdjustAttendancePayload,
@@ -109,4 +110,8 @@ export function getAttendanceErrorMessage(error: unknown): string {
         error,
         'Could not process attendance. Please try again.',
     );
+}
+
+export function getAttendanceErrorKey(error: unknown): I18nKey {
+    return getApiErrorKey(error);
 }

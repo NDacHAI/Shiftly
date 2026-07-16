@@ -24,7 +24,7 @@ import {
     createRewardPenaltyCatalog,
     deleteRewardPenaltyCatalog,
     getRewardPenaltyCatalog,
-    getRewardPenaltyCatalogErrorMessage,
+    getRewardPenaltyCatalogErrorKey,
     listRewardPenaltyCatalogs,
     updateRewardPenaltyCatalog,
 } from '../api/reward-penalty-catalogs.api';
@@ -118,7 +118,7 @@ export function RewardPenaltyCatalogsPage({
                 setPage(response.meta.totalPages);
             }
         } catch (loadError) {
-            setError(getRewardPenaltyCatalogErrorMessage(loadError));
+            setError(t(getRewardPenaltyCatalogErrorKey(loadError)));
         } finally {
             setLoading(false);
         }
@@ -176,7 +176,7 @@ export function RewardPenaltyCatalogsPage({
         try {
             setSelected(await getRewardPenaltyCatalog(id));
         } catch (viewError) {
-            const message = getRewardPenaltyCatalogErrorMessage(viewError);
+            const message = t(getRewardPenaltyCatalogErrorKey(viewError));
             setError(message);
             showToast({
                 message,
@@ -207,7 +207,7 @@ export function RewardPenaltyCatalogsPage({
                 variant: 'success',
             });
         } catch (deleteError) {
-            const message = getRewardPenaltyCatalogErrorMessage(deleteError);
+            const message = t(getRewardPenaltyCatalogErrorKey(deleteError));
             setError(message);
             showToast({
                 message,

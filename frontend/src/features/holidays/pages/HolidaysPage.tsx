@@ -24,7 +24,7 @@ import {
     createHoliday,
     deleteHoliday,
     getHoliday,
-    getHolidayErrorMessage,
+    getHolidayErrorKey,
     listHolidays,
     updateHoliday,
 } from '../api/holidays.api';
@@ -113,7 +113,7 @@ export function HolidaysPage({ canManage }: HolidaysPageProps) {
                 setPage(response.meta.totalPages);
             }
         } catch (loadError) {
-            setError(getHolidayErrorMessage(loadError));
+            setError(t(getHolidayErrorKey(loadError)));
         } finally {
             setLoading(false);
         }
@@ -168,7 +168,7 @@ export function HolidaysPage({ canManage }: HolidaysPageProps) {
         try {
             setSelected(await getHoliday(id));
         } catch (viewError) {
-            const message = getHolidayErrorMessage(viewError);
+            const message = t(getHolidayErrorKey(viewError));
             setError(message);
             showToast({
                 message,
@@ -196,7 +196,7 @@ export function HolidaysPage({ canManage }: HolidaysPageProps) {
                 variant: 'success',
             });
         } catch (deleteError) {
-            const message = getHolidayErrorMessage(deleteError);
+            const message = t(getHolidayErrorKey(deleteError));
             setError(message);
             showToast({
                 message,

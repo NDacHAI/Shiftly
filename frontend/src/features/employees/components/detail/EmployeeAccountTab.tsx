@@ -13,7 +13,7 @@ import { useI18n } from '@/i18n';
 import {
     createEmployeeAccount,
     getEmployeeAccount,
-    getEmployeeErrorMessage,
+    getEmployeeErrorKey,
     resetEmployeePassword,
 } from '../../api/employees.api';
 import { type Employee, type EmployeeAccount } from '../../types';
@@ -104,7 +104,7 @@ export function EmployeeAccountTab({
             } catch (error) {
                 if (active) {
                     showToast({
-                        message: getEmployeeErrorMessage(error),
+                        message: t(getEmployeeErrorKey(error)),
                         title: t('employees.accountLoadError'),
                         variant: 'error',
                     });
@@ -140,7 +140,7 @@ export function EmployeeAccountTab({
             });
         } catch (error) {
             showToast({
-                message: getEmployeeErrorMessage(error),
+                message: t(getEmployeeErrorKey(error)),
                 title: t('employees.accountCreateError'),
                 variant: 'error',
             });
@@ -170,7 +170,7 @@ export function EmployeeAccountTab({
             });
         } catch (error) {
             showToast({
-                message: getEmployeeErrorMessage(error),
+                message: t(getEmployeeErrorKey(error)),
                 title: t('employees.passwordResetError'),
                 variant: 'error',
             });

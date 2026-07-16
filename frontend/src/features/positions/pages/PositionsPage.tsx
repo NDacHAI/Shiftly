@@ -25,7 +25,7 @@ import {
     createPosition,
     deletePosition,
     getPosition,
-    getPositionErrorMessage,
+    getPositionErrorKey,
     listPositions,
     updatePosition,
     updatePositionStatus,
@@ -95,7 +95,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
             setTotalPages(response.meta.totalPages);
         } catch (error) {
             showToast({
-                message: getPositionErrorMessage(error),
+                message: t(getPositionErrorKey(error)),
                 title: t('positions.loadError'),
                 variant: 'error',
             });
@@ -185,7 +185,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
             });
         } catch (error) {
             showToast({
-                message: getPositionErrorMessage(error),
+                message: t(getPositionErrorKey(error)),
                 title: t('positions.statusUpdateError'),
                 variant: 'error',
             });
@@ -207,7 +207,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
             });
         } catch (error) {
             showToast({
-                message: getPositionErrorMessage(error),
+                message: t(getPositionErrorKey(error)),
                 title: t('positions.deleteError'),
                 variant: 'error',
             });

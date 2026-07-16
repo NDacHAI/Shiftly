@@ -5,7 +5,7 @@ import { useToast } from '@/components/feedback';
 import { Button, DropdownSelect } from '@/components/ui';
 import { type Branch } from '@/features/branches/types';
 import { useI18n } from '@/i18n';
-import { getPositionErrorMessage } from '../api/positions.api';
+import { getPositionErrorKey, getPositionErrorMessage } from '../api/positions.api';
 import {
     type Position,
     type PositionPayload,
@@ -80,9 +80,10 @@ export function PositionFormDialog({
                       },
             );
         } catch (error) {
-            const message = getPositionErrorMessage(error);
+            const message = t(getPositionErrorKey(error));
+            const rawMessage = getPositionErrorMessage(error);
 
-            if (message.toLowerCase().includes('code')) {
+            if (rawMessage.toLowerCase().includes('code')) {
                 setError('code', {
                     message,
                     type: 'server',

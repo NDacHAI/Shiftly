@@ -1,4 +1,5 @@
-import { getApiErrorMessage } from '@/lib/api-error';
+import { type I18nKey } from '@/i18n';
+import { getApiErrorKey, getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
     type SalaryRule,
@@ -63,4 +64,8 @@ export function getSalaryRuleErrorMessage(error: unknown): string {
         error,
         'Unable to process the salary rule request. Please try again.',
     );
+}
+
+export function getSalaryRuleErrorKey(error: unknown): I18nKey {
+    return getApiErrorKey(error);
 }

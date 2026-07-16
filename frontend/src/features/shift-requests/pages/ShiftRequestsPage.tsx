@@ -32,7 +32,7 @@ import {
     approveShiftRequest,
     cancelShiftRequest,
     createShiftRequest,
-    getShiftRequestErrorMessage,
+    getShiftRequestErrorKey,
     listMyShiftRequests,
     listShiftRequests,
     rejectShiftRequest,
@@ -178,7 +178,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
             setTotalPages(response.meta.totalPages);
         } catch (error) {
             showToast({
-                message: getShiftRequestErrorMessage(error),
+                message: t(getShiftRequestErrorKey(error)),
                 title: t('shiftRequests.loadError'),
                 variant: 'error',
             });
@@ -243,7 +243,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
             setWorkShifts(workShiftResponse.data);
         } catch (error) {
             showToast({
-                message: getShiftRequestErrorMessage(error),
+                message: t(getShiftRequestErrorKey(error)),
                 title: t('shiftRequests.filtersLoadError'),
                 variant: 'error',
             });
@@ -318,7 +318,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
             });
         } catch (error) {
             showToast({
-                message: getShiftRequestErrorMessage(error),
+                message: t(getShiftRequestErrorKey(error)),
                 title: t('shiftRequests.saveError'),
                 variant: 'error',
             });
@@ -356,7 +356,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
             });
         } catch (error) {
             showToast({
-                message: getShiftRequestErrorMessage(error),
+                message: t(getShiftRequestErrorKey(error)),
                 title: t('shiftRequests.reviewError'),
                 variant: 'error',
             });
@@ -381,7 +381,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
             });
         } catch (error) {
             showToast({
-                message: getShiftRequestErrorMessage(error),
+                message: t(getShiftRequestErrorKey(error)),
                 title: t('shiftRequests.cancelError'),
                 variant: 'error',
             });

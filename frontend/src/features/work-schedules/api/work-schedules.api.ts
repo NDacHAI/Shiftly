@@ -1,4 +1,5 @@
-import { getApiErrorMessage } from '@/lib/api-error';
+import { type I18nKey } from '@/i18n';
+import { getApiErrorKey, getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
     type BulkWorkSchedulePayload,
@@ -100,4 +101,8 @@ export function getWorkScheduleErrorMessage(error: unknown): string {
         error,
         'Could not process the schedule request. Please try again.',
     );
+}
+
+export function getWorkScheduleErrorKey(error: unknown): I18nKey {
+    return getApiErrorKey(error);
 }

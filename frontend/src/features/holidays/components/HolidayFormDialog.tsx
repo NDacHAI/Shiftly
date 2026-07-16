@@ -4,7 +4,7 @@ import { type FormEvent, useState } from 'react';
 import { useToast } from '@/components/feedback';
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { getHolidayErrorMessage } from '../api/holidays.api';
+import { getHolidayErrorKey, getHolidayErrorMessage } from '../api/holidays.api';
 import {
     type Holiday,
     type HolidayPayload,
@@ -79,8 +79,9 @@ export function HolidayFormDialog({
         try {
             await onSubmit(payload);
         } catch (submitError) {
-            const message = getHolidayErrorMessage(submitError);
-            if (message.toLowerCase().includes('date')) {
+            const message = t(getHolidayErrorKey(submitError));
+            const rawMessage = getHolidayErrorMessage(submitError);
+            if (rawMessage.toLowerCase().includes('date')) {
                 setFieldError(t('holidays.dateExists'));
                 return;
             }

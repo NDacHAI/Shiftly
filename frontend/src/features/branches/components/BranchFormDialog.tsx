@@ -4,7 +4,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { getBranchErrorMessage } from '../api/branches.api';
+import { getBranchErrorKey, getBranchErrorMessage } from '../api/branches.api';
 import { type Branch, type BranchPayload } from '../types';
 
 const fieldClass =
@@ -43,8 +43,9 @@ export function BranchFormDialog({
         try {
             await onSubmit(form);
         } catch (submitError) {
-            const message = getBranchErrorMessage(submitError);
-            const normalizedMessage = message.toLowerCase();
+            const message = t(getBranchErrorKey(submitError));
+            const rawMessage = getBranchErrorMessage(submitError);
+            const normalizedMessage = rawMessage.toLowerCase();
 
             if (normalizedMessage.includes('code')) {
                 setError('code', {

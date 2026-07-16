@@ -64,17 +64,10 @@ async function refreshAuthTokens(): Promise<AuthResponse> {
 }
 
 function notifyApiError(status: number) {
-    const messages: Record<number, string> = {
-        403: 'Bạn không có quyền thực hiện thao tác này.',
-        500: 'Máy chủ gặp lỗi. Vui lòng thử lại sau.',
-    };
-
-    const message = messages[status];
-
-    if (message) {
+    if (status === 403 || status === 500) {
         window.dispatchEvent(
             new CustomEvent(apiErrorEvent, {
-                detail: { message, status },
+                detail: { status },
             }),
         );
     }

@@ -24,7 +24,7 @@ import {
     createBranch,
     deleteBranch,
     getBranch,
-    getBranchErrorMessage,
+    getBranchErrorKey,
     listBranches,
     updateBranch,
 } from '../api/branches.api';
@@ -96,7 +96,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                 setPage(response.meta.totalPages);
             }
         } catch (loadError) {
-            setError(getBranchErrorMessage(loadError));
+            setError(t(getBranchErrorKey(loadError)));
         } finally {
             setLoading(false);
         }
@@ -142,7 +142,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
         try {
             setSelected(await getBranch(id));
         } catch (viewError) {
-            const message = getBranchErrorMessage(viewError);
+            const message = t(getBranchErrorKey(viewError));
             setError(message);
             showToast({
                 message,
@@ -173,7 +173,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                 variant: 'success',
             });
         } catch (deleteError) {
-            const message = getBranchErrorMessage(deleteError);
+            const message = t(getBranchErrorKey(deleteError));
             setError(message);
             showToast({
                 message,

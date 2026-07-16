@@ -24,7 +24,7 @@ import {
     createSalaryRule,
     deleteSalaryRule,
     getSalaryRule,
-    getSalaryRuleErrorMessage,
+    getSalaryRuleErrorKey,
     listSalaryRules,
     updateSalaryRule,
 } from '../api/salary-rules.api';
@@ -99,7 +99,7 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
                 setPage(response.meta.totalPages);
             }
         } catch (loadError) {
-            setError(getSalaryRuleErrorMessage(loadError));
+            setError(t(getSalaryRuleErrorKey(loadError)));
         } finally {
             setLoading(false);
         }
@@ -146,7 +146,7 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
         try {
             setSelected(await getSalaryRule(id));
         } catch (viewError) {
-            const message = getSalaryRuleErrorMessage(viewError);
+            const message = t(getSalaryRuleErrorKey(viewError));
             setError(message);
             showToast({
                 message,
@@ -177,7 +177,7 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
                 variant: 'success',
             });
         } catch (deleteError) {
-            const message = getSalaryRuleErrorMessage(deleteError);
+            const message = t(getSalaryRuleErrorKey(deleteError));
             setError(message);
             showToast({
                 message,

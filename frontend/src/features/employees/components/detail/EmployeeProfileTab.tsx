@@ -8,6 +8,7 @@ import { type Position } from '@/features/positions/types';
 import { useI18n } from '@/i18n';
 import {
     getEmployeeAccount,
+    getEmployeeErrorKey,
     getEmployeeErrorMessage,
     updateEmployeeAccount,
 } from '../../api/employees.api';
@@ -215,7 +216,7 @@ export function EmployeeProfileTab({
             } catch (error) {
                 if (active) {
                     showToast({
-                        message: getEmployeeErrorMessage(error),
+                        message: t(getEmployeeErrorKey(error)),
                         title: t('employees.accountLoadError'),
                         variant: 'error',
                     });
@@ -273,14 +274,15 @@ export function EmployeeProfileTab({
                 variant: 'success',
             });
         } catch (error) {
-            const message = getEmployeeErrorMessage(error);
+            const message = t(getEmployeeErrorKey(error));
+            const rawMessage = getEmployeeErrorMessage(error);
 
-            if (message.toLowerCase().includes('email')) {
+            if (rawMessage.toLowerCase().includes('email')) {
                 setError('email', { message, type: 'server' });
                 return;
             }
 
-            if (message.toLowerCase().includes('code')) {
+            if (rawMessage.toLowerCase().includes('code')) {
                 setError('employeeCode', { message, type: 'server' });
                 return;
             }

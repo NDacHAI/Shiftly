@@ -4,7 +4,7 @@ import { type FormEvent, useState } from 'react';
 import { useToast } from '@/components/feedback';
 import { Button, DropdownSelect } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { getRewardPenaltyCatalogErrorMessage } from '../api/reward-penalty-catalogs.api';
+import { getRewardPenaltyCatalogErrorKey, getRewardPenaltyCatalogErrorMessage } from '../api/reward-penalty-catalogs.api';
 import {
     type RewardPenaltyCatalog,
     RewardPenaltyCategory,
@@ -102,8 +102,9 @@ export function RewardPenaltyCatalogFormDialog({
         try {
             await onSubmit(payload);
         } catch (submitError) {
-            const message = getRewardPenaltyCatalogErrorMessage(submitError);
-            if (message.toLowerCase().includes('code')) {
+            const message = t(getRewardPenaltyCatalogErrorKey(submitError));
+            const rawMessage = getRewardPenaltyCatalogErrorMessage(submitError);
+            if (rawMessage.toLowerCase().includes('code')) {
                 setFieldError(t('rewardPenaltyCatalogs.codeExists'));
                 return;
             }

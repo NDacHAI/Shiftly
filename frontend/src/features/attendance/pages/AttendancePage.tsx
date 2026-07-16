@@ -29,7 +29,7 @@ import {
     checkIn,
     checkOut,
     confirmAttendance,
-    getAttendanceErrorMessage,
+    getAttendanceErrorKey,
     listAttendances,
     listMyAttendanceSchedules,
     manualCreateAttendance,
@@ -116,7 +116,7 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
         } catch (error) {
             showToast({
                 title: t('attendance.loadError'),
-                message: getAttendanceErrorMessage(error),
+                message: t(getAttendanceErrorKey(error)),
                 variant: 'error',
             });
         } finally {
@@ -141,7 +141,7 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
         } catch (error) {
             showToast({
                 title: t('attendance.actionError'),
-                message: getAttendanceErrorMessage(error),
+                message: t(getAttendanceErrorKey(error)),
                 variant: 'error',
             });
         } finally {

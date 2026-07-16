@@ -1,4 +1,5 @@
-﻿import { getApiErrorMessage } from '@/lib/api-error';
+import { type I18nKey } from '@/i18n';
+import { getApiErrorKey, getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
     type Branch,
@@ -55,4 +56,8 @@ export async function deleteBranch(id: string): Promise<void> {
 
 export function getBranchErrorMessage(error: unknown): string {
     return getApiErrorMessage(error);
+}
+
+export function getBranchErrorKey(error: unknown): I18nKey {
+    return getApiErrorKey(error);
 }

@@ -29,7 +29,7 @@ import {
     createEmployeeAccount,
     createEmployee,
     deleteEmployee,
-    getEmployeeErrorMessage,
+    getEmployeeErrorKey,
     getMyEmployee,
     listEmployees,
 } from '../api/employees.api';
@@ -109,7 +109,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             setTotalPages(response.meta.totalPages);
         } catch (error) {
             showToast({
-                message: getEmployeeErrorMessage(error),
+                message: t(getEmployeeErrorKey(error)),
                 title: t('employees.loadError'),
                 variant: 'error',
             });
@@ -163,7 +163,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             })
             .catch((error) => {
                 showToast({
-                    message: getEmployeeErrorMessage(error),
+                    message: t(getEmployeeErrorKey(error)),
                     title: t('employees.filtersLoadError'),
                     variant: 'error',
                 });
@@ -219,7 +219,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             });
         } catch (error) {
             showToast({
-                message: getEmployeeErrorMessage(error),
+                message: t(getEmployeeErrorKey(error)),
                 title: t('employees.deleteError'),
                 variant: 'error',
             });

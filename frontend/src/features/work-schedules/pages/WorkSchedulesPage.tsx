@@ -36,7 +36,7 @@ import {
     bulkCreateWorkSchedules,
     createWorkSchedule,
     deleteWorkSchedule,
-    getWorkScheduleErrorMessage,
+    getWorkScheduleErrorKey,
     listMyWorkSchedules,
     listWorkSchedules,
     updateWorkSchedule,
@@ -629,7 +629,7 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
         } catch (error) {
             showToast({
                 title: t('workSchedules.loadError'),
-                message: getWorkScheduleErrorMessage(error),
+                message: t(getWorkScheduleErrorKey(error)),
                 variant: 'error',
             });
         } finally {
@@ -650,7 +650,7 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
         void loadFilters().catch((error) => {
             showToast({
                 title: t('workSchedules.filtersLoadError'),
-                message: getWorkScheduleErrorMessage(error),
+                message: t(getWorkScheduleErrorKey(error)),
                 variant: 'error',
             });
         });
@@ -687,7 +687,7 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
         } catch (error) {
             showToast({
                 title: t('workSchedules.saveError'),
-                message: getWorkScheduleErrorMessage(error),
+                message: t(getWorkScheduleErrorKey(error)),
                 variant: 'error',
             });
         } finally {
@@ -715,7 +715,7 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
         } catch (error) {
             showToast({
                 title: t('workSchedules.bulkError'),
-                message: getWorkScheduleErrorMessage(error),
+                message: t(getWorkScheduleErrorKey(error)),
                 variant: 'error',
             });
         } finally {
@@ -739,7 +739,7 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
         } catch (error) {
             showToast({
                 title: t('workSchedules.deleteError'),
-                message: getWorkScheduleErrorMessage(error),
+                message: t(getWorkScheduleErrorKey(error)),
                 variant: 'error',
             });
         } finally {

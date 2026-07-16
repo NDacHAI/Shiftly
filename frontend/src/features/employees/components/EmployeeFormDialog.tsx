@@ -7,7 +7,7 @@ import { roles, type Role } from '@/constants/roles';
 import { type Branch } from '@/features/branches/types';
 import { type Position } from '@/features/positions/types';
 import { useI18n } from '@/i18n';
-import { getEmployeeErrorMessage } from '../api/employees.api';
+import { getEmployeeErrorKey, getEmployeeErrorMessage } from '../api/employees.api';
 import {
     type EmployeePayload,
     type EmployeeStatus,
@@ -129,14 +129,15 @@ export function EmployeeFormDialog({
                 account: buildAccountPayload(values),
             });
         } catch (error) {
-            const message = getEmployeeErrorMessage(error);
+            const message = t(getEmployeeErrorKey(error));
+            const rawMessage = getEmployeeErrorMessage(error);
 
-            if (message.toLowerCase().includes('email')) {
+            if (rawMessage.toLowerCase().includes('email')) {
                 setError('email', { message, type: 'server' });
                 return;
             }
 
-            if (message.toLowerCase().includes('code')) {
+            if (rawMessage.toLowerCase().includes('code')) {
                 setError('employeeCode', { message, type: 'server' });
                 return;
             }

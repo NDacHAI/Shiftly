@@ -26,7 +26,7 @@ import {
 import { EmployeeProfileTab } from '../components/detail/EmployeeProfileTab';
 import {
     getEmployee,
-    getEmployeeErrorMessage,
+    getEmployeeErrorKey,
     updateEmployee,
 } from '../api/employees.api';
 import { type Employee, type UpdateEmployeePayload } from '../types';
@@ -64,7 +64,7 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
             } catch (error) {
                 if (active) {
                     showToast({
-                        message: getEmployeeErrorMessage(error),
+                        message: t(getEmployeeErrorKey(error)),
                         title: t('employees.loadDetailError'),
                         variant: 'error',
                     });
@@ -109,7 +109,7 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
             })
             .catch((error) => {
                 showToast({
-                    message: getEmployeeErrorMessage(error),
+                    message: t(getEmployeeErrorKey(error)),
                     title: t('employees.filtersLoadError'),
                     variant: 'error',
                 });

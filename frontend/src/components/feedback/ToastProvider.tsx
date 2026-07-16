@@ -19,6 +19,7 @@ import {
     type ToastOptions,
     type ToastVariant,
 } from './toast-context';
+import { useI18n } from '@/i18n';
 import { apiErrorEvent } from '@/stores/auth.store';
 
 type ToastProviderProps = {
@@ -64,6 +65,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
     const nextId = useRef(0);
     const closingToastIds = useRef(new Set<number>());
     const exitTimers = useRef(new Map<number, number>());
+    const { t } = useI18n();
 
     const dismissToast = useCallback((id: number) => {
         if (closingToastIds.current.has(id)) {
@@ -119,18 +121,22 @@ export function ToastProvider({ children }: ToastProviderProps) {
 
     useEffect(() => {
         function handleApiError(event: Event) {
-            const { message } = (event as CustomEvent<{ message: string }>)
-                .detail;
+            const { message, status } = (
+                event as CustomEvent<{ message?: string; status?: number }>
+            ).detail;
             showToast({
-                message,
-                title: 'Không thể xử lý yêu cầu',
+                message:
+                    status === 500
+                        ? t('common.apiErrors.server')
+                        : (message ?? t('common.apiErrors.forbidden')),
+                title: t('common.apiErrors.title'),
                 variant: 'error',
             });
         }
 
         window.addEventListener(apiErrorEvent, handleApiError);
         return () => window.removeEventListener(apiErrorEvent, handleApiError);
-    }, [showToast]);
+    }, [showToast, t]);
 
     return (
         <ToastContext.Provider value={contextValue}>

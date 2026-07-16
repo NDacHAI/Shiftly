@@ -23,7 +23,7 @@ import {
     createWorkShift,
     deleteWorkShift,
     getWorkShift,
-    getWorkShiftErrorMessage,
+    getWorkShiftErrorKey,
     listWorkShifts,
     updateWorkShift,
 } from '../api/work-shift.api';
@@ -91,7 +91,7 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
             setTotalPages(response.meta.totalPages);
         } catch (error) {
             showToast({
-                message: getWorkShiftErrorMessage(error),
+                message: t(getWorkShiftErrorKey(error)),
                 title: t('workShifts.loadError'),
                 variant: 'error',
             });
@@ -136,7 +136,7 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
             });
         } catch (error) {
             showToast({
-                message: getWorkShiftErrorMessage(error),
+                message: t(getWorkShiftErrorKey(error)),
                 title: t('workShifts.saveError'),
                 variant: 'error',
             });
@@ -161,7 +161,7 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
             });
         } catch (error) {
             showToast({
-                message: getWorkShiftErrorMessage(error),
+                message: t(getWorkShiftErrorKey(error)),
                 title: t('workShifts.deleteError'),
                 variant: 'error',
             });

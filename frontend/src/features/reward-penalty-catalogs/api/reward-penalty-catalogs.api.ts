@@ -1,4 +1,5 @@
-import { getApiErrorMessage } from '@/lib/api-error';
+import { type I18nKey } from '@/i18n';
+import { getApiErrorKey, getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
     type RewardPenaltyCatalog,
@@ -72,4 +73,8 @@ export function getRewardPenaltyCatalogErrorMessage(error: unknown): string {
         error,
         'Unable to process the reward penalty catalog request. Please try again.',
     );
+}
+
+export function getRewardPenaltyCatalogErrorKey(error: unknown): I18nKey {
+    return getApiErrorKey(error);
 }

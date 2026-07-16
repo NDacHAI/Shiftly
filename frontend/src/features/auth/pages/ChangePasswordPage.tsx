@@ -6,6 +6,9 @@ import {
     faRightFromBracket,
     faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
+import { useToast } from '@/components/feedback';
+import { useI18n } from '@/i18n';
+import { getApiErrorKey } from '@/lib/api-error';
 import { changePassword } from '../api/auth.api';
 
 type ChangePasswordPageProps = {
@@ -23,15 +26,18 @@ export function ChangePasswordPage({
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { showToast } = useToast();
+    const { t } = useI18n();
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError('');
 
         if (newPassword !== confirmPassword) {
-            setError('Mật khẩu xác nhận không khớp.');
+            showToast({
+                message: t('common.apiErrors.passwordConfirmMismatch'),
+                variant: 'error',
+            });
             return;
         }
 
@@ -41,11 +47,15 @@ export function ChangePasswordPage({
             await changePassword({ currentPassword, newPassword });
             onPasswordChanged();
         } catch (changeError) {
-            setError(
-                changeError instanceof Error
-                    ? changeError.message
-                    : 'Không thể đổi mật khẩu.',
-            );
+            showToast({
+                message: t(
+                    getApiErrorKey(
+                        changeError,
+                        'common.apiErrors.passwordChangeGeneric',
+                    ),
+                ),
+                variant: 'error',
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -132,15 +142,6 @@ export function ChangePasswordPage({
                         />
                     </span>
                 </label>
-
-                {error && (
-                    <p
-                        className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-                        role="alert"
-                    >
-                        {error}
-                    </p>
-                )}
 
                 <button
                     className="inline-flex min-h-11 items-center justify-center gap-3 rounded-lg bg-blue-600 px-5 text-sm font-bold text-white transition hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"

@@ -4,7 +4,7 @@ import { type FormEvent, useState } from 'react';
 import { useToast } from '@/components/feedback';
 import { Button } from '@/components/ui';
 import { useI18n } from '@/i18n';
-import { getSalaryRuleErrorMessage } from '../api/salary-rules.api';
+import { getSalaryRuleErrorKey, getSalaryRuleErrorMessage } from '../api/salary-rules.api';
 import {
     type SalaryRule,
     type SalaryRulePayload,
@@ -93,8 +93,9 @@ export function SalaryRuleFormDialog({
         try {
             await onSubmit(payload);
         } catch (submitError) {
-            const message = getSalaryRuleErrorMessage(submitError);
-            if (message.toLowerCase().includes('code')) {
+            const message = t(getSalaryRuleErrorKey(submitError));
+            const rawMessage = getSalaryRuleErrorMessage(submitError);
+            if (rawMessage.toLowerCase().includes('code')) {
                 setFieldError(t('salaryRules.codeExists'));
                 return;
             }

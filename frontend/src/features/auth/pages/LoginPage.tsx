@@ -11,6 +11,9 @@ import {
     faSpinner,
     faCalendarDays,
 } from '@fortawesome/free-solid-svg-icons';
+import { useToast } from '@/components/feedback';
+import { useI18n } from '@/i18n';
+import { getApiErrorKey } from '@/lib/api-error';
 import { login } from '../api/auth.api';
 import { type AuthResponse } from '../types';
 
@@ -31,23 +34,27 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { showToast } = useToast();
+    const { t } = useI18n();
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        setError('');
         setIsSubmitting(true);
 
         try {
             const response = await login({ email, password });
             onLoginSuccess(response);
         } catch (loginError) {
-            setError(
-                loginError instanceof Error
-                    ? loginError.message
-                    : 'Không thể đăng nhập',
-            );
+            showToast({
+                message: t(
+                    getApiErrorKey(
+                        loginError,
+                        'common.apiErrors.invalidCredentials',
+                    ),
+                ),
+                variant: 'error',
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -226,15 +233,6 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                             />
                             Ghi nhớ đăng nhập
                         </label>
-
-                        {error && (
-                            <p
-                                className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-                                role="alert"
-                            >
-                                {error}
-                            </p>
-                        )}
 
                         <button
                             className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 px-5 text-xs font-bold text-white shadow-lg shadow-blue-200 transition hover:from-blue-600 hover:to-blue-800 focus:ring-4 focus:ring-blue-200 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"

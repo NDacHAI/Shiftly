@@ -1,4 +1,5 @@
-import { getApiErrorMessage } from '@/lib/api-error';
+import { type I18nKey } from '@/i18n';
+import { getApiErrorKey, getApiErrorMessage } from '@/lib/api-error';
 import { api } from '@/lib/axios';
 import {
     type UpdateWorkShiftPayload,
@@ -58,4 +59,8 @@ export function getWorkShiftErrorMessage(error: unknown): string {
         error,
         'Unable to process the request. Please try again.',
     );
+}
+
+export function getWorkShiftErrorKey(error: unknown): I18nKey {
+    return getApiErrorKey(error);
 }
