@@ -20,7 +20,8 @@
     "react-big-calendar": "^1.20.0",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.78.0",
-    "react-router-dom": "^7.17.0"
+    "react-router-dom": "^7.17.0",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -19,6 +19,7 @@ import { PayrollPeriodModule } from './module/payroll-period/payroll-period.modu
 import { PayrollAdjustmentModule } from './module/payroll-adjustment/payroll-adjustment.module';
 import { PayrollProcessingModule } from './module/payroll-processing/payroll-processing.module';
 import { PayslipModule } from './module/payslip/payslip.module';
+import { DashboardModule } from './module/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { PayslipModule } from './module/payslip/payslip.module';
     PayrollAdjustmentModule,
     PayrollProcessingModule,
     PayslipModule,
+    DashboardModule,
   ]
 })
 export class AppModule { }

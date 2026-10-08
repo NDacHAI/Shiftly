@@ -9,14 +9,21 @@ Shiftly is a workforce management system for managing employees, branches, shift
 - Local backend API: `http://localhost:3000`
 - Demo account: Email: admin@admin.com, Pass: admin123.
 
+## Docs for AI agents
+
+- [`llms.md`](llms.md): repository map, business rules and API summary.
+- [`AGENTS.md`](AGENTS.md): conventions to follow when editing the code.
+- [`.agents/skills/`](.agents/skills/): task skills, for example `shiftly-dashboard`.
+
 ## Tech Stack
 
-- Frontend: React 19, TypeScript, Vite, Tailwind CSS, React Router, Axios, React Hook Form, React Big Calendar, Font Awesome.
+- Frontend: React 19, TypeScript, Vite, Tailwind CSS, React Router, Axios, React Hook Form, React Big Calendar, Recharts, Font Awesome.
 - Backend: NestJS 11, TypeScript, TypeORM, MySQL, JWT authentication, class-validator, class-transformer.
 - Tooling: ESLint, Prettier, Jest, TypeScript project builds, TypeORM migrations and seeders.
 
 ## Features
 
+- Role-based dashboard: today's shift and attendance KPIs, pending approvals, attendance/payroll/branch-hour charts for admins and managers; check-in/out, upcoming shifts and latest payslip for employees.
 - Authentication with JWT access tokens, refresh tokens, role-based authorization, and password change flow.
 - User management with `admin`, `manager`, and `user` roles.
 - Branch, position, and employee management.
@@ -57,6 +64,7 @@ Shiftly/
 |   |       +-- attendance/
 |   |       +-- auth/
 |   |       +-- branch/
+|       +-- dashboard/
 |   |       +-- employee/
 |   |       +-- holiday/
 |   |       +-- leave-request/

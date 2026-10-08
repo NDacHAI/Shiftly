@@ -9,7 +9,7 @@ import { EmployeesPage } from '@/features/employees/pages/EmployeesPage';
 import { PositionsPage } from '@/features/positions/pages/PositionsPage';
 import { SettingsPage } from '@/features/settings/pages/SettingsPage';
 import { PermissionRoute } from '@/guards/PermissionRoute';
-import { DashboardPage } from '@/pages/DashboardPage';
+import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import WorkShiftPage from '@/features/work-shifts/pages/WorkShiftPage';
 import { WorkSchedulesPage } from '@/features/work-schedules/pages/WorkSchedulesPage';
@@ -41,7 +41,7 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                         user={user}
                         onLogout={onLogout}
                     >
-                        <DashboardPage />
+                        <DashboardPage userRole={user.role} />
                     </Layout>
                 }
             />
