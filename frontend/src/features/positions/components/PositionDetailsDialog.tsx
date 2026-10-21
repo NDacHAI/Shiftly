@@ -39,7 +39,7 @@ export function PositionDetailsDialog({
     ];
 
     return (
-        <div className="dialog-backdrop fixed inset-0 z-40 flex items-center justify-center bg-slate-950/55 p-5">
+        <div className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px] p-5">
             <div
                 aria-modal="true"
                 className="dialog-panel w-full max-w-xl rounded-xl bg-white p-6 shadow-2xl"

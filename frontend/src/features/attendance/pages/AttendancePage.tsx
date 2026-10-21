@@ -40,6 +40,7 @@ import {
     type AttendanceDisplayStatus,
     type AttendanceListItem,
 } from '../types';
+import { fieldClass, IconButton, PageHeader } from '@/components/ui';
 
 type AttendancePageProps = {
     userRole: Role;
@@ -59,8 +60,6 @@ type AttendanceFormState = {
 };
 
 const pageSize = 10;
-const fieldClass =
-    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400';
 const textAreaClass =
     'min-h-24 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-100';
 
@@ -249,32 +248,24 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-md:items-stretch max-md:flex-col">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl text-primary-600">
-                        <FontAwesomeIcon icon={faClock} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {title}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {subtitle}
-                        </p>
-                    </div>
-                </div>
-                <Button
-                    className="max-md:w-full"
-                    onClick={() => void loadAttendances()}
-                    size="lg"
-                    variant="secondary"
-                >
-                    <FontAwesomeIcon icon={faArrowRotateRight} />
-                    {t('common.refresh')}
-                </Button>
-            </div>
+            <PageHeader
+                actions={
+                    <Button
+                        className="max-md:w-full"
+                        onClick={() => void loadAttendances()}
+                        size="lg"
+                        variant="secondary"
+                    >
+                        <FontAwesomeIcon icon={faArrowRotateRight} />
+                        {t('common.refresh')}
+                    </Button>
+                }
+                description={subtitle}
+                icon={<FontAwesomeIcon icon={faClock} />}
+                title={title}
+            />
 
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                 <LoadingOverlay
                     label={t('attendance.loading')}
                     visible={loading}
@@ -323,28 +314,28 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1120px] table-fixed">
-                        <thead className="bg-slate-50">
-                            <tr className="border-b border-slate-200">
-                                <th className="w-[18%] px-4 py-3 text-center text-xs text-slate-600">
+                    <table className="data-table w-full min-w-[1120px] table-fixed">
+                        <thead>
+                            <tr>
+                                <th className="w-[18%]">
                                     {t('attendance.employee')}
                                 </th>
-                                <th className="w-[10%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[10%]">
                                     {t('attendance.date')}
                                 </th>
-                                <th className="w-[15%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[15%]">
                                     {t('attendance.shift')}
                                 </th>
-                                <th className="w-[16%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[16%]">
                                     {t('attendance.time')}
                                 </th>
-                                <th className="w-[13%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[13%]">
                                     {t('attendance.statusLabel')}
                                 </th>
-                                <th className="w-[14%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[14%]">
                                     {t('attendance.minutes')}
                                 </th>
-                                <th className="w-[14%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="cell-actions w-[14%]">
                                     {t('common.actions')}
                                 </th>
                             </tr>
@@ -355,7 +346,7 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                                     className="border-b border-slate-100 hover:bg-slate-50"
                                     key={item.workScheduleId}
                                 >
-                                    <td className="px-4 py-3 text-center text-sm">
+                                    <td>
                                         <div className="truncate font-semibold text-slate-800">
                                             {formatEmployee(item)}
                                         </div>
@@ -365,10 +356,10 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                                             {item.workSchedule.position?.name}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-center text-sm text-slate-700">
+                                    <td>
                                         {formatDate(item.scheduleDate)}
                                     </td>
-                                    <td className="px-4 py-3 text-center text-sm text-slate-700">
+                                    <td>
                                         <div className="truncate font-semibold text-slate-800">
                                             {item.workSchedule.shiftNameSnapshot}
                                         </div>
@@ -376,7 +367,7 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                                             {item.workSchedule.shiftCodeSnapshot}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-center text-sm text-slate-700">
+                                    <td>
                                         <div className="font-semibold text-slate-800">
                                             {formatTime(item.scheduledStartAt)}
                                             {' - '}
@@ -388,10 +379,10 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                                             {formatTime(item.checkOutAt)}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3 text-center">
+                                    <td>
                                         <StatusBadge status={item.displayStatus} />
                                     </td>
-                                    <td className="px-4 py-3 text-center text-xs text-slate-600">
+                                    <td>
                                         <div className="grid grid-cols-2 gap-x-2 gap-y-1">
                                             <span className="text-slate-400">{t('attendance.worked')}</span>
                                             <span className="font-semibold text-slate-700">{item.workedMinutes}</span>
@@ -403,8 +394,8 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                                             <span className="font-semibold text-slate-700">{item.overtimeMinutes}</span>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex justify-center gap-2">
+                                    <td className="cell-actions">
+                                        <div className="flex items-center justify-end gap-1">
                                             {!isManagerView && item.displayStatus === 'NOT_CHECKED_IN' && (
                                                 <ActionButton
                                                     icon={faClock}
@@ -642,16 +633,12 @@ function ActionButton({
     onClick: () => void;
 }) {
     return (
-        <button
-            aria-label={label}
-            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        <IconButton
             disabled={loading}
+            icon={icon}
+            label={label}
             onClick={onClick}
-            title={label}
-            type="button"
-        >
-            <FontAwesomeIcon icon={icon} />
-        </button>
+        />
     );
 }
 
@@ -673,7 +660,7 @@ function StatusBadge({ status }: { status: AttendanceDisplayStatus }) {
     };
 
     return (
-        <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${className}`}>
+        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${className}`}>
             {labels[status]}
         </span>
     );

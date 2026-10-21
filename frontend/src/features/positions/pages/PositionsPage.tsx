@@ -14,7 +14,9 @@ import {
     Button,
     DropdownSelect,
     EmptyState,
+    IconButton,
     LoadingOverlay,
+    PageHeader,
     Pagination,
 } from '@/components/ui';
 import { listBranches } from '@/features/branches/api/branches.api';
@@ -218,21 +220,8 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 items-center justify-center rounded-full bg-primary-50 text-primary-600">
-                        <FontAwesomeIcon icon={faBriefcase} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {t('positions.title')}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {t('positions.subtitle')}
-                        </p>
-                    </div>
-                </div>
-                {canManage && (
+            <PageHeader
+                actions={canManage && (
                     <Button
                         onClick={() => {
                             setEditing(null);
@@ -244,9 +233,12 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                         {t('positions.add')}
                     </Button>
                 )}
-            </div>
+                description={t('positions.subtitle')}
+                icon={<FontAwesomeIcon icon={faBriefcase} />}
+                title={t('positions.title')}
+            />
 
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                 <LoadingOverlay label={t('positions.loading')} visible={loading} />
                 <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
                     <label className="relative min-w-64 flex-1">
@@ -315,10 +307,10 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[980px] table-fixed">
-                        <thead className="bg-slate-50">
-                            <tr className="border-b border-slate-200">
-                                <th className="w-[16%] px-4 py-3 text-center text-xs text-slate-600">
+                    <table className="data-table w-full min-w-[980px] table-fixed">
+                        <thead>
+                            <tr>
+                                <th className="w-[16%]">
                                     {t('common.code')}
                                 </th>
                                 {(
@@ -328,7 +320,7 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                     ] as const
                                 ).map(([field, label]) => (
                                     <th
-                                        className="w-[22%] px-4 py-3 text-center text-xs text-slate-600"
+                                        className="w-[22%]"
                                         key={field}
                                     >
                                         <button
@@ -345,16 +337,16 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                         </button>
                                     </th>
                                 ))}
-                                <th className="w-[20%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[20%]">
                                     {t('common.branch')}
                                 </th>
-                                <th className="w-[14%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[14%]">
                                     {t('positions.hourlyRate')}
                                 </th>
-                                <th className="w-[16%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[16%]">
                                     {t('common.status')}
                                 </th>
-                                <th className="w-[20%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="cell-actions w-[20%]">
                                     {t('common.actions')}
                                 </th>
                             </tr>
@@ -366,26 +358,26 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                         className="border-b border-slate-100 hover:bg-slate-50"
                                         key={position.id}
                                     >
-                                        <td className="px-4 py-3 text-center text-sm font-semibold">
+                                        <td className="font-semibold">
                                             {position.code}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm">
+                                        <td>
                                             {position.name}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm">
+                                        <td>
                                             {new Date(
                                                 position.createdAt,
                                             ).toLocaleDateString('vi-VN')}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm">
+                                        <td>
                                             {position.branch.name}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm font-medium">
+                                        <td className="font-medium">
                                             {formatCurrency(position.hourlyRate)}
                                         </td>
-                                        <td className="px-4 py-3 text-center">
+                                        <td>
                                             <button
-                                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${
                                                     canManage
                                                         ? 'cursor-pointer'
                                                         : 'cursor-default'
@@ -405,52 +397,38 @@ export function PositionsPage({ canManage }: PositionsPageProps) {
                                                     : t('common.inactive')}
                                             </button>
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex justify-center gap-2">
-                                                <button
-                                                    aria-label={t('common.view')}
-                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
+                                        <td className="cell-actions">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <IconButton
+                                                    icon={faEye}
+                                                    label={t('common.view')}
                                                     onClick={() =>
                                                         void getPosition(
                                                             position.id,
                                                         ).then(setSelected)
                                                     }
-                                                    title={t('common.view')}
-                                                    type="button"
-                                                >
-                                                    <FontAwesomeIcon icon={faEye} />
-                                                </button>
+                                                />
                                                 {canManage && (
                                                     <>
-                                                        <button
-                                                            aria-label={t('common.edit')}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
+                                                        <IconButton
+                                                            icon={faPen}
+                                                            label={t('common.edit')}
                                                             onClick={() => {
                                                                 setEditing(position);
                                                                 setShowForm(true);
                                                             }}
-                                                            title={t('common.edit')}
-                                                            type="button"
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faPen}
-                                                            />
-                                                        </button>
-                                                        <button
-                                                            aria-label={t('common.delete')}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
+                                                            tone="primary"
+                                                        />
+                                                        <IconButton
+                                                            icon={faTrash}
+                                                            label={t('common.delete')}
                                                             onClick={() =>
                                                                 setPositionToDelete(
                                                                     position,
                                                                 )
                                                             }
-                                                            title={t('common.delete')}
-                                                            type="button"
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faTrash}
-                                                            />
-                                                        </button>
+                                                            tone="danger"
+                                                        />
                                                     </>
                                                 )}
                                             </div>

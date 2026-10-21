@@ -64,7 +64,7 @@ export function ChangePasswordPage({
     return (
         <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
             <form
-                className="grid w-full max-w-[420px] gap-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+                className="grid w-full max-w-[420px] gap-5 rounded-xl border border-line bg-white p-6 shadow-card"
                 onSubmit={handleSubmit}
             >
                 <div>

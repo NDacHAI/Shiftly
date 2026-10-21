@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
-import { Button, DropdownSelect } from '@/components/ui';
+import { Button, DropdownSelect, fieldClass } from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
 import { type Branch } from '@/features/branches/types';
 import { type Position } from '@/features/positions/types';
@@ -46,8 +46,6 @@ type ReadonlyGroup = {
     items: ReadonlyItem[];
 };
 
-const fieldClass =
-    'min-h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
 const gridClass =
     'grid grid-cols-[repeat(3,minmax(0,1fr))] gap-x-6 gap-y-2 max-lg:grid-cols-[repeat(2,minmax(0,1fr))] max-sm:grid-cols-1';
 

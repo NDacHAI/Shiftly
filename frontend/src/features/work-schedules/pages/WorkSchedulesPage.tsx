@@ -20,7 +20,15 @@ import {
     faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { ConfirmDialog, useToast } from '@/components/feedback';
-import { Button, EmptyState, LoadingOverlay } from '@/components/ui';
+import {
+    Button,
+    EmptyState,
+    fieldClass,
+    iconButtonClass,
+    iconButtonToneClasses,
+    LoadingOverlay,
+    PageHeader,
+} from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
 import { listBranches } from '@/features/branches/api/branches.api';
 import { type Branch } from '@/features/branches/types';
@@ -50,9 +58,6 @@ import {
 } from '../types';
 
 const pageSize = 100;
-const fieldClass =
-    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
-
 type WorkSchedulesPageProps = {
     userRole: Role;
 };
@@ -773,21 +778,8 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
 
     return (
         <section className="mx-auto grid max-w-[1500px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-md:items-stretch max-md:flex-col">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl text-primary-600">
-                        <FontAwesomeIcon icon={faCalendarCheck} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {t('workSchedules.title')}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {t('workSchedules.subtitle')}
-                        </p>
-                    </div>
-                </div>
-                {canManage && (
+            <PageHeader
+                actions={canManage && (
                     <div className="flex gap-3 max-sm:flex-col">
                         <Button onClick={() => setShowBulkForm(true)} size="lg" variant="secondary">
                             <FontAwesomeIcon icon={faLayerGroup} />
@@ -795,7 +787,10 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
                         </Button>
                     </div>
                 )}
-            </div>
+                description={t('workSchedules.subtitle')}
+                icon={<FontAwesomeIcon icon={faCalendarCheck} />}
+                title={t('workSchedules.title')}
+            />
 
             <div
                 className={`grid gap-5 ${
@@ -804,7 +799,7 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
                         : 'grid-cols-1'
                 }`}
             >
-                <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                     <LoadingOverlay label={t('workSchedules.loading')} visible={loading} />
                     <div className="grid gap-3 border-b border-slate-200 p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -990,7 +985,7 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
                 </div>
 
                 {canManage && (
-                    <aside className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <aside className="overflow-hidden rounded-xl border border-line bg-white shadow-card">
                         <div className="border-b border-slate-200 px-5 py-4">
                             <p className="text-xs font-bold uppercase tracking-wide text-primary-600">
                                 {t('workSchedules.date')}
@@ -1438,15 +1433,13 @@ function IconButton({
     onClick: () => void;
 }) {
     const toneClass =
-        tone === 'red'
-            ? 'border-red-100 bg-red-50 text-red-600 hover:bg-red-600'
-            : tone === 'blue'
-              ? 'border-blue-100 bg-blue-50 text-blue-600 hover:bg-blue-600'
-              : 'border-primary-100 bg-primary-50 text-primary-600 hover:bg-primary-600';
+        iconButtonToneClasses[
+            tone === 'red' ? 'danger' : tone === 'blue' ? 'primary' : 'neutral'
+        ];
     return (
         <button
             aria-label={label}
-            className={`flex size-9 items-center justify-center rounded-lg border transition hover:text-white ${toneClass}`}
+            className={`${iconButtonClass} ${toneClass}`}
             onClick={onClick}
             title={label}
             type="button"
@@ -1956,7 +1949,7 @@ function Modal({
 
     return (
         <div
-            className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/55 p-5"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px] p-5"
             onMouseDown={(event) => {
                 if (event.target === event.currentTarget) onClose();
             }}

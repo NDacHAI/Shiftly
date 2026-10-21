@@ -24,7 +24,7 @@ export function DashboardCard({
 
     return (
         <section
-            className={`flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white shadow-sm ${className}`}
+            className={`flex min-w-0 flex-col rounded-xl border border-line bg-white shadow-card ${className}`}
         >
             <header className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
                 <div className="min-w-0">

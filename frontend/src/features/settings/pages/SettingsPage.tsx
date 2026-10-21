@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear, faGlobe, faLanguage } from '@fortawesome/free-solid-svg-icons';
-import { DropdownSelect } from '@/components/ui';
+import { DropdownSelect, PageHeader } from '@/components/ui';
 import { useI18n, type Language } from '@/i18n';
 
 const languageOptions: Array<{
@@ -17,22 +17,14 @@ export function SettingsPage() {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-600">
-                    <FontAwesomeIcon icon={faGear} />
-                </span>
-                <div>
-                    <h2 className="text-xl font-bold text-slate-950">
-                        {t('settings.title')}
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                        {t('settings.subtitle')}
-                    </p>
-                </div>
-            </div>
+            <PageHeader
+                description={t('settings.subtitle')}
+                icon={<FontAwesomeIcon icon={faGear} />}
+                title={t('settings.title')}
+            />
 
-            <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex items-start gap-4 border-b border-slate-200 px-6 py-5">
+            <section className="rounded-xl border border-line bg-white shadow-card">
+                <div className="flex items-start gap-4 border-b border-line px-6 py-5">
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
                         <FontAwesomeIcon icon={faLanguage} />
                     </span>

@@ -2,7 +2,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useForm, useWatch } from 'react-hook-form';
 import { useToast } from '@/components/feedback';
-import { Button, DropdownSelect } from '@/components/ui';
+import { Button, DropdownSelect, fieldClass } from '@/components/ui';
 import { type Branch } from '@/features/branches/types';
 import { useI18n } from '@/i18n';
 import { getPositionErrorKey, getPositionErrorMessage } from '../api/positions.api';
@@ -20,9 +20,6 @@ type PositionFormDialogProps = {
         payload: PositionPayload | UpdatePositionPayload,
     ) => Promise<void>;
 };
-
-const fieldClass =
-    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
 
 export function PositionFormDialog({
     branches,
@@ -100,7 +97,7 @@ export function PositionFormDialog({
     }
 
     return (
-        <div className="dialog-backdrop fixed inset-0 z-40 flex items-center justify-center bg-slate-950/55 p-5">
+        <div className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px] p-5">
             <div
                 aria-modal="true"
                 className="dialog-panel flex max-h-[calc(100vh-40px)] w-full max-w-xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"

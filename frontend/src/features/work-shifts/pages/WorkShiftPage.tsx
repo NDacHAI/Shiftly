@@ -14,7 +14,9 @@ import {
     Button,
     DropdownSelect,
     EmptyState,
+    IconButton,
     LoadingOverlay,
+    PageHeader,
     Pagination,
 } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -172,22 +174,8 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 items-center justify-center rounded-full bg-primary-50 text-primary-600">
-                        <FontAwesomeIcon icon={faCalendarDays} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {t('workShifts.title')}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {t('workShifts.subtitle')}
-                        </p>
-                    </div>
-                </div>
-
-                {canManage && (
+            <PageHeader
+                actions={canManage && (
                     <Button
                         onClick={() => {
                             setEditing(null);
@@ -199,9 +187,12 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
                         {t('workShifts.add')}
                     </Button>
                 )}
-            </div>
+                description={t('workShifts.subtitle')}
+                icon={<FontAwesomeIcon icon={faCalendarDays} />}
+                title={t('workShifts.title')}
+            />
 
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                 <LoadingOverlay
                     label={t('workShifts.loading')}
                     visible={loading}
@@ -257,25 +248,25 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[960px] table-fixed">
-                        <thead className="bg-slate-50">
-                            <tr className="border-b border-slate-200">
-                                <th className="w-[12%] px-4 py-3 text-center text-xs text-slate-600">
+                    <table className="data-table w-full min-w-[960px] table-fixed">
+                        <thead>
+                            <tr>
+                                <th className="w-[12%]">
                                     {t('common.code')}
                                 </th>
-                                <th className="w-[18%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[18%]">
                                     {t('common.name')}
                                 </th>
-                                <th className="w-[16%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[16%]">
                                     {t('workShifts.timeRange')}
                                 </th>
-                                <th className="w-[10%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[10%]">
                                     {t('workShifts.overnight')}
                                 </th>
-                                <th className="w-[10%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="w-[10%]">
                                     {t('common.status')}
                                 </th>
-                                <th className="w-[14%] px-4 py-3 text-center text-xs text-slate-600">
+                                <th className="cell-actions w-[14%]">
                                     {t('common.actions')}
                                 </th>
                             </tr>
@@ -287,24 +278,24 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
                                         className="border-b border-slate-100 hover:bg-slate-50"
                                         key={workShift.id}
                                     >
-                                        <td className="px-4 py-3 text-center text-sm font-semibold">
+                                        <td className="font-semibold">
                                             {workShift.code}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm">
+                                        <td>
                                             {workShift.name}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm">
+                                        <td>
                                             {workShift.startTime.slice(0, 5)} -{' '}
                                             {workShift.endTime.slice(0, 5)}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm">
+                                        <td>
                                             {workShift.isOvernight
                                                 ? t('workShifts.yes')
                                                 : t('workShifts.no')}
                                         </td>
-                                        <td className="px-4 py-3 text-center">
+                                        <td>
                                             <span
-                                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${workShift.status ===
+                                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${workShift.status ===
                                                     WorkShiftStatus.Active
                                                     ? 'bg-emerald-50 text-emerald-700'
                                                     : 'bg-amber-50 text-amber-700'
@@ -316,60 +307,44 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
                                                     : t('common.inactive')}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex justify-center gap-2">
-                                                <button
-                                                    aria-label={t('common.view')}
-                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
+                                        <td className="cell-actions">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <IconButton
+                                                    icon={faEye}
+                                                    label={t('common.view')}
                                                     onClick={() =>
                                                         void getWorkShift(
                                                             workShift.id,
                                                         ).then(setSelected)
                                                     }
-                                                    title={t('common.view')}
-                                                    type="button"
-                                                >
-                                                    <FontAwesomeIcon icon={faEye} />
-                                                </button>
+                                                />
                                                 {canManage && (
                                                     <>
-                                                        <button
-                                                            aria-label={t(
+                                                        <IconButton
+                                                            icon={faPen}
+                                                            label={t(
                                                                 'common.edit',
                                                             )}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
                                                             onClick={() => {
                                                                 setEditing(
                                                                     workShift,
                                                                 );
                                                                 setShowForm(true);
                                                             }}
-                                                            title={t('common.edit')}
-                                                            type="button"
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faPen}
-                                                            />
-                                                        </button>
-                                                        <button
-                                                            aria-label={t(
+                                                            tone="primary"
+                                                        />
+                                                        <IconButton
+                                                            icon={faTrash}
+                                                            label={t(
                                                                 'common.delete',
                                                             )}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
                                                             onClick={() =>
                                                                 setWorkShiftToDelete(
                                                                     workShift,
                                                                 )
                                                             }
-                                                            title={t(
-                                                                'common.delete',
-                                                            )}
-                                                            type="button"
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faTrash}
-                                                            />
-                                                        </button>
+                                                            tone="danger"
+                                                        />
                                                     </>
                                                 )}
                                             </div>

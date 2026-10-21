@@ -15,7 +15,10 @@ import {
     Button,
     DropdownSelect,
     EmptyState,
+    fieldClass,
+    IconButton,
     LoadingOverlay,
+    PageHeader,
     Pagination,
 } from '@/components/ui';
 import { listPayrollPeriods } from '@/features/payroll-periods/api/payroll-periods.api';
@@ -48,9 +51,6 @@ import {
 
 const pageSize = 10;
 const detailPageSize = 8;
-const fieldClass =
-    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100';
-
 type PayrollProcessingsPageProps = {
     canManage: boolean;
 };
@@ -414,22 +414,8 @@ export function PayrollProcessingsPage({
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-lg:items-stretch max-lg:flex-col">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl text-primary-600">
-                        <FontAwesomeIcon icon={faFileInvoiceDollar} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {t('payrollProcessings.title')}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {t('payrollProcessings.subtitle')}
-                        </p>
-                    </div>
-                </div>
-
-                {canManage && (
+            <PageHeader
+                actions={canManage && (
                     <div className="flex items-center gap-3 max-sm:flex-col">
                         <DropdownSelect
                             ariaLabel={t('payrollProcessings.period')}
@@ -453,7 +439,10 @@ export function PayrollProcessingsPage({
                         </Button>
                     </div>
                 )}
-            </div>
+                description={t('payrollProcessings.subtitle')}
+                icon={<FontAwesomeIcon icon={faFileInvoiceDollar} />}
+                title={t('payrollProcessings.title')}
+            />
 
             {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -461,7 +450,7 @@ export function PayrollProcessingsPage({
                 </div>
             )}
 
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                 <LoadingOverlay
                     label={t('payrollProcessings.loading')}
                     visible={loading}
@@ -516,10 +505,10 @@ export function PayrollProcessingsPage({
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1180px] table-fixed border-collapse">
+                    <table className="data-table w-full min-w-[1180px] table-fixed border-collapse">
                         <thead>
-                            <tr className="border-b border-slate-200 bg-slate-50">
-                                <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
+                            <tr>
+                                <th>
                                     {t('payrollProcessings.period')}
                                 </th>
                                 {(
@@ -533,7 +522,6 @@ export function PayrollProcessingsPage({
                                     ] as const
                                 ).map(([field, label]) => (
                                     <th
-                                        className="px-5 py-3 text-center text-xs font-semibold text-slate-600"
                                         key={field}
                                     >
                                         <button
@@ -546,7 +534,7 @@ export function PayrollProcessingsPage({
                                         </button>
                                     </th>
                                 ))}
-                                <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
+                                <th className="cell-actions">
                                     {t('common.actions')}
                                 </th>
                             </tr>
@@ -558,80 +546,67 @@ export function PayrollProcessingsPage({
                                         className="border-b border-slate-100 transition hover:bg-slate-50/80 last:border-0"
                                         key={processing.id}
                                     >
-                                        <td className="px-5 py-3.5 text-center text-sm font-semibold text-slate-800">
+                                        <td className="font-semibold text-slate-900">
                                             {processing.payrollPeriod.name}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center text-sm text-slate-700">
+                                        <td>
                                             {processing.totalEmployees}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center text-sm text-slate-700">
+                                        <td>
                                             {processing.processedEmployees}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center text-sm text-emerald-700">
+                                        <td className="text-emerald-700">
                                             {processing.successCount}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center text-sm text-red-700">
+                                        <td className="text-red-700">
                                             {processing.failedCount}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center">
+                                        <td>
                                             <span
-                                                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(processing.status)}`}
+                                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${statusClass(processing.status)}`}
                                             >
                                                 {processingStatusLabel(processing.status)}
                                             </span>
                                         </td>
-                                        <td className="px-5 py-3.5 text-center text-sm text-slate-700">
+                                        <td>
                                             {formatDateTime(processing.generatedAt)}
                                         </td>
-                                        <td className="px-5 py-3.5">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button
-                                                    aria-label={t('common.view')}
-                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
-                                                    title={t('common.view')}
-                                                    type="button"
+                                        <td className="cell-actions">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <IconButton
+                                                    icon={faEye}
+                                                    label={t('common.view')}
                                                     onClick={() => {
                                                         setSelectedProcessing(processing);
                                                         setDetailPage(1);
                                                     }}
-                                                >
-                                                    <FontAwesomeIcon icon={faEye} />
-                                                </button>
+                                                />
                                                 {canManage &&
                                                     processing.status !==
                                                         PayrollProcessingStatus.Closed && (
-                                                        <button
-                                                            aria-label={t('payrollProcessings.recalculate')}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
-                                                            title={t('payrollProcessings.recalculate')}
-                                                            type="button"
+                                                        <IconButton
+                                                            icon={faArrowsRotate}
+                                                            label={t('payrollProcessings.recalculate')}
                                                             onClick={() =>
                                                                 void handleRecalculate(
                                                                     processing,
                                                                 )
                                                             }
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faArrowsRotate}
-                                                            />
-                                                        </button>
+                                                            tone="primary"
+                                                        />
                                                     )}
                                                 {canManage &&
                                                     processing.status ===
                                                         PayrollProcessingStatus.Completed && (
-                                                        <button
-                                                            aria-label={t('payrollProcessings.closeAction')}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-0 text-slate-700 transition hover:border-slate-400 hover:bg-slate-700 hover:text-white"
-                                                            title={t('payrollProcessings.closeAction')}
-                                                            type="button"
+                                                        <IconButton
+                                                            icon={faLock}
+                                                            label={t('payrollProcessings.closeAction')}
                                                             onClick={() =>
                                                                 setProcessingToClose(
                                                                     processing,
                                                                 )
                                                             }
-                                                        >
-                                                            <FontAwesomeIcon icon={faLock} />
-                                                        </button>
+                                                        />
                                                     )}
                                             </div>
                                         </td>
@@ -669,7 +644,7 @@ export function PayrollProcessingsPage({
             </div>
 
             {selectedProcessing && (
-                <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                     <LoadingOverlay
                         label={t('payrollProcessings.employeeLoading')}
                         visible={detailLoading}
@@ -724,9 +699,9 @@ export function PayrollProcessingsPage({
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[1280px] table-fixed border-collapse">
+                        <table className="data-table w-full min-w-[1280px] table-fixed border-collapse">
                             <thead>
-                                <tr className="border-b border-slate-200 bg-slate-50">
+                                <tr>
                                     {(
                                         [
                                             ['employeeCode', t('payrollProcessings.employee')],
@@ -736,7 +711,6 @@ export function PayrollProcessingsPage({
                                         ] as const
                                     ).map(([field, label]) => (
                                         <th
-                                            className="px-5 py-3 text-center text-xs font-semibold text-slate-600"
                                             key={field}
                                         >
                                             <button
@@ -751,19 +725,19 @@ export function PayrollProcessingsPage({
                                             </button>
                                         </th>
                                     ))}
-                                    <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
+                                    <th>
                                         {t('payrollProcessings.branch')}
                                     </th>
-                                    <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
+                                    <th>
                                         {t('payrollProcessings.position')}
                                     </th>
-                                    <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
+                                    <th>
                                         {t('payrollProcessings.minutes')}
                                     </th>
-                                    <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
+                                    <th>
                                         {t('payrollProcessings.adjustments')}
                                     </th>
-                                    <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
+                                    <th className="cell-actions">
                                         {t('common.actions')}
                                     </th>
                                 </tr>
@@ -775,32 +749,32 @@ export function PayrollProcessingsPage({
                                             className="border-b border-slate-100 transition hover:bg-slate-50/80 last:border-0"
                                             key={employeePayroll.id}
                                         >
-                                            <td className="px-5 py-3.5 text-center text-sm font-semibold text-slate-800">
+                                            <td className="font-semibold text-slate-900">
                                                 {employeePayroll.employeeCode} -{' '}
                                                 {employeePayroll.employeeName}
                                             </td>
-                                            <td className="px-5 py-3.5 text-center">
+                                            <td>
                                                 <span
-                                                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(employeePayroll.status)}`}
+                                                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${statusClass(employeePayroll.status)}`}
                                                 >
                                                     {employeeStatusLabel(
                                                         employeePayroll.status,
                                                     )}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-3.5 text-center text-sm text-slate-700">
+                                            <td>
                                                 {formatMoney(employeePayroll.grossPay)}
                                             </td>
-                                            <td className="px-5 py-3.5 text-center text-sm font-semibold text-slate-800">
+                                            <td className="font-semibold text-slate-900">
                                                 {formatMoney(employeePayroll.netPay)}
                                             </td>
-                                            <td className="px-5 py-3.5 text-center text-sm text-slate-700">
+                                            <td>
                                                 {employeePayroll.branchName}
                                             </td>
-                                            <td className="px-5 py-3.5 text-center text-sm text-slate-700">
+                                            <td>
                                                 {employeePayroll.positionName}
                                             </td>
-                                            <td className="px-5 py-3.5 text-center text-xs text-slate-600">
+                                            <td>
                                                 {formatMinutes(
                                                     employeePayroll.workedMinutes,
                                                 )}{' '}
@@ -809,7 +783,7 @@ export function PayrollProcessingsPage({
                                                     employeePayroll.overtimeMinutes,
                                                 )}
                                             </td>
-                                            <td className="px-5 py-3.5 text-center text-xs text-slate-600">
+                                            <td>
                                                 +{formatMoney(
                                                     employeePayroll.rewardTotal,
                                                 )}{' '}
@@ -818,25 +792,20 @@ export function PayrollProcessingsPage({
                                                     employeePayroll.penaltyTotal,
                                                 )}
                                             </td>
-                                            <td className="px-5 py-3.5">
-                                                <div className="flex items-center justify-center gap-2">
+                                            <td className="cell-actions">
+                                                <div className="flex items-center justify-end gap-1">
                                                     {employeePayroll.status ===
                                                         EmployeePayrollStatus.Failed && (
-                                                        <button
-                                                            aria-label={t('payrollProcessings.retry')}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-amber-100 bg-amber-50 p-0 text-amber-700 transition hover:border-amber-300 hover:bg-amber-500 hover:text-white"
-                                                            title={t('payrollProcessings.retry')}
-                                                            type="button"
+                                                        <IconButton
+                                                            icon={faArrowsRotate}
+                                                            label={t('payrollProcessings.retry')}
                                                             onClick={() =>
                                                                 void handleRetry(
                                                                     employeePayroll,
                                                                 )
                                                             }
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faArrowsRotate}
-                                                            />
-                                                        </button>
+                                                            tone="warning"
+                                                        />
                                                     )}
                                                     {employeePayroll.status !==
                                                         EmployeePayrollStatus.Failed && (

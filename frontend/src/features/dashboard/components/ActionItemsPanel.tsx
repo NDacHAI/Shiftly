@@ -195,7 +195,7 @@ export function ActionItemsPanel({ summary }: ActionItemsPanelProps) {
                             </div>
                             {row.meta && (
                                 <span
-                                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${metaToneClasses[row.tone]}`}
+                                    className={`shrink-0 inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${metaToneClasses[row.tone]}`}
                                 >
                                     {row.meta}
                                 </span>

@@ -101,7 +101,7 @@ export function MyShiftList({
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
                             <span
-                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${state.className}`}
+                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${state.className}`}
                             >
                                 {t(state.labelKey)}
                             </span>

@@ -9,7 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { Link, useParams } from 'react-router-dom';
 import { useToast } from '@/components/feedback';
-import { EmptyState, LoadingOverlay } from '@/components/ui';
+import { EmptyState, LoadingOverlay, PageHeader } from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
 import { routes } from '@/constants/routes';
 import { useI18n } from '@/i18n';
@@ -129,30 +129,22 @@ export function EmployeeDetailPage({ userRole }: EmployeeDetailPageProps) {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-sm:flex-col max-sm:items-stretch">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-600">
-                        <FontAwesomeIcon icon={faEnvelope} />
-                    </span>
-                    <div>
-                        <p className="text-xs font-bold tracking-wider text-primary-600 uppercase">
-                            {employee?.employeeCode ?? 'Employee'}
-                        </p>
-                        <h2 className="mt-1 text-xl font-bold text-slate-950">
-                            {employee ? fullName(employee) : t('employees.details')}
-                        </h2>
-                    </div>
-                </div>
-                <Link
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700"
-                    to={routes.employees}
-                >
-                    <FontAwesomeIcon icon={faArrowLeft} />
-                    {t('common.back')}
-                </Link>
-            </div>
+            <PageHeader
+                actions={
+                    <Link
+                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-xs transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                        to={routes.employees}
+                    >
+                        <FontAwesomeIcon icon={faArrowLeft} />
+                        {t('common.back')}
+                    </Link>
+                }
+                description={employee?.employeeCode}
+                icon={<FontAwesomeIcon icon={faEnvelope} />}
+                title={employee ? fullName(employee) : t('employees.details')}
+            />
 
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                 <LoadingOverlay label={t('employees.loading')} visible={loading} />
                 <div className="flex gap-2 overflow-x-auto border-b border-slate-200 px-4 pt-4">
                     {employeeDetailTabs.map((tab) => {

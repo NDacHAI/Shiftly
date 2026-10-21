@@ -16,7 +16,7 @@ export function EmptyState({
     return (
         <div className="mx-auto flex max-w-md flex-col items-center px-5 py-10 text-center">
             {icon && (
-                <span className="mb-3 flex size-11 items-center justify-center rounded-full bg-primary-50 text-primary-600">
+                <span className="mb-3 flex size-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
                     {icon}
                 </span>
             )}

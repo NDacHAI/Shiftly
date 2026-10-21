@@ -3,6 +3,7 @@ import { type AuthUser } from '@/features/auth/types';
 import { type I18nKey, useI18n } from '@/i18n';
 import { Header } from './Header';
 import { Nav } from './Nav';
+import { findNavGroupLabelKey } from './navigation';
 
 type LayoutProps = {
     activeNavKey?: I18nKey;
@@ -21,14 +22,15 @@ export function Layout({
 }: LayoutProps) {
     const { t } = useI18n();
     const title = t(titleKey);
+    const groupLabelKey = findNavGroupLabelKey(activeNavKey ?? titleKey);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     return (
         <main
             className={`grid min-h-screen transition-[grid-template-columns] duration-200 max-sm:block ${
                 sidebarCollapsed
-                    ? 'grid-cols-[80px_minmax(0,1fr)]'
-                    : 'grid-cols-[288px_minmax(0,1fr)]'
+                    ? 'grid-cols-[72px_minmax(0,1fr)]'
+                    : 'grid-cols-[256px_minmax(0,1fr)]'
             }`}
         >
             <Nav
@@ -38,7 +40,12 @@ export function Layout({
                 onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
             />
             <div className="min-w-0">
-                <Header title={title} user={user} onLogout={onLogout} />
+                <Header
+                    groupLabel={groupLabelKey ? t(groupLabelKey) : undefined}
+                    title={title}
+                    user={user}
+                    onLogout={onLogout}
+                />
                 {children}
             </div>
         </main>

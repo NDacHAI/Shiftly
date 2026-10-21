@@ -8,7 +8,12 @@ import {
     faUserCheck,
     faUserClock,
 } from '@fortawesome/free-solid-svg-icons';
-import { Button, DropdownSelect, LoadingOverlay } from '@/components/ui';
+import {
+    Button,
+    DropdownSelect,
+    LoadingOverlay,
+    PageHeader,
+} from '@/components/ui';
 import { type I18nKey, useI18n } from '@/i18n';
 import { getDashboardErrorKey, getDashboardSummary } from '../api/dashboard.api';
 import { ActionItemsPanel } from '../components/ActionItemsPanel';
@@ -78,70 +83,64 @@ export function ManagerDashboard() {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-lg:flex-col max-lg:items-stretch">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl text-primary-600">
-                        <FontAwesomeIcon icon={faChartColumn} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {t('dashboard.title')}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {summary
-                                ? `${formatLongDate(summary.date, language)} · ${interpolate(
-                                      t('dashboard.updatedAt'),
-                                      { time: formatTime(summary.generatedAt, language) },
-                                  )}`
-                                : t('dashboard.subtitle')}
-                        </p>
+            <PageHeader
+                actions={
+                    <div className="flex flex-wrap items-center gap-2">
+                        <DropdownSelect
+                            ariaLabel={t('common.branch')}
+                            className="min-w-48 max-sm:w-full"
+                            options={[
+                                { value: allBranchesValue, label: t('common.allBranches') },
+                                ...(summary?.branches ?? []).map((branch) => ({
+                                    value: branch.id,
+                                    label: branch.name,
+                                })),
+                            ]}
+                            value={branchId}
+                            onChange={changeBranch}
+                        />
+                        <div
+                            aria-label={t('dashboard.range.label')}
+                            className="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5"
+                            role="group"
+                        >
+                            {rangeOptions.map((option) => (
+                                <button
+                                    aria-pressed={days === option}
+                                    className={`min-h-9 cursor-pointer rounded-md px-3 text-sm font-semibold transition ${
+                                        days === option
+                                            ? 'bg-white text-primary-700 shadow-sm'
+                                            : 'bg-transparent text-slate-500 hover:text-slate-800'
+                                    }`}
+                                    key={option}
+                                    type="button"
+                                    onClick={() => changeDays(option)}
+                                >
+                                    {interpolate(t('dashboard.range.days'), { days: option })}
+                                </button>
+                            ))}
+                        </div>
+                        <Button
+                            onClick={reload}
+                            size="lg"
+                            variant="secondary"
+                        >
+                            <FontAwesomeIcon icon={faRotateRight} />
+                            {t('common.refresh')}
+                        </Button>
                     </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                    <DropdownSelect
-                        ariaLabel={t('common.branch')}
-                        className="min-w-48 max-sm:w-full"
-                        options={[
-                            { value: allBranchesValue, label: t('common.allBranches') },
-                            ...(summary?.branches ?? []).map((branch) => ({
-                                value: branch.id,
-                                label: branch.name,
-                            })),
-                        ]}
-                        value={branchId}
-                        onChange={changeBranch}
-                    />
-                    <div
-                        aria-label={t('dashboard.range.label')}
-                        className="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5"
-                        role="group"
-                    >
-                        {rangeOptions.map((option) => (
-                            <button
-                                aria-pressed={days === option}
-                                className={`min-h-9 cursor-pointer rounded-md px-3 text-sm font-semibold transition ${
-                                    days === option
-                                        ? 'bg-white text-primary-700 shadow-sm'
-                                        : 'bg-transparent text-slate-500 hover:text-slate-800'
-                                }`}
-                                key={option}
-                                type="button"
-                                onClick={() => changeDays(option)}
-                            >
-                                {interpolate(t('dashboard.range.days'), { days: option })}
-                            </button>
-                        ))}
-                    </div>
-                    <Button
-                        onClick={reload}
-                        size="lg"
-                        variant="secondary"
-                    >
-                        <FontAwesomeIcon icon={faRotateRight} />
-                        {t('common.refresh')}
-                    </Button>
-                </div>
-            </div>
+                }
+                description={
+                    summary
+                    ? `${formatLongDate(summary.date, language)} · ${interpolate(
+                    t('dashboard.updatedAt'),
+                    { time: formatTime(summary.generatedAt, language) },
+                    )}`
+                    : t('dashboard.subtitle')
+                }
+                icon={<FontAwesomeIcon icon={faChartColumn} />}
+                title={t('dashboard.title')}
+            />
 
             {errorKey && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

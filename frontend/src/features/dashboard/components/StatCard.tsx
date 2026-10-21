@@ -28,7 +28,7 @@ export function StatCard({
     tone = 'primary',
 }: StatCardProps) {
     return (
-        <div className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex items-start gap-4 rounded-xl border border-line bg-white p-5 shadow-card">
             <span
                 className={`flex size-11 shrink-0 items-center justify-center rounded-full text-lg ${toneClasses[tone]}`}
             >

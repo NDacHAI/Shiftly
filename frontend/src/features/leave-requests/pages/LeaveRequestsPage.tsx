@@ -21,7 +21,11 @@ import {
     Button,
     DropdownSelect,
     EmptyState,
+    fieldClass,
+    iconButtonClass,
+    iconButtonToneClasses,
     LoadingOverlay,
+    PageHeader,
     Pagination,
 } from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
@@ -53,9 +57,6 @@ import {
 } from '../types';
 
 const pageSize = 10;
-const fieldClass =
-    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
-
 type LeaveRequestsPageProps = {
     userRole: Role;
 };
@@ -484,34 +485,26 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 items-center justify-center rounded-full bg-primary-50 text-primary-600">
+            <PageHeader
+                actions={
+                    <Button
+                        disabled={filtersLoading}
+                        onClick={() => {
+                            resetForm();
+                            setShowForm(true);
+                        }}
+                        size="lg"
+                    >
                         <FontAwesomeIcon icon={faCalendarMinus} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {employeeMode ? 'Đơn nghỉ của tôi' : 'Quản lý đơn nghỉ'}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            Tạo, theo dõi, duyệt và hủy đơn nghỉ theo ngày/giờ hoặc theo ca.
-                        </p>
-                    </div>
-                </div>
-                <Button
-                    disabled={filtersLoading}
-                    onClick={() => {
-                        resetForm();
-                        setShowForm(true);
-                    }}
-                    size="lg"
-                >
-                    <FontAwesomeIcon icon={faCalendarMinus} />
-                    Tạo đơn nghỉ
-                </Button>
-            </div>
+                        Tạo đơn nghỉ
+                    </Button>
+                }
+                description={<>Tạo, theo dõi, duyệt và hủy đơn nghỉ theo ngày/giờ hoặc theo ca.</>}
+                icon={<FontAwesomeIcon icon={faCalendarMinus} />}
+                title={employeeMode ? 'Đơn nghỉ của tôi' : 'Quản lý đơn nghỉ'}
+            />
 
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                 <LoadingOverlay label="Đang tải đơn nghỉ..." visible={loading} />
                 <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
                     <DropdownSelect
@@ -576,16 +569,16 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1080px] table-fixed">
-                        <thead className="bg-slate-50">
-                            <tr className="border-b border-slate-200">
-                                <th className="w-[13%] px-4 py-3 text-center text-xs text-slate-600">Mã đơn</th>
-                                <th className="w-[19%] px-4 py-3 text-center text-xs text-slate-600">Nhân viên</th>
-                                <th className="w-[13%] px-4 py-3 text-center text-xs text-slate-600">Chi nhánh</th>
-                                <th className="w-[12%] px-4 py-3 text-center text-xs text-slate-600">Hình thức</th>
-                                <th className="w-[17%] px-4 py-3 text-center text-xs text-slate-600">Thời gian/Ca</th>
-                                <th className="w-[11%] px-4 py-3 text-center text-xs text-slate-600">Trạng thái</th>
-                                <th className="w-[15%] px-4 py-3 text-center text-xs text-slate-600">Thao tác</th>
+                    <table className="data-table w-full min-w-[1080px] table-fixed">
+                        <thead>
+                            <tr>
+                                <th className="w-[13%]">Mã đơn</th>
+                                <th className="w-[19%]">Nhân viên</th>
+                                <th className="w-[13%]">Chi nhánh</th>
+                                <th className="w-[12%]">Hình thức</th>
+                                <th className="w-[17%]">Thời gian/Ca</th>
+                                <th className="w-[11%]">Trạng thái</th>
+                                <th className="cell-actions w-[15%]">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -595,30 +588,30 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                                         className="border-b border-slate-100 hover:bg-slate-50"
                                         key={request.id}
                                     >
-                                        <td className="px-4 py-3 text-center text-sm font-semibold text-slate-800">
+                                        <td className="font-semibold text-slate-900">
                                             {request.code}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-slate-700">
+                                        <td>
                                             {formatEmployee(request.employee)}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm text-slate-600">
+                                        <td>
                                             {request.branch.name}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm text-slate-600">
+                                        <td>
                                             {request.requestMode === LeaveRequestMode.Shift
                                                 ? 'Theo ca'
                                                 : 'Theo ngày/giờ'}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm text-slate-600">
+                                        <td>
                                             {formatLeaveTime(request)}
                                         </td>
-                                        <td className="px-4 py-3 text-center">
-                                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusClass(request.status)}`}>
+                                        <td>
+                                            <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${statusClass(request.status)}`}>
                                                 {statusLabel(request.status)}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex justify-center gap-2">
+                                        <td className="cell-actions">
+                                            <div className="flex items-center justify-end gap-1">
                                                 {!employeeMode &&
                                                     request.status === LeaveRequestStatus.Pending && (
                                                         <>
@@ -964,16 +957,12 @@ function IconButton({
     tone?: 'primary' | 'danger' | 'warning';
 }) {
     const toneClass =
-        tone === 'danger'
-            ? 'border-red-100 bg-red-50 text-red-600 hover:border-red-300 hover:bg-red-600'
-            : tone === 'warning'
-              ? 'border-amber-100 bg-amber-50 text-amber-600 hover:border-amber-300 hover:bg-amber-600'
-              : 'border-primary-100 bg-primary-50 text-primary-600 hover:border-primary-300 hover:bg-primary-600';
+        iconButtonToneClasses[tone === 'primary' ? 'neutral' : tone];
 
     return (
         <button
             aria-label={label}
-            className={`flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border p-0 transition hover:text-white ${toneClass}`}
+            className={`${iconButtonClass} ${toneClass}`}
             onClick={onClick}
             title={label}
             type="button"

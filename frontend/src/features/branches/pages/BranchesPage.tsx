@@ -15,7 +15,10 @@ import {
     Button,
     DropdownSelect,
     EmptyState,
+    fieldClass,
+    IconButton,
     LoadingOverlay,
+    PageHeader,
     Pagination,
 } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -39,9 +42,6 @@ import {
 
 const pageSize = 10;
 type StatusFilter = 'all' | 'active' | 'inactive';
-
-const fieldClass =
-    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat('vi-VN', {
@@ -202,21 +202,8 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-sm:items-stretch max-sm:flex-col">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl text-primary-600">
-                        <FontAwesomeIcon icon={faBuilding} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {t('branches.title')}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {t('branches.subtitle')}
-                        </p>
-                    </div>
-                </div>
-                {canManage && (
+            <PageHeader
+                actions={canManage && (
                     <Button
                         className="shadow-sm"
                         onClick={() => {
@@ -229,7 +216,10 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                         {t('branches.add')}
                     </Button>
                 )}
-            </div>
+                description={t('branches.subtitle')}
+                icon={<FontAwesomeIcon icon={faBuilding} />}
+                title={t('branches.title')}
+            />
 
             {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -237,7 +227,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                 </div>
             )}
 
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                 <LoadingOverlay label={t('branches.loading')} visible={loading} />
                 <div className="flex items-center justify-between gap-4 border-b border-slate-200 p-4 max-md:items-stretch max-md:flex-col">
                     <label className="relative block w-full max-w-sm">
@@ -301,9 +291,9 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[820px] table-fixed border-collapse">
+                    <table className="data-table w-full min-w-[820px] table-fixed border-collapse">
                         <thead>
-                            <tr className="border-b border-slate-200 bg-slate-50">
+                            <tr>
                                 {(
                                     [
                                         ['code', t('common.code')],
@@ -313,7 +303,6 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                                     ] as const
                                 ).map(([field, label]) => (
                                     <th
-                                        className="px-5 py-3 text-center text-xs font-semibold text-slate-600"
                                         key={field}
                                     >
                                         <button
@@ -326,7 +315,7 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                                         </button>
                                     </th>
                                 ))}
-                                <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
+                                <th className="cell-actions">
                                     {t('common.actions')}
                                 </th>
                             </tr>
@@ -338,15 +327,15 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                                         className="border-b border-slate-100 transition hover:bg-slate-50/80 last:border-0"
                                         key={branch.id}
                                     >
-                                        <td className="px-5 py-3.5 text-center text-sm font-semibold text-slate-800">
+                                        <td className="font-semibold text-slate-900">
                                             {branch.code}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center text-sm text-slate-700">
+                                        <td>
                                             {branch.name}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center">
+                                        <td>
                                             <span
-                                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${
                                                     branch.status
                                                         ? 'bg-emerald-50 text-emerald-700'
                                                         : 'bg-amber-50 text-amber-700'
@@ -364,49 +353,39 @@ export function BranchesPage({ canManage }: BranchesPageProps) {
                                                     : t('common.inactive')}
                                             </span>
                                         </td>
-                                        <td className="px-5 py-3.5 text-center text-sm text-slate-600">
+                                        <td>
                                             {formatDate(branch.createdAt)}
                                         </td>
-                                        <td className="px-5 py-3.5">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button
-                                                    aria-label={t('common.view')}
-                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
+                                        <td className="cell-actions">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <IconButton
+                                                    icon={faEye}
+                                                    label={t('common.view')}
                                                     onClick={() =>
                                                         void handleView(branch.id)
                                                     }
-                                                    title={t('common.view')}
-                                                    type="button"
-                                                >
-                                                    <FontAwesomeIcon icon={faEye} />
-                                                </button>
+                                                />
                                                 {canManage && (
                                                     <>
-                                                        <button
-                                                            aria-label={t('common.edit')}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
+                                                        <IconButton
+                                                            icon={faPen}
+                                                            label={t('common.edit')}
                                                             onClick={() => {
                                                                 setEditing(branch);
                                                                 setShowForm(true);
                                                             }}
-                                                            title={t('common.edit')}
-                                                            type="button"
-                                                        >
-                                                            <FontAwesomeIcon icon={faPen} />
-                                                        </button>
-                                                        <button
-                                                            aria-label={t('common.delete')}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
+                                                            tone="primary"
+                                                        />
+                                                        <IconButton
+                                                            icon={faTrash}
+                                                            label={t('common.delete')}
                                                             onClick={() =>
                                                                 setBranchToDelete(
                                                                     branch,
                                                                 )
                                                             }
-                                                            title={t('common.delete')}
-                                                            type="button"
-                                                        >
-                                                            <FontAwesomeIcon icon={faTrash} />
-                                                        </button>
+                                                            tone="danger"
+                                                        />
                                                     </>
                                                 )}
                                             </div>

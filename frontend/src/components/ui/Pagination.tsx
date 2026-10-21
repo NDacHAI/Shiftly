@@ -21,7 +21,7 @@ export function Pagination({
     const displayedPage = totalPages === 0 ? 0 : page;
 
     return (
-        <div className="flex items-center justify-between gap-4 border-t border-slate-200 px-5 py-4 text-sm text-slate-500 max-sm:flex-col">
+        <div className="flex items-center justify-between gap-4 border-t border-line px-4 py-3 text-[13px] text-slate-500 max-sm:flex-col">
             <span>Hiển thị {pageSize} trên mỗi trang</span>
             <div className="flex items-center gap-2">
                 <Button
@@ -33,7 +33,7 @@ export function Pagination({
                 >
                     <FontAwesomeIcon icon={faChevronLeft} />
                 </Button>
-                <span className="flex size-9 items-center justify-center rounded-lg bg-primary-600 font-semibold text-white">
+                <span className="flex size-9 items-center justify-center rounded-lg bg-primary-50 font-semibold text-primary-700 ring-1 ring-primary-100 ring-inset">
                     {displayedPage}
                 </span>
                 <Button

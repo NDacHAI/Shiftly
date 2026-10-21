@@ -15,7 +15,10 @@ import {
     Button,
     DropdownSelect,
     EmptyState,
+    fieldClass,
+    IconButton,
     LoadingOverlay,
+    PageHeader,
     Pagination,
 } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -41,9 +44,6 @@ import {
 } from '../types';
 
 const pageSize = 10;
-
-const fieldClass =
-    'min-h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500';
 
 type SalaryRulesPageProps = {
     canManage: boolean;
@@ -206,21 +206,8 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-sm:items-stretch max-sm:flex-col">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl text-primary-600">
-                        <FontAwesomeIcon icon={faCoins} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {t('salaryRules.title')}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {t('salaryRules.subtitle')}
-                        </p>
-                    </div>
-                </div>
-                {canManage && (
+            <PageHeader
+                actions={canManage && (
                     <Button
                         className="shadow-sm"
                         onClick={() => {
@@ -233,7 +220,10 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
                         {t('salaryRules.add')}
                     </Button>
                 )}
-            </div>
+                description={t('salaryRules.subtitle')}
+                icon={<FontAwesomeIcon icon={faCoins} />}
+                title={t('salaryRules.title')}
+            />
 
             {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -241,7 +231,7 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
                 </div>
             )}
 
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                 <LoadingOverlay
                     label={t('salaryRules.loading')}
                     visible={loading}
@@ -311,9 +301,9 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[980px] table-fixed border-collapse">
+                    <table className="data-table w-full min-w-[980px] table-fixed border-collapse">
                         <thead>
-                            <tr className="border-b border-slate-200 bg-slate-50">
+                            <tr>
                                 {(
                                     [
                                         ['code', t('salaryRules.code')],
@@ -326,7 +316,6 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
                                     ] as const
                                 ).map(([field, label], index) => (
                                     <th
-                                        className="px-5 py-3 text-center text-xs font-semibold text-slate-600"
                                         key={`${field}-${index}`}
                                     >
                                         {field === 'createdAt' ? (
@@ -343,7 +332,7 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
                                         )}
                                     </th>
                                 ))}
-                                <th className="px-5 py-3 text-center text-xs font-semibold text-slate-600">
+                                <th className="cell-actions">
                                     {t('common.actions')}
                                 </th>
                             </tr>
@@ -355,19 +344,19 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
                                         className="border-b border-slate-100 transition hover:bg-slate-50/80 last:border-0"
                                         key={salaryRule.id}
                                     >
-                                        <td className="px-5 py-3.5 text-center text-sm font-semibold text-slate-800">
+                                        <td className="font-semibold text-slate-900">
                                             {salaryRule.code}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center text-sm text-slate-700">
+                                        <td>
                                             {salaryRule.name}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center text-sm font-semibold text-slate-800">
+                                        <td className="font-semibold text-slate-900">
                                             {salaryRule.currentMultiplier ??
                                                 t('salaryRules.noCurrentVersion')}
                                         </td>
-                                        <td className="px-5 py-3.5 text-center">
+                                        <td>
                                             <span
-                                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${
                                                     salaryRule.status ===
                                                     SalaryRuleStatus.Active
                                                         ? 'bg-emerald-50 text-emerald-700'
@@ -388,65 +377,47 @@ export function SalaryRulesPage({ canManage }: SalaryRulesPageProps) {
                                                     : t('common.inactive')}
                                             </span>
                                         </td>
-                                        <td className="px-5 py-3.5">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button
-                                                    aria-label={t('common.view')}
-                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
-                                                    title={t('common.view')}
-                                                    type="button"
+                                        <td className="cell-actions">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <IconButton
+                                                    icon={faEye}
+                                                    label={t('common.view')}
                                                     onClick={() =>
                                                         void handleView(
                                                             salaryRule.id,
                                                         )
                                                     }
-                                                >
-                                                    <FontAwesomeIcon icon={faEye} />
-                                                </button>
+                                                />
                                                 {canManage && (
                                                     <>
-                                                        <button
-                                                            aria-label={t(
+                                                        <IconButton
+                                                            icon={faPen}
+                                                            label={t(
                                                                 'common.edit',
                                                             )}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-blue-100 bg-blue-50 p-0 text-blue-600 transition hover:border-blue-300 hover:bg-blue-600 hover:text-white"
-                                                            title={t(
-                                                                'common.edit',
-                                                            )}
-                                                            type="button"
                                                             onClick={() => {
                                                                 setEditing(
                                                                     salaryRule,
                                                                 );
                                                                 setShowForm(true);
                                                             }}
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faPen}
-                                                            />
-                                                        </button>
-                                                        <button
-                                                            aria-label={t(
-                                                                'common.delete',
-                                                            )}
-                                                            className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                                                            tone="primary"
+                                                        />
+                                                        <IconButton
                                                             disabled={
                                                                 salaryRule.isDefault
                                                             }
-                                                            title={t(
+                                                            icon={faTrash}
+                                                            label={t(
                                                                 'common.delete',
                                                             )}
-                                                            type="button"
                                                             onClick={() =>
                                                                 setRuleToDelete(
                                                                     salaryRule,
                                                                 )
                                                             }
-                                                        >
-                                                            <FontAwesomeIcon
-                                                                icon={faTrash}
-                                                            />
-                                                        </button>
+                                                            tone="danger"
+                                                        />
                                                     </>
                                                 )}
                                             </div>

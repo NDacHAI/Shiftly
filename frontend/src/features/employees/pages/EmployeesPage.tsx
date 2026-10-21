@@ -14,7 +14,10 @@ import {
     Button,
     DropdownSelect,
     EmptyState,
+    fieldClass,
+    IconButton,
     LoadingOverlay,
+    PageHeader,
     Pagination,
 } from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
@@ -51,9 +54,6 @@ type StatusFilter = 'all' | EmployeeStatus;
 type EmployeesPageProps = {
     userRole: Role;
 };
-
-const fieldClass =
-    'min-h-11 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100';
 
 function fullName(employee: Employee) {
     return `${employee.firstName} ${employee.lastName}`;
@@ -230,21 +230,8 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-sm:flex-col max-sm:items-stretch">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-600">
-                        <FontAwesomeIcon icon={faUsers} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {t('employees.title')}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {t('employees.subtitle')}
-                        </p>
-                    </div>
-                </div>
-                {canManage && (
+            <PageHeader
+                actions={canManage && (
                     <Button
                         onClick={() => {
                             setShowForm(true);
@@ -255,9 +242,12 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                         {t('employees.add')}
                     </Button>
                 )}
-            </div>
+                description={t('employees.subtitle')}
+                icon={<FontAwesomeIcon icon={faUsers} />}
+                title={t('employees.title')}
+            />
 
-            <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
                 <LoadingOverlay label={t('employees.loading')} visible={loading} />
                 {canList && (
                     <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
@@ -346,10 +336,10 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                 )}
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[760px] table-fixed">
-                        <thead className="bg-slate-50">
-                            <tr className="border-b border-slate-200">
-                                <th className="w-[16%] px-4 py-3 text-center text-xs font-semibold text-slate-600">
+                    <table className="data-table w-full min-w-[760px] table-fixed">
+                        <thead>
+                            <tr>
+                                <th className="w-[16%]">
                                     <button
                                         className="cursor-pointer hover:text-primary-600"
                                         onClick={() => changeSort('employeeCode')}
@@ -358,7 +348,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                         {t('common.code')}
                                     </button>
                                 </th>
-                                <th className="w-[26%] px-4 py-3 text-center text-xs font-semibold text-slate-600">
+                                <th className="w-[26%]">
                                     <button
                                         className="cursor-pointer hover:text-primary-600"
                                         onClick={() => changeSort('fullName')}
@@ -367,13 +357,13 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                         {t('common.fullName')}
                                     </button>
                                 </th>
-                                <th className="w-[30%] px-4 py-3 text-center text-xs font-semibold text-slate-600">
+                                <th className="w-[30%]">
                                     {t('common.email')}
                                 </th>
-                                <th className="w-[14%] px-4 py-3 text-center text-xs font-semibold text-slate-600">
+                                <th className="w-[14%]">
                                     {t('common.status')}
                                 </th>
-                                <th className="w-[14%] px-4 py-3 text-center text-xs font-semibold text-slate-600">
+                                <th className="cell-actions w-[14%]">
                                     {t('common.actions')}
                                 </th>
                             </tr>
@@ -385,18 +375,18 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                         className="border-b border-slate-100 hover:bg-slate-50"
                                         key={employee.id}
                                     >
-                                        <td className="px-4 py-3 text-center text-sm font-semibold text-slate-800">
+                                        <td className="font-semibold text-slate-900">
                                             {employee.employeeCode}
                                         </td>
-                                        <td className="px-4 py-3 text-center text-sm text-slate-800">
+                                        <td className="text-slate-900">
                                             {fullName(employee)}
                                         </td>
-                                        <td className="truncate px-4 py-3 text-center text-sm text-slate-600">
+                                        <td className="truncate">
                                             {employee.email}
                                         </td>
-                                        <td className="px-4 py-3 text-center">
+                                        <td>
                                             <span
-                                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${
                                                     employee.status === 'Active'
                                                         ? 'bg-emerald-50 text-emerald-700'
                                                         : 'bg-amber-50 text-amber-700'
@@ -407,37 +397,28 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                                                     : t('common.inactive')}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex justify-center gap-2">
-                                                <button
-                                                    aria-label={t('common.view')}
-                                                    className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-primary-100 bg-primary-50 p-0 text-primary-600 transition hover:border-primary-300 hover:bg-primary-600 hover:text-white"
+                                        <td className="cell-actions">
+                                            <div className="flex items-center justify-end gap-1">
+                                                <IconButton
+                                                    icon={faEye}
+                                                    label={t('common.view')}
                                                     onClick={() =>
                                                         navigate(
                                                             `${routes.employees}/${employee.id}`,
                                                         )
                                                     }
-                                                    title={t('common.view')}
-                                                    type="button"
-                                                >
-                                                    <FontAwesomeIcon icon={faEye} />
-                                                </button>
+                                                />
                                                 {canManage && (
-                                                    <button
-                                                        aria-label={t('common.delete')}
-                                                        className="flex size-9 min-h-0 cursor-pointer items-center justify-center rounded-lg border border-red-100 bg-red-50 p-0 text-red-600 transition hover:border-red-300 hover:bg-red-600 hover:text-white"
+                                                    <IconButton
+                                                        icon={faTrash}
+                                                        label={t('common.delete')}
                                                         onClick={() =>
                                                             setEmployeeToDelete(
                                                                 employee,
                                                             )
                                                         }
-                                                        title={t('common.delete')}
-                                                        type="button"
-                                                    >
-                                                        <FontAwesomeIcon
-                                                            icon={faTrash}
-                                                        />
-                                                    </button>
+                                                        tone="danger"
+                                                    />
                                                 )}
                                             </div>
                                         </td>

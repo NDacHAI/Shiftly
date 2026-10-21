@@ -11,7 +11,12 @@ import {
     faUserClock,
 } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/components/feedback';
-import { Button, EmptyState, LoadingOverlay } from '@/components/ui';
+import {
+    Button,
+    EmptyState,
+    LoadingOverlay,
+    PageHeader,
+} from '@/components/ui';
 import { routes } from '@/constants/routes';
 import { checkIn, checkOut, getAttendanceErrorKey } from '@/features/attendance/api/attendance.api';
 import { type I18nKey, useI18n } from '@/i18n';
@@ -108,36 +113,32 @@ export function EmployeeDashboard() {
 
     return (
         <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <div className="flex items-center justify-between gap-5 rounded-xl border border-slate-200 bg-white px-6 py-5 shadow-sm max-lg:flex-col max-lg:items-stretch">
-                <div className="flex items-center gap-4">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-50 text-xl text-primary-600">
-                        <FontAwesomeIcon icon={faChartColumn} />
-                    </span>
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-950">
-                            {dashboard
-                                ? interpolate(t('dashboard.my.greeting'), {
-                                      name: dashboard.employee.fullName,
-                                  })
-                                : t('dashboard.title')}
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {dashboard
-                                ? formatLongDate(dashboard.date, language)
-                                : t('dashboard.my.subtitle')}
-                        </p>
-                    </div>
-                </div>
-                <Button
-                    className="max-sm:w-full"
-                    onClick={reload}
-                    size="lg"
-                    variant="secondary"
-                >
-                    <FontAwesomeIcon icon={faRotateRight} />
-                    {t('common.refresh')}
-                </Button>
-            </div>
+            <PageHeader
+                actions={
+                    <Button
+                        className="max-sm:w-full"
+                        onClick={reload}
+                        size="lg"
+                        variant="secondary"
+                    >
+                        <FontAwesomeIcon icon={faRotateRight} />
+                        {t('common.refresh')}
+                    </Button>
+                }
+                description={
+                    dashboard
+                    ? formatLongDate(dashboard.date, language)
+                    : t('dashboard.my.subtitle')
+                }
+                icon={<FontAwesomeIcon icon={faChartColumn} />}
+                title={
+                    dashboard
+                    ? interpolate(t('dashboard.my.greeting'), {
+                    name: dashboard.employee.fullName,
+                    })
+                    : t('dashboard.title')
+                }
+            />
 
             {errorKey && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
