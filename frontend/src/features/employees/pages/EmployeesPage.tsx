@@ -1,30 +1,24 @@
 ﻿import { useCallback, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faEye,
+    faArrowDown,
+    faArrowUp,
+    faChevronLeft,
+    faChevronRight,
     faPlus,
-    faRotateRight,
     faSearch,
     faTrash,
-    faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmDialog, useToast } from '@/components/feedback';
-import {
-    Button,
-    DropdownSelect,
-    EmptyState,
-    fieldClass,
-    IconButton,
-    LoadingOverlay,
-    PageHeader,
-    Pagination,
-} from '@/components/ui';
+import { DropdownSelect } from '@/components/ui';
+import { useSlidingIndicator } from '@/components/layout/useSlidingIndicator';
 import { roles, type Role } from '@/constants/roles';
 import { routes } from '@/constants/routes';
 import { useI18n } from '@/i18n';
 import { listBranches } from '@/features/branches/api/branches.api';
 import { type Branch } from '@/features/branches/types';
+import { initialsOf, interpolate } from '@/features/dashboard/lib/format';
 import { listPositions } from '@/features/positions/api/positions.api';
 import { type Position } from '@/features/positions/types';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -37,12 +31,17 @@ import {
     listEmployees,
 } from '../api/employees.api';
 import {
-    EmployeeFormDialog,
-    type EmployeeFormSubmit,
-} from '../components/EmployeeFormDialog';
+    EmployeeAddDrawer,
+    type EmployeeAddSubmit,
+} from '../components/EmployeeAddDrawer';
+import { EmployeeStatusPill } from '../components/EmployeeStatusPill';
+import {
+    employeeFullName,
+    formatDateDmy,
+    primaryButtonClass,
+} from '../lib/employee-ui';
 import {
     type Employee,
-    type EmployeePayload,
     type EmployeeSortField,
     type EmployeeStatus,
     type SortOrder,
@@ -51,16 +50,24 @@ import {
 const pageSize = 10;
 type StatusFilter = 'all' | EmployeeStatus;
 
+const statusFilters: Array<{ value: StatusFilter; labelKey: 'employees.statusAll' | 'common.active' | 'common.inactive' }> = [
+    { value: 'all', labelKey: 'employees.statusAll' },
+    { value: 'Active', labelKey: 'common.active' },
+    { value: 'Inactive', labelKey: 'common.inactive' },
+];
+
+const rowGridClass =
+    'grid grid-cols-[96px_minmax(220px,2fr)_minmax(120px,1.2fr)_minmax(110px,1fr)_110px_120px_56px] items-center gap-3 px-5';
+
+const pagerButtonClass =
+    'grid size-8 min-h-0 cursor-pointer place-items-center rounded-md border border-rule-strong bg-transparent text-xs text-ink transition-colors hover:bg-stone-soft disabled:cursor-default disabled:text-[#b9b3a4] disabled:hover:bg-transparent';
+
 type EmployeesPageProps = {
     userRole: Role;
 };
 
-function fullName(employee: Employee) {
-    return `${employee.firstName} ${employee.lastName}`;
-}
-
 export function EmployeesPage({ userRole }: EmployeesPageProps) {
-    const { t } = useI18n();
+    const { language, t } = useI18n();
     const canManage = userRole === roles.admin;
     const canList = userRole === roles.admin || userRole === roles.manager;
     const navigate = useNavigate();
@@ -70,6 +77,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
     const [positions, setPositions] = useState<Position[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
+    const [total, setTotal] = useState(0);
     const [search, setSearch] = useState('');
     const [branchId, setBranchId] = useState('');
     const [positionId, setPositionId] = useState('');
@@ -77,11 +85,14 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
     const [sortBy, setSortBy] = useState<EmployeeSortField>('createdAt');
     const [sortOrder, setSortOrder] = useState<SortOrder>('DESC');
     const [loading, setLoading] = useState(true);
+    const [loaded, setLoaded] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [employeeToDelete, setEmployeeToDelete] =
         useState<Employee | null>(null);
     const [deleting, setDeleting] = useState(false);
     const debouncedSearch = useDebounce(search);
+    const { containerRef: statusRef, indicatorRef: statusPillRef } =
+        useSlidingIndicator<HTMLDivElement>('employee-status', `${statusFilter}|${language}`);
 
     const loadEmployees = useCallback(async () => {
         setLoading(true);
@@ -90,6 +101,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             if (!canList) {
                 const employee = await getMyEmployee();
                 setEmployees([employee]);
+                setTotal(1);
                 setTotalPages(1);
                 return;
             }
@@ -106,6 +118,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                 sortOrder,
             });
             setEmployees(response.data);
+            setTotal(response.meta.total);
             setTotalPages(response.meta.totalPages);
         } catch (error) {
             showToast({
@@ -115,6 +128,7 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
             });
         } finally {
             setLoading(false);
+            setLoaded(true);
         }
     }, [
         canList,
@@ -184,22 +198,19 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
         setPage(1);
     }
 
-    async function handleSave(payload: EmployeeFormSubmit) {
-        const employee = await createEmployee(
-            payload.employee as EmployeePayload,
-        );
+    async function handleSave(payload: EmployeeAddSubmit) {
+        const employee = await createEmployee(payload.employee);
 
-        if (payload.account?.action === 'create') {
-            await createEmployeeAccount(employee.id, {
-                role: payload.account.role,
-                temporaryPassword: payload.account.temporaryPassword,
-            });
+        if (payload.account) {
+            await createEmployeeAccount(employee.id, payload.account);
         }
 
-        setShowForm(false);
         await loadEmployees();
         showToast({
-            message: t('employees.created'),
+            message: interpolate(t('employees.createdWithCode'), {
+                name: employeeFullName(employee),
+                code: employee.employeeCode,
+            }),
             variant: 'success',
         });
     }
@@ -228,228 +239,316 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
         }
     }
 
-    return (
-        <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <PageHeader
-                actions={canManage && (
-                    <Button
-                        onClick={() => {
-                            setShowForm(true);
-                        }}
-                        size="lg"
-                    >
-                        <FontAwesomeIcon icon={faPlus} />
-                        {t('employees.add')}
-                    </Button>
-                )}
-                description={t('employees.subtitle')}
-                icon={<FontAwesomeIcon icon={faUsers} />}
-                title={t('employees.title')}
-            />
+    function renderSortHeader(field: EmployeeSortField, label: string) {
+        const active = sortBy === field;
 
-            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
-                <LoadingOverlay label={t('employees.loading')} visible={loading} />
-                {canList && (
-                    <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
-                        <label className="relative min-w-64 flex-1">
-                            <FontAwesomeIcon
-                                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
-                                icon={faSearch}
-                            />
-                            <input
-                                className={`${fieldClass} w-full pl-9`}
-                                placeholder={t('employees.searchPlaceholder')}
-                                value={search}
-                                onChange={(event) => {
-                                    setSearch(event.target.value);
+        return (
+            <button
+                className={`flex min-h-0 cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-left text-xs transition-colors hover:text-ink ${
+                    active ? 'text-ink' : 'text-muted'
+                }`}
+                type="button"
+                onClick={() => changeSort(field)}
+            >
+                {label}
+                {active && (
+                    <FontAwesomeIcon
+                        className="text-[10px]"
+                        icon={sortOrder === 'ASC' ? faArrowUp : faArrowDown}
+                    />
+                )}
+            </button>
+        );
+    }
+
+    const displayedPage = totalPages === 0 ? 0 : page;
+
+    return (
+        <section className="bg-sand text-ink">
+            <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-5 px-8 pt-8 pb-24 max-sm:px-4">
+                <div className="flex flex-wrap items-end justify-between gap-5">
+                    <div className="flex flex-col gap-1.5">
+                        <span className="tabular-nums text-xs tracking-[0.04em] text-muted uppercase">
+                            {t('employees.eyebrow')}
+                        </span>
+                        <h1 className="text-[34px] leading-tight font-semibold tracking-[-0.03em] max-sm:text-[28px]">
+                            {t('employees.title')}
+                        </h1>
+                        <p className="text-[15px] text-muted">
+                            {t('employees.subtitle')}
+                        </p>
+                    </div>
+                    {canManage && (
+                        <button
+                            className={primaryButtonClass}
+                            type="button"
+                            onClick={() => setShowForm(true)}
+                        >
+                            <FontAwesomeIcon icon={faPlus} />
+                            {t('employees.add')}
+                        </button>
+                    )}
+                </div>
+
+                <section className="flex flex-col overflow-hidden rounded-[14px] border border-rule bg-paper">
+                    {canList && (
+                        <div className="flex flex-wrap items-center gap-2.5 border-b border-rule px-5 py-4 max-sm:px-4">
+                            <label className="flex h-[38px] min-w-[200px] flex-[0_1_360px] items-center gap-2.5 rounded-lg border border-rule-strong bg-white px-3 transition-colors focus-within:border-ink">
+                                <FontAwesomeIcon
+                                    className="text-xs text-muted"
+                                    icon={faSearch}
+                                />
+                                <input
+                                    aria-label={t('common.search')}
+                                    className="min-w-0 flex-1 border-0 bg-transparent text-[13px] text-ink outline-none placeholder:text-faint"
+                                    placeholder={t('employees.searchPlaceholder')}
+                                    value={search}
+                                    onChange={(event) => {
+                                        setSearch(event.target.value);
+                                        setPage(1);
+                                    }}
+                                />
+                            </label>
+                            <DropdownSelect
+                                ariaLabel={t('common.branch')}
+                                options={[
+                                    { value: '', label: t('common.allBranches') },
+                                    ...branches.map((branch) => ({
+                                        value: branch.id,
+                                        label: branch.name,
+                                    })),
+                                ]}
+                                size="xs"
+                                value={branchId}
+                                onChange={(value) => {
+                                    setBranchId(value);
                                     setPage(1);
                                 }}
                             />
-                        </label>
-                        <DropdownSelect
-                            ariaLabel={t('common.branch')}
-                            options={[
-                                {
-                                    value: '',
-                                    label: t('common.allBranches'),
-                                },
-                                ...branches.map((branch) => ({
-                                    value: branch.id,
-                                    label: branch.name,
-                                })),
-                            ]}
-                            value={branchId}
-                            onChange={(value) => {
-                                setBranchId(value);
-                                setPage(1);
-                            }}
-                        />
-                        <DropdownSelect
-                            ariaLabel={t('common.position')}
-                            options={[
-                                {
-                                    value: '',
-                                    label: t('common.allPositions'),
-                                },
-                                ...positions.map((position) => ({
-                                    value: position.id,
-                                    label: position.name,
-                                })),
-                            ]}
-                            value={positionId}
-                            onChange={(value) => {
-                                setPositionId(value);
-                                setPage(1);
-                            }}
-                        />
-                        <DropdownSelect
-                            ariaLabel={t('common.status')}
-                            options={[
-                                {
-                                    value: 'all',
-                                    label: t('common.allStatuses'),
-                                },
-                                {
-                                    value: 'Active',
-                                    label: t('common.active'),
-                                },
-                                {
-                                    value: 'Inactive',
-                                    label: t('common.inactive'),
-                                },
-                            ]}
-                            value={statusFilter}
-                            onChange={(value) => {
-                                setStatusFilter(value as StatusFilter);
-                                setPage(1);
-                            }}
-                        />
-                        <Button
-                            onClick={() => void loadEmployees()}
-                            size="lg"
-                            variant="secondary"
-                        >
-                            <FontAwesomeIcon icon={faRotateRight} />
-                            {t('common.refresh')}
-                        </Button>
-                    </div>
-                )}
+                            <DropdownSelect
+                                ariaLabel={t('common.position')}
+                                options={[
+                                    { value: '', label: t('common.allPositions') },
+                                    ...positions.map((position) => ({
+                                        value: position.id,
+                                        label: position.name,
+                                    })),
+                                ]}
+                                size="xs"
+                                value={positionId}
+                                onChange={(value) => {
+                                    setPositionId(value);
+                                    setPage(1);
+                                }}
+                            />
+                            <div className="flex-1" />
+                            <div
+                                aria-label={t('common.status')}
+                                className="relative flex gap-0.5 rounded-lg bg-stone p-[3px]"
+                                ref={statusRef}
+                                role="group"
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className="pointer-events-none absolute inset-y-[3px] left-0 rounded-md bg-paper opacity-0 shadow-[0_1px_2px_rgba(23,22,15,0.12)] transition-[transform,width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none"
+                                    ref={statusPillRef}
+                                />
+                                {statusFilters.map((filter) => {
+                                    const active = statusFilter === filter.value;
 
-                <div className="overflow-x-auto">
-                    <table className="data-table w-full min-w-[760px] table-fixed">
-                        <thead>
-                            <tr>
-                                <th className="w-[16%]">
-                                    <button
-                                        className="cursor-pointer hover:text-primary-600"
-                                        onClick={() => changeSort('employeeCode')}
-                                        type="button"
-                                    >
-                                        {t('common.code')}
-                                    </button>
-                                </th>
-                                <th className="w-[26%]">
-                                    <button
-                                        className="cursor-pointer hover:text-primary-600"
-                                        onClick={() => changeSort('fullName')}
-                                        type="button"
-                                    >
-                                        {t('common.fullName')}
-                                    </button>
-                                </th>
-                                <th className="w-[30%]">
-                                    {t('common.email')}
-                                </th>
-                                <th className="w-[14%]">
-                                    {t('common.status')}
-                                </th>
-                                <th className="cell-actions w-[14%]">
-                                    {t('common.actions')}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {!loading &&
-                                employees.map((employee) => (
-                                    <tr
-                                        className="border-b border-slate-100 hover:bg-slate-50"
-                                        key={employee.id}
-                                    >
-                                        <td className="font-semibold text-slate-900">
-                                            {employee.employeeCode}
-                                        </td>
-                                        <td className="text-slate-900">
-                                            {fullName(employee)}
-                                        </td>
-                                        <td className="truncate">
-                                            {employee.email}
-                                        </td>
-                                        <td>
-                                            <span
-                                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${
-                                                    employee.status === 'Active'
-                                                        ? 'bg-emerald-50 text-emerald-700'
-                                                        : 'bg-amber-50 text-amber-700'
-                                                }`}
-                                            >
-                                                {employee.status === 'Active'
-                                                    ? t('common.active')
-                                                    : t('common.inactive')}
+                                    return (
+                                        <button
+                                            aria-pressed={active}
+                                            className={`relative h-8 min-h-0 cursor-pointer rounded-md border-0 bg-transparent px-3 text-[13px] font-medium whitespace-nowrap transition-colors duration-200 ${
+                                                active ? 'text-ink' : 'text-muted hover:text-ink'
+                                            }`}
+                                            data-active={active}
+                                            key={filter.value}
+                                            type="button"
+                                            onClick={() => {
+                                                setStatusFilter(filter.value);
+                                                setPage(1);
+                                            }}
+                                        >
+                                            {t(filter.labelKey)}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[880px]">
+                            <div
+                                className={`${rowGridClass} border-b border-rule py-2.5 text-xs text-muted`}
+                            >
+                                {renderSortHeader('employeeCode', t('common.code'))}
+                                {renderSortHeader('fullName', t('employees.employeeColumn'))}
+                                <span>{t('common.branches')}</span>
+                                <span>{t('common.position')}</span>
+                                <span>{t('employees.hireDate')}</span>
+                                <span>{t('common.status')}</span>
+                                <span />
+                            </div>
+
+                            {!loaded && (
+                                <div aria-busy="true" aria-label={t('employees.loading')}>
+                                    {Array.from({ length: 4 }, (_, index) => (
+                                        <div
+                                            className={`${rowGridClass} h-16 border-b border-rule-soft`}
+                                            key={index}
+                                        >
+                                            <span className="h-3 w-16 animate-pulse rounded bg-stone" />
+                                            <span className="flex items-center gap-3">
+                                                <span className="size-[34px] animate-pulse rounded-full bg-stone" />
+                                                <span className="h-3 w-40 animate-pulse rounded bg-stone" />
                                             </span>
-                                        </td>
-                                        <td className="cell-actions">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <IconButton
-                                                    icon={faEye}
-                                                    label={t('common.view')}
-                                                    onClick={() =>
-                                                        navigate(
-                                                            `${routes.employees}/${employee.id}`,
-                                                        )
-                                                    }
-                                                />
-                                                {canManage && (
-                                                    <IconButton
-                                                        icon={faTrash}
-                                                        label={t('common.delete')}
-                                                        onClick={() =>
-                                                            setEmployeeToDelete(
-                                                                employee,
-                                                            )
-                                                        }
-                                                        tone="danger"
-                                                    />
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            {!loading && employees.length === 0 && (
-                                <tr>
-                                    <td colSpan={5}>
-                                        <EmptyState
-                                            description={t('employees.noResultsDescription')}
-                                            icon={<FontAwesomeIcon icon={faUsers} />}
-                                            title={t('employees.noResultsTitle')}
-                                        />
-                                    </td>
-                                </tr>
+                                            <span className="h-3 w-20 animate-pulse rounded bg-stone" />
+                                            <span className="h-3 w-16 animate-pulse rounded bg-stone" />
+                                            <span className="h-3 w-16 animate-pulse rounded bg-stone" />
+                                            <span className="h-5 w-20 animate-pulse rounded-full bg-stone" />
+                                            <span />
+                                        </div>
+                                    ))}
+                                </div>
                             )}
-                        </tbody>
-                    </table>
-                </div>
-                {canList && (
-                    <Pagination
-                        page={page}
-                        pageSize={pageSize}
-                        totalPages={totalPages}
-                        onPageChange={setPage}
-                    />
-                )}
+
+                            {loaded && (
+                                <div
+                                    className={`transition-opacity duration-200 ${
+                                        loading ? 'opacity-50' : 'opacity-100'
+                                    }`}
+                                >
+                                    {employees.map((employee) => {
+                                        const name = employeeFullName(employee);
+
+                                        return (
+                                            <div
+                                                className={`${rowGridClass} group h-16 cursor-pointer border-b border-rule-soft text-sm transition-colors hover:bg-[#f6f4ef]`}
+                                                key={employee.id}
+                                                role="link"
+                                                tabIndex={0}
+                                                onClick={() =>
+                                                    navigate(`${routes.employees}/${employee.id}`)
+                                                }
+                                                onKeyDown={(event) => {
+                                                    if (event.key === 'Enter') {
+                                                        navigate(`${routes.employees}/${employee.id}`);
+                                                    }
+                                                }}
+                                            >
+                                                <span className="tabular-nums text-[13px] font-medium">
+                                                    {employee.employeeCode}
+                                                </span>
+                                                <div className="flex min-w-0 items-center gap-3">
+                                                    <span className="grid size-[34px] flex-none place-items-center rounded-full bg-stone text-xs font-semibold">
+                                                        {initialsOf(name)}
+                                                    </span>
+                                                    <span className="flex min-w-0 flex-col gap-0.5">
+                                                        <span className="truncate font-semibold">
+                                                            {name}
+                                                        </span>
+                                                        <span className="truncate text-xs text-muted">
+                                                            {employee.email}
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                                <span className="truncate text-[13px]">
+                                                    {employee.branches.map((branch) => branch.name).join(', ') || '—'}
+                                                </span>
+                                                <span className="truncate text-[13px]">
+                                                    {employee.positions.map((position) => position.name).join(', ') || '—'}
+                                                </span>
+                                                <span className="tabular-nums text-xs text-muted">
+                                                    {formatDateDmy(employee.hireDate)}
+                                                </span>
+                                                <span className="flex">
+                                                    <EmployeeStatusPill status={employee.status} />
+                                                </span>
+                                                <span className="flex items-center justify-end gap-1">
+                                                    {canManage && (
+                                                        <button
+                                                            aria-label={t('common.delete')}
+                                                            className="grid size-7 min-h-0 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-xs text-muted opacity-0 transition-[opacity,background-color,color] group-hover:opacity-100 hover:bg-ember-tint hover:text-ember-strong focus-visible:opacity-100"
+                                                            title={t('common.delete')}
+                                                            type="button"
+                                                            onClick={(event) => {
+                                                                event.stopPropagation();
+                                                                setEmployeeToDelete(employee);
+                                                            }}
+                                                        >
+                                                            <FontAwesomeIcon icon={faTrash} />
+                                                        </button>
+                                                    )}
+                                                    <span className="text-base text-faint transition-transform duration-200 group-hover:translate-x-0.5">
+                                                        ›
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+
+                                    {employees.length === 0 && (
+                                        <div className="flex flex-col gap-1.5 border-b border-rule-soft px-5 py-14 text-center">
+                                            <span className="text-[15px] font-semibold">
+                                                {t('employees.noResultsTitle')}
+                                            </span>
+                                            <span className="text-[13px] text-muted">
+                                                {t('employees.noResultsDescription')}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {canList && (
+                        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 max-sm:px-4">
+                            <span className="text-[13px] text-muted">
+                                {interpolate(t('employees.countLabel'), {
+                                    shown: employees.length,
+                                    total,
+                                    size: pageSize,
+                                })}
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    aria-label={t('employees.previousPage')}
+                                    className={pagerButtonClass}
+                                    disabled={page <= 1 || totalPages === 0}
+                                    type="button"
+                                    onClick={() => setPage(page - 1)}
+                                >
+                                    <FontAwesomeIcon icon={faChevronLeft} />
+                                </button>
+                                <span className="grid size-8 place-items-center rounded-md bg-ink text-[13px] font-semibold text-sand">
+                                    {displayedPage}
+                                </span>
+                                <button
+                                    aria-label={t('employees.nextPage')}
+                                    className={pagerButtonClass}
+                                    disabled={page >= totalPages || totalPages === 0}
+                                    type="button"
+                                    onClick={() => setPage(page + 1)}
+                                >
+                                    <FontAwesomeIcon icon={faChevronRight} />
+                                </button>
+                                <span className="pl-2 tabular-nums text-xs text-muted">
+                                    {interpolate(t('employees.pageInfo'), {
+                                        page: displayedPage,
+                                        total: totalPages,
+                                    })}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </section>
             </div>
 
             {showForm && (
-                <EmployeeFormDialog
+                <EmployeeAddDrawer
                     branches={branches}
                     positions={positions}
                     onClose={() => setShowForm(false)}
@@ -457,11 +556,11 @@ export function EmployeesPage({ userRole }: EmployeesPageProps) {
                 />
             )}
             <ConfirmDialog
+                cancelLabel={t('common.cancel')}
                 confirmLabel={t('employees.deleteConfirmLabel')}
-                description={t('employees.deleteDescription').replace(
-                    '{name}',
-                    employeeToDelete ? fullName(employeeToDelete) : '',
-                )}
+                description={interpolate(t('employees.deleteDescription'), {
+                    name: employeeToDelete ? employeeFullName(employeeToDelete) : '',
+                })}
                 loading={deleting}
                 open={Boolean(employeeToDelete)}
                 title={t('common.confirmDelete')}

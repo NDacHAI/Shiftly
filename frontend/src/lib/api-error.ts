@@ -52,6 +52,7 @@ const apiErrorKeys: Record<string, I18nKey> = {
     'Employee account is not linked': 'common.apiErrors.employeeNotLinked',
     'Employee already has an account': 'common.apiErrors.employeeAccountExists',
     'Employee account not found': 'common.apiErrors.employeeAccountNotFound',
+    'Could not send password email': 'common.apiErrors.passwordEmailFailed',
     'Email already exists': 'common.apiErrors.emailExists',
     'User not found': 'common.apiErrors.userNotFound',
     'Work shift not found': 'common.apiErrors.workShiftNotFound',

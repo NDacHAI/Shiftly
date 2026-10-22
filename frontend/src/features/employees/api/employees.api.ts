@@ -9,7 +9,6 @@ import {
     type EmployeePayload,
     type EmployeeSortField,
     type EmployeeStatus,
-    type ResetEmployeePasswordPayload,
     type SortOrder,
     type UpdateEmployeeAccountPayload,
     type UpdateEmployeePayload,
@@ -97,11 +96,9 @@ export async function updateEmployeeAccount(
 
 export async function resetEmployeePassword(
     id: string,
-    payload: ResetEmployeePasswordPayload,
 ): Promise<EmployeeAccount> {
     const response = await api.post<EmployeeAccount>(
         `/employees/${id}/account/reset-password`,
-        payload,
     );
     return response.data;
 }

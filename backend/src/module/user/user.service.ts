@@ -5,7 +5,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { UserRole } from '@/common/enum/role.enum';
 import { PasswordService } from '@/common/services/password.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -28,6 +28,7 @@ export class UserService {
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
         private readonly passwordService: PasswordService,
+        private readonly dataSource: DataSource,
     ) { }
 
     async findAll(): Promise<UserResponse[]> {
@@ -172,21 +173,37 @@ export class UserService {
         return user ? this.toResponse(user) : null;
     }
 
+    /**
+     * Sets a generated temporary password and hands it to `deliver` before
+     * committing, so a failed delivery leaves the old password in place.
+     */
     async resetEmployeePassword(
         employeeId: string,
-        temporaryPassword: string,
+        deliver: (user: User, temporaryPassword: string) => Promise<void>,
     ): Promise<UserResponse> {
-        const user = await this.findByEmployeeId(employeeId);
+        const savedUser = await this.dataSource.transaction(async (manager) => {
+            const user = await manager.findOne(User, {
+                where: { employeeId },
+                lock: { mode: 'pessimistic_write' },
+            });
 
-        if (!user) {
-            throw new NotFoundException('Employee account not found');
-        }
+            if (!user) {
+                throw new NotFoundException('Employee account not found');
+            }
 
-        user.password = await this.passwordService.hash(temporaryPassword);
-        user.mustChangePassword = true;
-        user.refreshTokenHash = null;
+            const temporaryPassword =
+                this.passwordService.generateTemporaryPassword();
 
-        const savedUser = await this.userRepository.save(user);
+            user.password = await this.passwordService.hash(temporaryPassword);
+            user.mustChangePassword = true;
+            user.refreshTokenHash = null;
+
+            const saved = await manager.save(user);
+            await deliver(saved, temporaryPassword);
+
+            return saved;
+        });
+
         return this.toResponse(savedUser);
     }
 

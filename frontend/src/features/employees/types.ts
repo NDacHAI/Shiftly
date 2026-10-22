@@ -69,7 +69,3 @@ export type CreateEmployeeAccountPayload = {
 export type UpdateEmployeeAccountPayload = {
     role: Role;
 };
-
-export type ResetEmployeePasswordPayload = {
-    temporaryPassword: string;
-};

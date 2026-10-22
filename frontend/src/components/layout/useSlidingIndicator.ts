@@ -25,8 +25,11 @@ function isSameSlot(left: Slot | undefined, right: Slot) {
 
 // Moves an absolutely positioned indicator under the container's `[data-active="true"]`
 // child. The CSS transition lives on the indicator; this only sets transform/width.
-export function useSlidingIndicator(name: string, activeKey: string) {
-    const containerRef = useRef<HTMLElement>(null);
+export function useSlidingIndicator<TContainer extends HTMLElement = HTMLElement>(
+    name: string,
+    activeKey: string,
+) {
+    const containerRef = useRef<TContainer>(null);
     const indicatorRef = useRef<HTMLSpanElement>(null);
 
     useLayoutEffect(() => {

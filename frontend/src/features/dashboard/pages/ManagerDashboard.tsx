@@ -105,7 +105,7 @@ export function ManagerDashboard({ userName }: ManagerDashboardProps) {
                 <div className="flex flex-wrap items-end justify-between gap-5">
                     <div className="flex flex-col gap-1.5">
                         {summary && (
-                            <span className="font-mono text-xs tracking-[0.04em] text-muted uppercase">
+                            <span className="tabular-nums text-xs tracking-[0.04em] text-muted uppercase">
                                 {formatClockDate(summary.generatedAt, language)}
                             </span>
                         )}

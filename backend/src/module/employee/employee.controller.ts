@@ -25,7 +25,6 @@ import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { Employee } from './entities/employee.entity';
 import { EmployeeService, PaginatedEmployees } from './employee.service';
 import { CreateEmployeeAccountDto } from './dto/create_account_dto';
-import { ResetEmployeePasswordDto } from './dto/reset_employee_password.dto';
 import { UpdateEmployeeAccountDto } from './dto/update_employee_account.dto';
 
 @Controller('employees')
@@ -115,11 +114,8 @@ export class EmployeeController {
 
     @Post(':id/account/reset-password')
     @Roles(UserRole.Admin)
-    resetAccountPassword(
-        @Param('id', new ParseUUIDPipe()) id: string,
-        @Body() payload: ResetEmployeePasswordDto,
-    ) {
-        return this.employeeService.resetAccountPassword(id, payload);
+    resetAccountPassword(@Param('id', new ParseUUIDPipe()) id: string) {
+        return this.employeeService.resetAccountPassword(id);
     }
 
     @Put(':id')

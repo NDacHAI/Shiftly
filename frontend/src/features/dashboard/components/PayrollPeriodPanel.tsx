@@ -83,7 +83,7 @@ export function PayrollPeriodPanel({ period, trend, date }: PayrollPeriodPanelPr
                     {period?.name ?? t('dashboard.payroll.title')}
                 </h2>
                 {period && (
-                    <span className="font-mono text-xs text-fog">
+                    <span className="tabular-nums text-xs text-fog">
                         {formatShortDate(period.startDate, language)} –{' '}
                         {formatShortDate(period.endDate, language)}
                     </span>
@@ -124,7 +124,7 @@ export function PayrollPeriodPanel({ period, trend, date }: PayrollPeriodPanelPr
                     <div className="flex flex-col gap-2.5">
                         <div className="flex justify-between gap-3 text-[13px]">
                             <span>{closingText(period.daysRemaining)}</span>
-                            <span className="font-mono text-fog">
+                            <span className="tabular-nums text-fog">
                                 {elapsedDays}/{totalDays}
                             </span>
                         </div>

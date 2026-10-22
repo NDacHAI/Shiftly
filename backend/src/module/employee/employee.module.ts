@@ -7,12 +7,14 @@ import { EmployeeController } from './employee.controller';
 import { EmployeeService } from './employee.service';
 import { Employee } from './entities/employee.entity';
 import { UserModule } from '@/module/user/user.module';
+import { MailModule } from '@/module/mail/mail.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Employee, Branch, Position]),
         AuthModule,
         UserModule,
+        MailModule,
     ],
     controllers: [EmployeeController],
     providers: [EmployeeService],

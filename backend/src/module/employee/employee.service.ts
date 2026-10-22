@@ -15,8 +15,8 @@ import { EmployeeStatus } from './entities/employee-status.enum';
 import { Employee } from './entities/employee.entity';
 import { UserRole } from '@/common/enum/role.enum';
 import { UserService, UserResponse } from '@/module/user/user.service';
+import { MailService } from '@/module/mail/mail.service';
 import { CreateEmployeeAccountDto } from './dto/create_account_dto';
-import { ResetEmployeePasswordDto } from './dto/reset_employee_password.dto';
 import { UpdateEmployeeAccountDto } from './dto/update_employee_account.dto';
 export type PaginatedEmployees = {
     data: Employee[];
@@ -38,6 +38,7 @@ export class EmployeeService {
         @InjectRepository(Position)
         private readonly positionRepository: Repository<Position>,
         private readonly userService: UserService,
+        private readonly mailService: MailService,
     ) { }
 
     async create(payload: CreateEmployeeDto): Promise<Employee> {
@@ -301,15 +302,18 @@ export class EmployeeService {
         });
     }
 
-    async resetAccountPassword(
-        employeeId: string,
-        payload: ResetEmployeePasswordDto,
-    ): Promise<UserResponse> {
+    async resetAccountPassword(employeeId: string): Promise<UserResponse> {
         const employee = await this.findOne(employeeId);
 
         return this.userService.resetEmployeePassword(
             employee.id,
-            payload.temporaryPassword,
+            (user, temporaryPassword) =>
+                this.mailService.sendPasswordResetMail(user.email, {
+                    fullName:
+                        `${employee.firstName} ${employee.lastName}`.trim(),
+                    email: user.email,
+                    temporaryPassword,
+                }),
         );
     }
 

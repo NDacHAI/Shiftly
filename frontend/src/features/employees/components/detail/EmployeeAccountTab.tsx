@@ -1,127 +1,50 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-    faIdCard,
-    faKey,
-    faRotateRight,
-    faShieldHalved,
-} from '@fortawesome/free-solid-svg-icons';
+import { useState, type FormEvent } from 'react';
 import { useToast } from '@/components/feedback';
-import { Button, DropdownSelect, EmptyState, LoadingOverlay } from '@/components/ui';
 import { roles, type Role } from '@/constants/roles';
+import { interpolate } from '@/features/dashboard/lib/format';
 import { useI18n } from '@/i18n';
 import {
     createEmployeeAccount,
-    getEmployeeAccount,
     getEmployeeErrorKey,
     resetEmployeePassword,
 } from '../../api/employees.api';
+import {
+    fieldGridClass,
+    primaryButtonClass,
+    secondaryButtonClass,
+    warmFieldClass,
+    warmLabelClass,
+    warmSelectClass,
+} from '../../lib/employee-ui';
 import { type Employee, type EmployeeAccount } from '../../types';
+import { DetailSection } from './DetailSection';
 
 type EmployeeAccountTabProps = {
+    account: EmployeeAccount | null;
     canManage: boolean;
     employee: Employee;
+    loading: boolean;
+    role: Role;
+    onAccountChange: (account: EmployeeAccount) => void;
+    onRoleChange: (role: Role) => void;
 };
 
-function getRoleLabel(role: EmployeeAccount['role'], t: ReturnType<typeof useI18n>['t']) {
-    if (role === roles.manager) return t('employees.managerRole');
-    if (role === roles.user) return t('employees.employeeRole');
-
-    return role;
-}
-
-function AccountDetails({ account }: { account: EmployeeAccount }) {
-    const { t } = useI18n();
-
-    return (
-        <dl className="grid gap-3">
-            <div className="flex justify-between gap-4 border-b border-slate-200 pb-3">
-                <dt className="text-sm text-slate-500">Email</dt>
-                <dd className="text-sm font-semibold text-slate-900">
-                    {account.email}
-                </dd>
-            </div>
-            <div className="flex justify-between gap-4 border-b border-slate-200 pb-3">
-                <dt className="text-sm text-slate-500">
-                    {t('employees.accountRole')}
-                </dt>
-                <dd className="text-sm font-semibold text-slate-900">
-                    {getRoleLabel(account.role, t)}
-                </dd>
-            </div>
-            <div className="flex justify-between gap-4 border-b border-slate-200 pb-3">
-                <dt className="text-sm text-slate-500">
-                    {t('employees.accountStatus')}
-                </dt>
-                <dd className="text-sm font-semibold text-emerald-700">
-                    {account.isActive ? t('common.active') : t('common.inactive')}
-                </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-                <dt className="text-sm text-slate-500">
-                    {t('employees.accountMustChangePassword')}
-                </dt>
-                <dd className="text-sm font-semibold text-amber-700">
-                    {account.mustChangePassword
-                        ? t('employees.accountMustChangeRequired')
-                        : t('employees.accountMustChangeNotRequired')}
-                </dd>
-            </div>
-        </dl>
-    );
-}
-
 export function EmployeeAccountTab({
+    account,
     canManage,
     employee,
+    loading,
+    role,
+    onAccountChange,
+    onRoleChange,
 }: EmployeeAccountTabProps) {
     const { showToast } = useToast();
     const { t } = useI18n();
-    const [role, setRole] = useState<Role>(roles.user);
+    const [creating, setCreating] = useState(false);
+    const [newRole, setNewRole] = useState<Role>(roles.user);
     const [temporaryPassword, setTemporaryPassword] = useState('');
-    const [account, setAccount] = useState<EmployeeAccount | null>(null);
-    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [resetting, setResetting] = useState(false);
-
-    useEffect(() => {
-        if (!canManage) {
-            setLoading(false);
-            return;
-        }
-
-        let active = true;
-
-        async function loadAccount() {
-            setLoading(true);
-
-            try {
-                const accountResponse = await getEmployeeAccount(employee.id);
-
-                if (active) {
-                    setAccount(accountResponse);
-                }
-            } catch (error) {
-                if (active) {
-                    showToast({
-                        message: t(getEmployeeErrorKey(error)),
-                        title: t('employees.accountLoadError'),
-                        variant: 'error',
-                    });
-                }
-            } finally {
-                if (active) {
-                    setLoading(false);
-                }
-            }
-        }
-
-        void loadAccount();
-
-        return () => {
-            active = false;
-        };
-    }, [canManage, employee.id, showToast, t]);
 
     async function handleCreate(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -129,11 +52,12 @@ export function EmployeeAccountTab({
 
         try {
             const createdAccount = await createEmployeeAccount(employee.id, {
-                role,
+                role: newRole,
                 temporaryPassword,
             });
-            setAccount(createdAccount);
+            onAccountChange(createdAccount);
             setTemporaryPassword('');
+            setCreating(false);
             showToast({
                 message: t('employees.accountCreated'),
                 variant: 'success',
@@ -149,23 +73,16 @@ export function EmployeeAccountTab({
         }
     }
 
-    function generateTemporaryPassword() {
-        const randomPart = Math.random().toString(36).slice(2, 10);
-
-        return `Shiftly@${randomPart}`;
-    }
-
     async function handleReset() {
         setResetting(true);
 
         try {
-            const temporaryPassword = generateTemporaryPassword();
-            const updatedAccount = await resetEmployeePassword(employee.id, {
-                temporaryPassword,
-            });
-            setAccount(updatedAccount);
+            const updatedAccount = await resetEmployeePassword(employee.id);
+            onAccountChange(updatedAccount);
             showToast({
-                message: t('employees.passwordReset'),
+                message: interpolate(t('employees.passwordReset'), {
+                    email: updatedAccount.email,
+                }),
                 variant: 'success',
             });
         } catch (error) {
@@ -179,127 +96,185 @@ export function EmployeeAccountTab({
         }
     }
 
-    if (!canManage) {
+    function renderBody() {
+        if (!canManage) {
+            return (
+                <div className="flex flex-col gap-1 rounded-xl border border-dashed border-[#cfcabe] p-7">
+                    <span className="text-[15px] font-semibold">
+                        {t('employees.accountAccessDeniedTitle')}
+                    </span>
+                    <span className="text-[13px] text-muted">
+                        {t('employees.accountAccessDeniedDescription')}
+                    </span>
+                </div>
+            );
+        }
+
+        if (loading) {
+            return (
+                <div
+                    aria-label={t('employees.accountLoading')}
+                    className="h-[120px] animate-pulse rounded-xl bg-stone"
+                    role="status"
+                />
+            );
+        }
+
+        if (!account) {
+            return (
+                <div className="flex flex-col gap-5 rounded-xl border border-dashed border-[#cfcabe] p-7 max-sm:p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[15px] font-semibold">
+                                {t('employees.noAccountTitle')}
+                            </span>
+                            <span className="text-[13px] text-muted">
+                                {interpolate(t('employees.accountWillBeCreatedFor'), {
+                                    email: employee.email,
+                                })}
+                            </span>
+                        </div>
+                        {!creating && (
+                            <button
+                                className={primaryButtonClass}
+                                type="button"
+                                onClick={() => setCreating(true)}
+                            >
+                                {t('employees.createAccount')}
+                            </button>
+                        )}
+                    </div>
+
+                    {creating && (
+                        <form className="rise-enter flex flex-col gap-4" onSubmit={handleCreate}>
+                            <div className={fieldGridClass}>
+                                <label className={warmLabelClass}>
+                                    {t('employees.accountRole')}
+                                    <select
+                                        className={warmSelectClass}
+                                        value={newRole}
+                                        onChange={(event) =>
+                                            setNewRole(event.target.value as Role)
+                                        }
+                                    >
+                                        <option value={roles.user}>
+                                            {t('employees.employeeRole')}
+                                        </option>
+                                        <option value={roles.manager}>
+                                            {t('employees.managerRole')}
+                                        </option>
+                                    </select>
+                                </label>
+                                <label className={warmLabelClass}>
+                                    {t('employees.temporaryPassword')}
+                                    <input
+                                        autoComplete="new-password"
+                                        className={warmFieldClass}
+                                        minLength={6}
+                                        required
+                                        type="password"
+                                        value={temporaryPassword}
+                                        onChange={(event) =>
+                                            setTemporaryPassword(event.target.value)
+                                        }
+                                    />
+                                </label>
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    className={secondaryButtonClass}
+                                    disabled={submitting}
+                                    type="button"
+                                    onClick={() => setCreating(false)}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    className={primaryButtonClass}
+                                    disabled={submitting}
+                                    type="submit"
+                                >
+                                    {submitting
+                                        ? t('employees.creatingAccount')
+                                        : t('employees.createAccount')}
+                                </button>
+                            </div>
+                        </form>
+                    )}
+                </div>
+            );
+        }
+
+        const roleOptions: Role[] = [roles.user, roles.manager];
+
+        if (!roleOptions.includes(account.role)) roleOptions.push(account.role);
+
         return (
-            <EmptyState
-                description={t('employees.accountAccessDeniedDescription')}
-                icon={<FontAwesomeIcon icon={faShieldHalved} />}
-                title={t('employees.accountAccessDeniedTitle')}
-            />
+            <>
+                <div className={fieldGridClass}>
+                    <label className={warmLabelClass}>
+                        {t('employees.loginEmail')}
+                        <input
+                            className={`${warmFieldClass} tabular-nums`}
+                            disabled
+                            value={account.email}
+                        />
+                    </label>
+                    <label className={warmLabelClass}>
+                        {t('employees.accountRole')}
+                        <select
+                            className={warmSelectClass}
+                            value={role}
+                            onChange={(event) => onRoleChange(event.target.value as Role)}
+                        >
+                            {roleOptions.map((option) => (
+                                <option key={option} value={option}>
+                                    {option === roles.manager
+                                        ? t('employees.managerRole')
+                                        : option === roles.user
+                                          ? t('employees.employeeRole')
+                                          : t('header.roles.admin')}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-rule px-4 py-3.5">
+                    <span className="flex items-center gap-2 text-[13px] text-muted">
+                        <span
+                            className={`size-1.5 rounded-full ${
+                                account.isActive ? 'bg-live' : 'bg-faint'
+                            }`}
+                        />
+                        {account.isActive
+                            ? t('employees.accountActive')
+                            : t('employees.accountDisabled')}
+                        {' · '}
+                        {account.mustChangePassword
+                            ? t('employees.accountPendingPasswordChange')
+                            : t('employees.accountPasswordChanged')}
+                    </span>
+                    <button
+                        className="h-8 min-h-0 cursor-pointer rounded-md border border-rule-strong bg-transparent px-3 text-xs font-medium text-ink transition-colors hover:bg-stone-soft disabled:cursor-wait disabled:opacity-60"
+                        disabled={resetting}
+                        type="button"
+                        onClick={() => void handleReset()}
+                    >
+                        {resetting
+                            ? t('employees.resettingPassword')
+                            : t('employees.resetPassword')}
+                    </button>
+                </div>
+            </>
         );
     }
 
     return (
-        <div className="relative grid gap-6 p-6 lg:grid-cols-[minmax(0,420px)_1fr]">
-            <LoadingOverlay label={t('employees.accountLoading')} visible={loading} />
-            {!account ? (
-                <form
-                    className="grid content-start gap-4 rounded-xl border border-slate-200 bg-white p-5"
-                    onSubmit={handleCreate}
-                >
-                    <div>
-                        <h3 className="text-base font-bold text-slate-950">
-                            {t('employees.createLoginAccount')}
-                        </h3>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {employee.email}
-                        </p>
-                    </div>
-
-                    <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                        {t('employees.accountRole')}
-                        <div className="dropdown-select-field">
-                            <DropdownSelect
-                                ariaLabel={t('employees.accountRoleAria')}
-                                options={[
-                                    {
-                                        value: roles.user,
-                                        label: t('employees.employeeRole'),
-                                    },
-                                    {
-                                        value: roles.manager,
-                                        label: t('employees.managerRole'),
-                                    },
-                                ]}
-                                value={role}
-                                onChange={(value) => setRole(value as Role)}
-                            />
-                        </div>
-                    </label>
-
-                    <label className="grid gap-2 text-sm font-semibold text-slate-700">
-                        {t('employees.temporaryPassword')}
-                        <span className="relative">
-                            <FontAwesomeIcon
-                                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
-                                icon={faKey}
-                            />
-                            <input
-                                className="min-h-11 w-full rounded-lg border border-slate-200 bg-white pr-3 pl-9 text-sm text-slate-800 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-                                minLength={6}
-                                required
-                                type="password"
-                                value={temporaryPassword}
-                                onChange={(event) =>
-                                    setTemporaryPassword(event.target.value)
-                                }
-                            />
-                        </span>
-                    </label>
-
-                    <Button
-                        loading={submitting}
-                        loadingLabel={t('employees.creatingAccount')}
-                        size="lg"
-                        type="submit"
-                    >
-                        <FontAwesomeIcon icon={faIdCard} />
-                        {t('employees.createAccount')}
-                    </Button>
-                </form>
-            ) : (
-                <div className="grid content-start gap-4 rounded-xl border border-slate-200 bg-white p-5">
-                    <div>
-                        <h3 className="text-base font-bold text-slate-950">
-                            {t('employees.resetPassword')}
-                        </h3>
-                        <p className="mt-1 text-sm text-slate-500">
-                            {t('employees.accountExistsFor').replace(
-                                '{email}',
-                                employee.email,
-                            )}
-                        </p>
-                    </div>
-
-                    <Button
-                        loading={resetting}
-                        loadingLabel={t('employees.resettingPassword')}
-                        onClick={() => void handleReset()}
-                        size="lg"
-                        variant="secondary"
-                    >
-                        <FontAwesomeIcon icon={faRotateRight} />
-                        {t('employees.resetPassword')}
-                    </Button>
-                </div>
-            )}
-
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-                <h3 className="text-base font-bold text-slate-950">
-                    {t('employees.accountInfo')}
-                </h3>
-                <div className="mt-4">
-                    {account ? (
-                        <AccountDetails account={account} />
-                    ) : (
-                        <EmptyState
-                            description={t('employees.noAccountDescription')}
-                            icon={<FontAwesomeIcon icon={faIdCard} />}
-                            title={t('employees.noAccountTitle')}
-                        />
-                    )}
-                </div>
-            </div>
-        </div>
+        <DetailSection
+            hint={t('employees.accountHint')}
+            title={t('employees.accountSection')}
+        >
+            {renderBody()}
+        </DetailSection>
     );
 }

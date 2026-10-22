@@ -184,7 +184,6 @@ export function AttendanceTrendChart({
                                 minTickGap={12}
                                 tick={{
                                     fill: chartColors.axis,
-                                    fontFamily: 'var(--font-mono)',
                                     fontSize: 10,
                                 }}
                                 tickLine={false}

@@ -103,7 +103,7 @@ export function TodayShiftTimeline({ shifts, date, now }: TodayShiftTimelineProp
                                 <div className="relative">
                                     {ticks.map((hour) => (
                                         <span
-                                            className="absolute -translate-x-1/2 font-mono text-[11px] text-faint"
+                                            className="absolute -translate-x-1/2 tabular-nums text-[11px] text-faint"
                                             key={hour}
                                             style={{ left: `${toPercent(hour)}%` }}
                                         >
@@ -136,7 +136,7 @@ export function TodayShiftTimeline({ shifts, date, now }: TodayShiftTimelineProp
                                             }}
                                             title={`${row.shiftName} · ${row.branchName}`}
                                         >
-                                            <span className="font-mono text-[11px] whitespace-nowrap">
+                                            <span className="tabular-nums text-[11px] whitespace-nowrap">
                                                 {formatTime(row.scheduledStartAt, language)}–
                                                 {formatTime(row.scheduledEndAt, language)}
                                             </span>
@@ -156,7 +156,7 @@ export function TodayShiftTimeline({ shifts, date, now }: TodayShiftTimelineProp
                                         left: `calc(${LABEL_WIDTH}px + (100% - ${LABEL_WIDTH}px) * ${toPercent(nowHour) / 100})`,
                                     }}
                                 >
-                                    <span className="absolute -top-5 left-1/2 -translate-x-1/2 rounded bg-ember px-[5px] py-px font-mono text-[10px] font-medium text-ink">
+                                    <span className="absolute -top-5 left-1/2 -translate-x-1/2 rounded bg-ember px-[5px] py-px tabular-nums text-[10px] font-medium text-ink">
                                         {formatTime(now, language)}
                                     </span>
                                 </div>
