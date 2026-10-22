@@ -10,6 +10,7 @@ import { AttendanceStatus } from '@/module/attendance/entities/attendance-status
 import { JwtPayload } from '@/module/auth/types/auth-user.type';
 import { Branch } from '@/module/branch/entities/branch.entity';
 import { Employee } from '@/module/employee/entities/employee.entity';
+import { EmployeeStatus } from '@/module/employee/entities/employee-status.enum';
 import { Holiday } from '@/module/holiday/entities/holiday.entity';
 import { HolidayStatus } from '@/module/holiday/entities/holiday-status.enum';
 import { LeaveRequestAssignment } from '@/module/leave-request/entities/leave-request-assignment.entity';
@@ -35,8 +36,8 @@ import {
     vietnamToday,
 } from './dashboard.utils';
 import {
-    DashboardBranchHours,
     DashboardBranchOption,
+    DashboardBranchStats,
     DashboardCurrentPayrollPeriod,
     DashboardDailyStats,
     DashboardEmployeeRanking,
@@ -50,6 +51,7 @@ import {
     DashboardPendingLeaveRequest,
     DashboardPendingShiftRequest,
     DashboardSummary,
+    DashboardTodayShift,
 } from './types/dashboard.types';
 
 const ACTION_ITEM_LIMIT = 5;
@@ -118,7 +120,8 @@ export class DashboardService {
             pendingShift,
             pendingAttendance,
             missingCheckIns,
-            branchHours,
+            todayShifts,
+            branchStats,
             payrollTrend,
             currentPayrollPeriod,
             upcomingHolidays,
@@ -131,7 +134,8 @@ export class DashboardService {
             this.findPendingShiftRequests(branchIds),
             this.findPendingAttendances(branchIds),
             this.findMissingCheckIns(today, now, branchIds),
-            this.aggregateBranchHours(fromDate, today, branchIds),
+            this.aggregateTodayShifts(today, branchIds),
+            this.aggregateBranchStats(fromDate, today, branchIds),
             this.aggregatePayrollTrend(branchIds),
             this.findCurrentPayrollPeriod(today),
             this.findUpcomingHolidays(today),
@@ -150,6 +154,8 @@ export class DashboardService {
             branchId: query.branchId ?? null,
             branches,
             todayStats,
+            todayShifts,
+            missingCheckInTotal: missingCheckIns.total,
             pending: {
                 leaveRequests: pendingLeave.total,
                 shiftRequests: pendingShift.total,
@@ -160,13 +166,13 @@ export class DashboardService {
                     pendingAttendance.total,
             },
             actionItems: {
-                missingCheckIns,
+                missingCheckIns: missingCheckIns.items,
                 pendingLeaveRequests: pendingLeave.items,
                 pendingShiftRequests: pendingShift.items,
                 pendingAttendances: pendingAttendance.items,
             },
             attendanceTrend: dailyStats,
-            branchHours,
+            branchStats,
             payrollTrend,
             currentPayrollPeriod,
             upcomingHolidays,
@@ -324,6 +330,10 @@ export class DashboardService {
                 `SUM(CASE WHEN attendance.id IS NULL AND NOT ${APPROVED_LEAVE_EXISTS} THEN 1 ELSE 0 END)`,
                 'notRecorded',
             )
+            .addSelect(
+                'SUM(CASE WHEN attendance.checkInAt IS NOT NULL THEN attendance.lateMinutes ELSE 0 END)',
+                'lateMinutes',
+            )
             .where('schedule.workDate BETWEEN :fromDate AND :toDate', {
                 fromDate,
                 toDate,
@@ -356,6 +366,7 @@ export class DashboardService {
                 absent: toNumber(row.absent),
                 onLeave: toNumber(row.onLeave),
                 notRecorded: toNumber(row.notRecorded),
+                lateMinutes: toNumber(row.lateMinutes),
             };
         });
     }
@@ -370,6 +381,7 @@ export class DashboardService {
             absent: 0,
             onLeave: 0,
             notRecorded: 0,
+            lateMinutes: 0,
         };
     }
 
@@ -377,7 +389,7 @@ export class DashboardService {
         today: string,
         now: Date,
         branchIds?: string[],
-    ): Promise<DashboardMissingCheckIn[]> {
+    ): Promise<{ items: DashboardMissingCheckIn[]; total: number }> {
         const queryBuilder = this.workScheduleRepository
             .createQueryBuilder('schedule')
             .leftJoin(
@@ -398,7 +410,7 @@ export class DashboardService {
 
         const schedules = await queryBuilder.getMany();
 
-        return schedules
+        const overdue = schedules
             .map((schedule) => {
                 const scheduledStartAt = toVietnamDateTime(
                     schedule.workDate,
@@ -420,8 +432,12 @@ export class DashboardService {
                     minutesOverdue,
                 };
             })
-            .filter((item) => item.minutesOverdue > MISSING_CHECK_IN_AFTER_MINUTES)
-            .slice(0, MISSING_CHECK_IN_LIMIT);
+            .filter((item) => item.minutesOverdue > MISSING_CHECK_IN_AFTER_MINUTES);
+
+        return {
+            total: overdue.length,
+            items: overdue.slice(0, MISSING_CHECK_IN_LIMIT),
+        };
     }
 
     private async findPendingLeaveRequests(
@@ -526,44 +542,162 @@ export class DashboardService {
         };
     }
 
-    private async aggregateBranchHours(
+    // One row per branch + shift slot today, so the dashboard can draw a staffing timeline.
+    private async aggregateTodayShifts(
+        today: string,
+        branchIds?: string[],
+    ): Promise<DashboardTodayShift[]> {
+        const queryBuilder = this.workScheduleRepository
+            .createQueryBuilder('schedule')
+            .innerJoin('schedule.branch', 'branch')
+            .leftJoin(
+                Attendance,
+                'attendance',
+                'attendance.workScheduleId = schedule.id',
+            )
+            .select('branch.id', 'branchId')
+            .addSelect('branch.name', 'branchName')
+            .addSelect('schedule.shiftNameSnapshot', 'shiftName')
+            .addSelect('schedule.startTimeSnapshot', 'startTime')
+            .addSelect('schedule.endTimeSnapshot', 'endTime')
+            .addSelect('COUNT(schedule.id)', 'scheduled')
+            .addSelect(
+                'SUM(CASE WHEN attendance.checkInAt IS NOT NULL THEN 1 ELSE 0 END)',
+                'checkedIn',
+            )
+            .addSelect(
+                'SUM(CASE WHEN attendance.checkInAt IS NOT NULL AND attendance.lateMinutes > 0 THEN 1 ELSE 0 END)',
+                'late',
+            )
+            .addSelect(
+                `SUM(CASE WHEN attendance.id IS NULL AND ${APPROVED_LEAVE_EXISTS} THEN 1 ELSE 0 END)`,
+                'onLeave',
+            )
+            .where('schedule.workDate = :today', { today })
+            .setParameters({ approvedLeaveStatus: LeaveRequestStatus.Approved })
+            .groupBy('branch.id')
+            .addGroupBy('branch.name')
+            .addGroupBy('schedule.shiftNameSnapshot')
+            .addGroupBy('schedule.startTimeSnapshot')
+            .addGroupBy('schedule.endTimeSnapshot')
+            .orderBy('schedule.startTimeSnapshot', 'ASC')
+            .addOrderBy('branch.name', 'ASC');
+
+        this.applyBranchScope(queryBuilder, 'schedule.branchId', branchIds);
+
+        const rows = await queryBuilder.getRawMany<Record<string, string>>();
+
+        return rows.map((row) => {
+            const scheduledStartAt = toVietnamDateTime(today, row.startTime);
+            let scheduledEndAt = toVietnamDateTime(today, row.endTime);
+
+            if (scheduledEndAt <= scheduledStartAt) {
+                scheduledEndAt = new Date(
+                    scheduledEndAt.getTime() + 24 * 60 * 60 * 1000,
+                );
+            }
+
+            return {
+                branchId: row.branchId,
+                branchName: row.branchName,
+                shiftName: row.shiftName,
+                scheduledStartAt: scheduledStartAt.toISOString(),
+                scheduledEndAt: scheduledEndAt.toISOString(),
+                scheduled: toNumber(row.scheduled),
+                checkedIn: toNumber(row.checkedIn),
+                late: toNumber(row.late),
+                onLeave: toNumber(row.onLeave),
+            };
+        });
+    }
+
+    private async aggregateBranchStats(
         fromDate: string,
         toDate: string,
         branchIds?: string[],
-    ): Promise<DashboardBranchHours[]> {
-        const queryBuilder = this.attendanceRepository
+    ): Promise<DashboardBranchStats[]> {
+        if (branchIds && branchIds.length === 0) {
+            return [];
+        }
+
+        const attendanceQuery = this.attendanceRepository
             .createQueryBuilder('attendance')
-            .innerJoin('attendance.branch', 'branch')
-            .select('branch.id', 'branchId')
-            .addSelect('branch.name', 'branchName')
-            .addSelect('SUM(attendance.workedMinutes)', 'workedMinutes')
-            .addSelect('SUM(attendance.overtimeMinutes)', 'overtimeMinutes')
+            .select('attendance.branchId', 'branchId')
+            .addSelect(
+                'SUM(CASE WHEN attendance.checkInAt IS NOT NULL THEN 1 ELSE 0 END)',
+                'attended',
+            )
+            .addSelect(
+                'SUM(CASE WHEN attendance.checkInAt IS NOT NULL AND attendance.lateMinutes = 0 THEN 1 ELSE 0 END)',
+                'onTime',
+            )
+            .addSelect(
+                'SUM(CASE WHEN attendance.checkInAt IS NOT NULL AND attendance.lateMinutes > 0 THEN 1 ELSE 0 END)',
+                'late',
+            )
+            .addSelect(
+                'SUM(CASE WHEN attendance.status IN (:...workedStatuses) THEN attendance.workedMinutes ELSE 0 END)',
+                'workedMinutes',
+            )
+            .addSelect(
+                'SUM(CASE WHEN attendance.status IN (:...workedStatuses) THEN attendance.overtimeMinutes ELSE 0 END)',
+                'overtimeMinutes',
+            )
             .where('attendance.scheduleDate BETWEEN :fromDate AND :toDate', {
                 fromDate,
                 toDate,
             })
-            .andWhere('attendance.status IN (:...statuses)', {
-                statuses: [
+            .setParameters({
+                workedStatuses: [
                     AttendanceStatus.PendingConfirmation,
                     AttendanceStatus.Confirmed,
                 ],
             })
-            .groupBy('branch.id')
-            .addGroupBy('branch.name')
-            .orderBy('workedMinutes', 'DESC');
+            .groupBy('attendance.branchId');
 
-        this.applyBranchScope(queryBuilder, 'attendance.branchId', branchIds);
+        this.applyBranchScope(attendanceQuery, 'attendance.branchId', branchIds);
 
-        const rows = await queryBuilder.getRawMany<
-            Record<keyof DashboardBranchHours, string>
-        >();
+        const employeeQuery = this.employeeRepository
+            .createQueryBuilder('employee')
+            .innerJoin('employee.branches', 'branch')
+            .select('branch.id', 'branchId')
+            .addSelect('COUNT(DISTINCT employee.id)', 'employees')
+            .where('employee.status = :employeeStatus', {
+                employeeStatus: EmployeeStatus.Active,
+            })
+            .groupBy('branch.id');
 
-        return rows.map((row) => ({
-            branchId: row.branchId,
-            branchName: row.branchName,
-            workedMinutes: toNumber(row.workedMinutes),
-            overtimeMinutes: toNumber(row.overtimeMinutes),
-        }));
+        this.applyBranchScope(employeeQuery, 'branch.id', branchIds);
+
+        const [branches, attendanceRows, employeeRows] = await Promise.all([
+            this.branchRepository.find({
+                where: branchIds ? { id: In(branchIds) } : { status: true },
+                order: { name: 'ASC' },
+            }),
+            attendanceQuery.getRawMany<Record<string, string>>(),
+            employeeQuery.getRawMany<Record<string, string>>(),
+        ]);
+        const attendanceByBranch = new Map(
+            attendanceRows.map((row) => [row.branchId, row]),
+        );
+        const employeesByBranch = new Map(
+            employeeRows.map((row) => [row.branchId, toNumber(row.employees)]),
+        );
+
+        return branches.map((branch) => {
+            const row = attendanceByBranch.get(branch.id);
+
+            return {
+                branchId: branch.id,
+                branchName: branch.name,
+                employees: employeesByBranch.get(branch.id) ?? 0,
+                attended: toNumber(row?.attended),
+                onTime: toNumber(row?.onTime),
+                late: toNumber(row?.late),
+                workedMinutes: toNumber(row?.workedMinutes),
+                overtimeMinutes: toNumber(row?.overtimeMinutes),
+            };
+        });
     }
 
     private async aggregatePayrollTrend(

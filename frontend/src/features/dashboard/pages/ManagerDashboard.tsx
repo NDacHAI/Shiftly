@@ -1,35 +1,32 @@
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-    faChartColumn,
-    faClipboardCheck,
-    faClock,
-    faRotateRight,
-    faUserCheck,
-    faUserClock,
-} from '@fortawesome/free-solid-svg-icons';
-import {
-    Button,
-    DropdownSelect,
-    LoadingOverlay,
-    PageHeader,
-} from '@/components/ui';
+import { faRotateRight } from '@fortawesome/free-solid-svg-icons';
+import { DropdownSelect } from '@/components/ui';
 import { type I18nKey, useI18n } from '@/i18n';
 import { getDashboardErrorKey, getDashboardSummary } from '../api/dashboard.api';
-import { ActionItemsPanel } from '../components/ActionItemsPanel';
+import { ApprovalQueue } from '../components/ApprovalQueue';
 import { AttendanceTrendChart } from '../components/AttendanceTrendChart';
-import { BranchHoursChart } from '../components/BranchHoursChart';
-import { PayrollPeriodCard } from '../components/PayrollPeriodCard';
-import { PayrollTrendChart } from '../components/PayrollTrendChart';
-import { RankingList } from '../components/RankingList';
-import { StatCard } from '../components/StatCard';
-import { formatLongDate, formatTime, interpolate } from '../lib/format';
+import { BranchStatsTable } from '../components/BranchStatsTable';
+import { LiveTodayPanel } from '../components/LiveTodayPanel';
+import { PayrollPeriodPanel } from '../components/PayrollPeriodPanel';
+import { TodayShiftTimeline } from '../components/TodayShiftTimeline';
+import { formatClockDate, hoursSinceDayStart, interpolate } from '../lib/format';
 import { type DashboardRangeDays, type DashboardSummary } from '../types';
 
 const allBranchesValue = 'all';
 const rangeOptions: DashboardRangeDays[] = [7, 30, 90];
 
-export function ManagerDashboard() {
+function greetingKeyOf(hour: number): I18nKey {
+    if (hour < 12) return 'dashboard.greeting.morning';
+    if (hour < 18) return 'dashboard.greeting.afternoon';
+    return 'dashboard.greeting.evening';
+}
+
+type ManagerDashboardProps = {
+    userName: string;
+};
+
+export function ManagerDashboard({ userName }: ManagerDashboardProps) {
     const { language, t } = useI18n();
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
     const [branchId, setBranchId] = useState(allBranchesValue);
@@ -78,13 +75,46 @@ export function ManagerDashboard() {
         setDays(value);
     }
 
-    const today = summary?.todayStats;
-    const attended = today ? today.onTime + today.late : 0;
+    const greeting = interpolate(
+        t(
+            greetingKeyOf(
+                summary ? hoursSinceDayStart(summary.generatedAt, summary.date) : 9,
+            ),
+        ),
+        { name: userName },
+    );
+    const headline = summary
+        ? interpolate(
+              t(
+                  summary.missingCheckInTotal > 0
+                      ? 'dashboard.headline.attention'
+                      : 'dashboard.headline.clear',
+              ),
+              {
+                  missing: summary.missingCheckInTotal,
+                  pending: summary.pending.total,
+              },
+          )
+        : t('dashboard.subtitle');
+    const workedMinutes =
+        summary?.branchStats.reduce((total, row) => total + row.workedMinutes, 0) ?? 0;
 
     return (
-        <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
-            <PageHeader
-                actions={
+        <section className="bg-sand text-ink">
+            <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-5 p-8 max-sm:p-4">
+                <div className="flex flex-wrap items-end justify-between gap-5">
+                    <div className="flex flex-col gap-1.5">
+                        {summary && (
+                            <span className="font-mono text-xs tracking-[0.04em] text-muted uppercase">
+                                {formatClockDate(summary.generatedAt, language)}
+                            </span>
+                        )}
+                        <h1 className="text-[34px] leading-tight font-semibold tracking-[-0.03em] text-pretty max-sm:text-[28px]">
+                            {greeting}
+                        </h1>
+                        <p className="text-[15px] text-muted">{headline}</p>
+                    </div>
+
                     <div className="flex flex-wrap items-center gap-2">
                         <DropdownSelect
                             ariaLabel={t('common.branch')}
@@ -101,16 +131,16 @@ export function ManagerDashboard() {
                         />
                         <div
                             aria-label={t('dashboard.range.label')}
-                            className="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5"
+                            className="flex gap-0.5 rounded-lg bg-stone p-[3px]"
                             role="group"
                         >
                             {rangeOptions.map((option) => (
                                 <button
                                     aria-pressed={days === option}
-                                    className={`min-h-9 cursor-pointer rounded-md px-3 text-sm font-semibold transition ${
+                                    className={`h-8 min-h-0 cursor-pointer rounded-md border-0 px-3 text-[13px] font-medium ${
                                         days === option
-                                            ? 'bg-white text-primary-700 shadow-sm'
-                                            : 'bg-transparent text-slate-500 hover:text-slate-800'
+                                            ? 'bg-paper text-ink shadow-[0_1px_2px_rgba(23,22,15,0.12)]'
+                                            : 'bg-transparent text-muted hover:text-ink'
                                     }`}
                                     key={option}
                                     type="button"
@@ -120,118 +150,76 @@ export function ManagerDashboard() {
                                 </button>
                             ))}
                         </div>
-                        <Button
+                        <button
+                            className="flex h-[38px] min-h-0 cursor-pointer items-center gap-2 rounded-lg border-0 bg-ink px-3.5 text-[13px] font-medium text-sand hover:bg-ink-soft disabled:cursor-wait disabled:opacity-70"
+                            disabled={loading}
+                            type="button"
                             onClick={reload}
-                            size="lg"
-                            variant="secondary"
                         >
-                            <FontAwesomeIcon icon={faRotateRight} />
+                            <FontAwesomeIcon icon={faRotateRight} spin={loading} />
                             {t('common.refresh')}
-                        </Button>
+                        </button>
                     </div>
-                }
-                description={
-                    summary
-                    ? `${formatLongDate(summary.date, language)} · ${interpolate(
-                    t('dashboard.updatedAt'),
-                    { time: formatTime(summary.generatedAt, language) },
-                    )}`
-                    : t('dashboard.subtitle')
-                }
-                icon={<FontAwesomeIcon icon={faChartColumn} />}
-                title={t('dashboard.title')}
-            />
-
-            {errorKey && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    {t(errorKey)}
                 </div>
-            )}
 
-            <div className={`relative grid gap-5 ${summary ? '' : 'min-h-64'}`}>
-                <LoadingOverlay label={t('dashboard.loading')} visible={loading} />
+                {errorKey && (
+                    <div className="rounded-[10px] border border-ember bg-ember-tint px-4 py-3 text-sm text-ember-ink">
+                        {t(errorKey)}
+                    </div>
+                )}
 
-                {summary && today && (
-                    <>
-                        <div className="grid grid-cols-4 gap-4 max-xl:grid-cols-2 max-sm:grid-cols-1">
-                            <StatCard
-                                hint={interpolate(t('dashboard.kpi.shiftsHint'), {
-                                    notRecorded: today.notRecorded,
-                                    onLeave: today.onLeave,
-                                })}
-                                icon={faUserCheck}
-                                label={t('dashboard.kpi.shiftsToday')}
-                                value={`${attended}/${today.scheduled}`}
+                {!summary && loading && (
+                    <div
+                        aria-busy="true"
+                        aria-label={t('dashboard.loading')}
+                        className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,320px),1fr))] gap-5"
+                    >
+                        <div className="col-span-full h-[132px] animate-pulse rounded-[14px] bg-stone" />
+                        <div className="h-[340px] animate-pulse rounded-[14px] bg-stone" />
+                        <div className="h-[340px] animate-pulse rounded-[14px] bg-stone" />
+                        <div className="h-[340px] animate-pulse rounded-[14px] bg-stone" />
+                    </div>
+                )}
+
+                {summary && (
+                    <div
+                        aria-busy={loading}
+                        className={`flex flex-col gap-5 transition-opacity ${
+                            loading ? 'opacity-60' : ''
+                        }`}
+                    >
+                        <LiveTodayPanel
+                            missingCheckIns={summary.missingCheckInTotal}
+                            stats={summary.todayStats}
+                        />
+
+                        <div className="flex flex-wrap items-stretch gap-5">
+                            <TodayShiftTimeline
+                                date={summary.date}
+                                now={summary.generatedAt}
+                                shifts={summary.todayShifts}
                             />
-                            <StatCard
-                                icon={faClock}
-                                label={t('dashboard.kpi.working')}
-                                tone="success"
-                                value={today.working}
-                            />
-                            <StatCard
-                                hint={interpolate(t('dashboard.kpi.absentHint'), {
-                                    absent: today.absent,
-                                })}
-                                icon={faUserClock}
-                                label={t('dashboard.kpi.late')}
-                                tone={today.late > 0 ? 'warning' : 'neutral'}
-                                value={today.late}
-                            />
-                            <StatCard
-                                hint={interpolate(t('dashboard.kpi.pendingHint'), {
-                                    leave: summary.pending.leaveRequests,
-                                    shift: summary.pending.shiftRequests,
-                                    attendance: summary.pending.attendanceConfirmations,
-                                })}
-                                icon={faClipboardCheck}
-                                label={t('dashboard.kpi.pending')}
-                                tone={summary.pending.total > 0 ? 'danger' : 'neutral'}
-                                value={summary.pending.total}
-                            />
+                            <ApprovalQueue summary={summary} onChanged={reload} />
                         </div>
 
-                        <div className="grid grid-cols-3 gap-5 max-xl:grid-cols-1">
-                            <ActionItemsPanel summary={summary} />
-                            <PayrollPeriodCard
-                                holidays={summary.upcomingHolidays}
+                        <div className="flex flex-wrap items-stretch gap-5">
+                            <AttendanceTrendChart
+                                data={summary.attendanceTrend}
+                                days={summary.range.days}
+                                workedMinutes={workedMinutes}
+                            />
+                            <PayrollPeriodPanel
+                                date={summary.date}
                                 period={summary.currentPayrollPeriod}
+                                trend={summary.payrollTrend}
                             />
                         </div>
 
-                        <div className="grid grid-cols-3 gap-5 max-xl:grid-cols-1">
-                            <AttendanceTrendChart data={summary.attendanceTrend} />
-                            <div className="grid content-start gap-5">
-                                <RankingList
-                                    countLabel={t('dashboard.ranking.lateCount')}
-                                    description={interpolate(
-                                        t('dashboard.ranking.rangeDescription'),
-                                        { days: summary.range.days },
-                                    )}
-                                    items={summary.topLateEmployees}
-                                    metric="minutes"
-                                    title={t('dashboard.ranking.lateTitle')}
-                                />
-                                <RankingList
-                                    countLabel={t('dashboard.ranking.overtimeCount')}
-                                    description={interpolate(
-                                        t('dashboard.ranking.rangeDescription'),
-                                        { days: summary.range.days },
-                                    )}
-                                    items={summary.topOvertimeEmployees}
-                                    metric="hours"
-                                    title={t('dashboard.ranking.overtimeTitle')}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-5 max-xl:grid-cols-1">
-                            <div className="xl:col-span-2">
-                                <PayrollTrendChart data={summary.payrollTrend} />
-                            </div>
-                            <BranchHoursChart data={summary.branchHours} />
-                        </div>
-                    </>
+                        <BranchStatsTable
+                            days={summary.range.days}
+                            rows={summary.branchStats}
+                        />
+                    </div>
                 )}
             </div>
         </section>

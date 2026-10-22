@@ -41,7 +41,10 @@ export function AppRouter({ user, onLogout }: AppRouterProps) {
                         user={user}
                         onLogout={onLogout}
                     >
-                        <DashboardPage userRole={user.role} />
+                        <DashboardPage
+                            userName={user.email.split('@')[0]}
+                            userRole={user.role}
+                        />
                     </Layout>
                 }
             />

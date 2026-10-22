@@ -8,6 +8,8 @@ type DashboardCardProps = {
     children: ReactNode;
     // When provided, the card offers a chart/table toggle so values are never chart-only.
     table?: ReactNode;
+    // Rows run edge to edge (lists, tables); the header keeps its padding.
+    flush?: boolean;
     className?: string;
 };
 
@@ -17,6 +19,7 @@ export function DashboardCard({
     action,
     children,
     table,
+    flush = false,
     className = '',
 }: DashboardCardProps) {
     const { t } = useI18n();
@@ -24,23 +27,24 @@ export function DashboardCard({
 
     return (
         <section
-            className={`flex min-w-0 flex-col rounded-xl border border-line bg-white shadow-card ${className}`}
+            className={`flex min-w-0 flex-col gap-4 rounded-[14px] border border-rule bg-paper pt-[22px] ${
+                flush ? 'pb-2' : 'pb-6'
+            } ${className}`}
         >
-            <header className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+            <header className="flex flex-wrap items-start justify-between gap-3 px-6 max-sm:px-4">
                 <div className="min-w-0">
-                    <h3 className="text-base font-semibold text-slate-900">
+                    <h2 className="text-[17px] font-semibold tracking-[-0.01em] text-ink">
                         {title}
-                    </h3>
+                    </h2>
                     {description && (
-                        <p className="mt-0.5 text-xs text-slate-500">
-                            {description}
-                        </p>
+                        <p className="mt-1 text-[13px] text-muted">{description}</p>
                     )}
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 items-center gap-3">
+                    {action}
                     {table && (
                         <button
-                            className="min-h-0 cursor-pointer rounded-md bg-transparent px-2 py-1 text-xs font-semibold text-primary-600 hover:bg-primary-50"
+                            className="min-h-0 cursor-pointer rounded-md border border-rule-strong bg-transparent px-2.5 py-1 text-xs font-medium text-ink hover:bg-stone-soft"
                             type="button"
                             onClick={() => setShowTable((current) => !current)}
                         >
@@ -49,10 +53,9 @@ export function DashboardCard({
                                 : t('dashboard.common.showTable')}
                         </button>
                     )}
-                    {action}
                 </div>
             </header>
-            <div className="flex-1 p-5">
+            <div className={`flex-1 ${flush ? '' : 'px-6 max-sm:px-4'}`}>
                 {table && showTable ? (
                     <div className="max-h-80 overflow-auto">{table}</div>
                 ) : (

@@ -145,9 +145,3 @@ export const navigationGroups: Array<{
         items: [{ labelKey: 'nav.settings', icon: faGear, href: routes.settings }],
     },
 ];
-
-export function findNavGroupLabelKey(labelKey: I18nKey) {
-    return navigationGroups.find((group) =>
-        group.items.some((item) => item.labelKey === labelKey),
-    )?.labelKey;
-}

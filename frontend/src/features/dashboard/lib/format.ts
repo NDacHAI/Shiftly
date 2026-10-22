@@ -64,6 +64,45 @@ export function formatTime(value: string, language: Language) {
     }).format(new Date(value));
 }
 
+// `ratio` is 0..1; keeps one decimal like "94,2%".
+export function formatPercent(ratio: number, language: Language) {
+    return new Intl.NumberFormat(localeOf(language), {
+        style: 'percent',
+        maximumFractionDigits: 1,
+    }).format(ratio);
+}
+
+// Hours elapsed since Vietnam midnight of `date` (YYYY-MM-DD); 10:30 -> 10.5, next-day 02:00 -> 26.
+export function hoursSinceDayStart(value: string, date: string) {
+    const [year, month, day] = date.split('-').map(Number);
+    const dayStart = Date.UTC(year, month - 1, day) - 7 * 60 * 60 * 1000;
+
+    return (new Date(value).getTime() - dayStart) / (60 * 60 * 1000);
+}
+
+export function formatClockDate(value: string, language: Language) {
+    const parts = new Intl.DateTimeFormat(localeOf(language), {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: vietnamTimeZone,
+    }).formatToParts(new Date(value));
+    const part = (type: Intl.DateTimeFormatPartTypes) =>
+        parts.find((item) => item.type === type)?.value ?? '';
+
+    return `${part('weekday')} · ${part('day')}.${part('month')}.${part('year')} · ${formatTime(value, language)}`;
+}
+
+export function initialsOf(name: string) {
+    return name
+        .trim()
+        .split(/\s+/)
+        .slice(-2)
+        .map((word) => word.charAt(0).toUpperCase())
+        .join('');
+}
+
 export function interpolate(
     template: string,
     values: Record<string, string | number>,

@@ -15,8 +15,29 @@
     --color-primary-900: #1e3481;
     --color-primary-950: #172250;
 
-    --color-canvas: #f4f6f9;
+    --color-canvas: #f2f0eb;
     --color-line: #e3e7ee;
+
+    /* Warm dashboard palette (frontend/ui/Shiftly Dashboard.html). */
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --color-ink: #17160f;
+    --color-ink-soft: #2e2c22;
+    --color-ink-line: #3a382c;
+    --color-paper: #fbfaf7;
+    --color-sand: #f2f0eb;
+    --color-stone: #e7e4dc;
+    --color-stone-soft: #efece5;
+    --color-rule: #e3dfd6;
+    --color-rule-soft: #eeebe4;
+    --color-rule-strong: #dcd8ce;
+    --color-muted: #6b675c;
+    --color-faint: #8a8577;
+    --color-fog: #a9a597;
+    --color-ember: #e06a2c;
+    --color-ember-strong: #c4541c;
+    --color-ember-ink: #8a3510;
+    --color-ember-tint: #fbe3d4;
+    --color-live: #3a9a5b;
 
     --shadow-card: 0 1px 2px rgb(15 23 42 / 4%), 0 1px 3px rgb(15 23 42 / 4%);
 }
@@ -144,6 +165,27 @@
     to {
         opacity: 0;
         transform: translateX(32px);
+    }
+}
+
+@keyframes page-enter {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Route change: opacity only, so the page never grows past the viewport mid-animation. */
+.page-transition {
+    animation: page-enter 220ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-transition {
+        animation: none;
     }
 }
 

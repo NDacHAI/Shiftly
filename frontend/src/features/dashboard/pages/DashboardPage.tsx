@@ -4,12 +4,13 @@ import { ManagerDashboard } from './ManagerDashboard';
 
 type DashboardPageProps = {
     userRole: Role;
+    userName: string;
 };
 
-export function DashboardPage({ userRole }: DashboardPageProps) {
+export function DashboardPage({ userRole, userName }: DashboardPageProps) {
     if (userRole === roles.user) {
         return <EmployeeDashboard />;
     }
 
-    return <ManagerDashboard />;
+    return <ManagerDashboard userName={userName} />;
 }

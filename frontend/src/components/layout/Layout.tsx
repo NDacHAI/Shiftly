@@ -1,9 +1,8 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { type AuthUser } from '@/features/auth/types';
-import { type I18nKey, useI18n } from '@/i18n';
+import { type I18nKey } from '@/i18n';
 import { Header } from './Header';
-import { Nav } from './Nav';
-import { findNavGroupLabelKey } from './navigation';
 
 type LayoutProps = {
     activeNavKey?: I18nKey;
@@ -20,34 +19,19 @@ export function Layout({
     user,
     onLogout,
 }: LayoutProps) {
-    const { t } = useI18n();
-    const title = t(titleKey);
-    const groupLabelKey = findNavGroupLabelKey(activeNavKey ?? titleKey);
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const { pathname } = useLocation();
 
     return (
-        <main
-            className={`grid min-h-screen transition-[grid-template-columns] duration-200 max-sm:block ${
-                sidebarCollapsed
-                    ? 'grid-cols-[72px_minmax(0,1fr)]'
-                    : 'grid-cols-[256px_minmax(0,1fr)]'
-            }`}
-        >
-            <Nav
-                collapsed={sidebarCollapsed}
-                defaultActiveItem={activeNavKey ?? titleKey}
-                userRole={user.role}
-                onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
+        <div className="flex min-h-screen flex-col">
+            <Header
+                activeNavKey={activeNavKey ?? titleKey}
+                user={user}
+                onLogout={onLogout}
             />
-            <div className="min-w-0">
-                <Header
-                    groupLabel={groupLabelKey ? t(groupLabelKey) : undefined}
-                    title={title}
-                    user={user}
-                    onLogout={onLogout}
-                />
+            {/* Keyed so the fallback enter animation replays on every route change. */}
+            <main className="page-transition min-w-0 flex-1" key={pathname}>
                 {children}
-            </div>
-        </main>
+            </main>
+        </div>
     );
 }

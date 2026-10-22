@@ -20,6 +20,7 @@ export type DashboardDailyStats = {
     absent: number;
     onLeave: number;
     notRecorded: number;
+    lateMinutes: number;
 };
 
 export type DashboardPendingCounts = {
@@ -74,9 +75,25 @@ export type DashboardPendingAttendance = {
     lateMinutes: number;
 };
 
-export type DashboardBranchHours = {
+export type DashboardTodayShift = {
     branchId: string;
     branchName: string;
+    shiftName: string;
+    scheduledStartAt: string;
+    scheduledEndAt: string;
+    scheduled: number;
+    checkedIn: number;
+    late: number;
+    onLeave: number;
+};
+
+export type DashboardBranchStats = {
+    branchId: string;
+    branchName: string;
+    employees: number;
+    attended: number;
+    onTime: number;
+    late: number;
     workedMinutes: number;
     overtimeMinutes: number;
 };
@@ -132,6 +149,8 @@ export type DashboardSummary = {
     branchId: string | null;
     branches: DashboardBranchOption[];
     todayStats: DashboardDailyStats;
+    todayShifts: DashboardTodayShift[];
+    missingCheckInTotal: number;
     pending: DashboardPendingCounts;
     actionItems: {
         missingCheckIns: DashboardMissingCheckIn[];
@@ -140,7 +159,7 @@ export type DashboardSummary = {
         pendingAttendances: DashboardPendingAttendance[];
     };
     attendanceTrend: DashboardDailyStats[];
-    branchHours: DashboardBranchHours[];
+    branchStats: DashboardBranchStats[];
     payrollTrend: DashboardPayrollTrend[];
     currentPayrollPeriod: DashboardCurrentPayrollPeriod | null;
     upcomingHolidays: DashboardHoliday[];
