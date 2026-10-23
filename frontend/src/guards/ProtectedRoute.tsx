@@ -66,6 +66,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (authState.user.mustChangePassword) {
         return (
             <ChangePasswordPage
+                user={authState.user}
                 onLogout={() => void handleLogout()}
                 onPasswordChanged={() => {
                     clearAuthTokens();

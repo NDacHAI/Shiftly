@@ -1,4 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useI18n, type Language } from '@/i18n';
 import { getApiErrorKey } from '@/lib/api-error';
 import { login } from '../api/auth.api';
@@ -171,7 +173,7 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                                         <input
                                             aria-invalid={showPasswordError || Boolean(authError)}
                                             autoComplete="current-password"
-                                            className={`${inputClass} pr-16 ${
+                                            className={`${inputClass} pr-12 ${
                                                 showPasswordError || authError ? 'border-ember-strong' : 'border-rule-strong'
                                             }`}
                                             id="login-password"
@@ -185,11 +187,13 @@ export function LoginPage({ onLoginSuccess }: LoginPageProps) {
                                         />
                                         <button
                                             aria-label={showPassword ? t('login.hidePasswordAria') : t('login.showPasswordAria')}
-                                            className="absolute top-[7px] right-1.5 h-8 min-h-0 cursor-pointer rounded-md border-0 bg-transparent px-2.5 text-xs font-medium text-muted transition-colors hover:bg-stone hover:text-ink"
+                                            aria-pressed={showPassword}
+                                            className="absolute top-[7px] right-1.5 grid size-8 min-h-0 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-sm text-muted transition-colors hover:bg-stone hover:text-ink"
+                                            title={showPassword ? t('login.hidePasswordAria') : t('login.showPasswordAria')}
                                             type="button"
                                             onClick={() => setShowPassword((visible) => !visible)}
                                         >
-                                            {showPassword ? t('login.hidePassword') : t('login.showPassword')}
+                                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                                         </button>
                                     </div>
                                     {showPasswordError && (

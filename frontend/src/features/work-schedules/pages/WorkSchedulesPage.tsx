@@ -40,7 +40,6 @@ import {
     isoWeekdayOf,
     monthGridDays,
     moveAnchorDate,
-    openShortage,
     type ShiftBlock,
     startOfMonth,
     startOfWeek,
@@ -191,13 +190,6 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
     }, [branchFilter, canManage, reloadKey, showToast, t, viewRange]);
 
     const blocksByDate = useMemo(() => buildShiftBlocks(schedules, now), [schedules, now]);
-    const upcomingShortage = useMemo(
-        () =>
-            Object.entries(blocksByDate)
-                .filter(([date]) => date >= now.date)
-                .reduce((total, [, blocks]) => total + openShortage(blocks), 0),
-        [blocksByDate, now.date],
-    );
     const selectedBlocks = blocksByDate[selectedDate] ?? [];
     const reload = useCallback(() => {
         setLoading(true);
@@ -390,11 +382,7 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
                         </h1>
                         <p className="text-[15px] text-muted">
                             {canManage
-                                ? upcomingShortage
-                                    ? interpolate(t('workSchedules.headlineShort'), {
-                                          count: upcomingShortage,
-                                      })
-                                    : t('workSchedules.headlineFull')
+                                ? t('workSchedules.headlineManage')
                                 : t('workSchedules.headlineMine')}
                         </p>
                     </div>
@@ -540,7 +528,6 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
                                         days={gridDays}
                                         month={anchorDate.slice(0, 7)}
                                         selectedDate={selectedDate}
-                                        showStaffing={canManage}
                                         today={now.date}
                                         onOpenDay={(date) => {
                                             setMotion('rise-enter');
@@ -560,7 +547,6 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
                                         search={search}
                                         selectedDate={selectedDate}
                                         showBranch={branchFilter === allBranches}
-                                        showStaffing={canManage}
                                         onPickBlock={(block) => {
                                             setSelectedDate(block.date);
                                             setOpenBlockId(block.id);
@@ -577,14 +563,8 @@ export function WorkSchedulesPage({ userRole }: WorkSchedulesPageProps) {
                         <div className="flex flex-wrap gap-[18px] border-t border-rule px-5 py-3 text-xs text-muted max-sm:px-4">
                             <span className="flex items-center gap-1.5">
                                 <span className="size-2.5 rounded-[3px] bg-ink" />
-                                {canManage ? t('workSchedules.statusEnough') : t('workSchedules.tagUpcoming')}
+                                {t('workSchedules.tagUpcoming')}
                             </span>
-                            {canManage && (
-                                <span className="flex items-center gap-1.5">
-                                    <span className="size-2.5 rounded-[3px] border border-ember bg-ember-tint" />
-                                    {t('workSchedules.statusUnderstaffed')}
-                                </span>
-                            )}
                             <span className="flex items-center gap-1.5">
                                 <span className="size-2.5 rounded-[3px] bg-stone" />
                                 {t('workSchedules.statusEnded')}

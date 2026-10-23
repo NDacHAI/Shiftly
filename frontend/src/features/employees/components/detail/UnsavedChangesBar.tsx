@@ -1,6 +1,7 @@
 import { useI18n } from '@/i18n';
 
 type UnsavedChangesBarProps = {
+    discardLabel?: string;
     message: string;
     saving: boolean;
     onDiscard: () => void;
@@ -9,6 +10,7 @@ type UnsavedChangesBarProps = {
 
 // Floating bar that rises from the bottom while the profile has unsaved edits.
 export function UnsavedChangesBar({
+    discardLabel,
     message,
     saving,
     onDiscard,
@@ -28,7 +30,7 @@ export function UnsavedChangesBar({
                 type="button"
                 onClick={onDiscard}
             >
-                {t('employees.discardChanges')}
+                {discardLabel ?? t('employees.discardChanges')}
             </button>
             <button
                 className="h-9 min-h-0 cursor-pointer rounded-lg border-0 bg-ember px-3.5 text-[13px] font-semibold whitespace-nowrap text-ink transition-colors hover:bg-[#ea7d43] disabled:cursor-wait disabled:opacity-70"

@@ -1,8 +1,6 @@
 import { type I18nKey } from '@/i18n';
 import { type WorkSchedule, type WorkScheduleViewMode } from '../types';
 
-// Staffing target per shift block; the backend has no headcount field yet.
-export const defaultStaffTarget = 4;
 export const hourHeight = 44;
 const defaultFirstHour = 6;
 const defaultLastHour = 24;
@@ -220,8 +218,6 @@ export type ShiftBlock = {
     startMinutes: number;
     endMinutes: number;
     schedules: WorkSchedule[];
-    need: number;
-    shortage: number;
     ended: boolean;
 };
 
@@ -260,7 +256,6 @@ export function buildShiftBlocks(
 
         if (isOvernight) endMinutes += 24 * 60;
 
-        const need = Math.max(defaultStaffTarget, list.length);
         const ended =
             first.workDate < now.date ||
             (first.workDate === now.date && !isOvernight && endMinutes <= now.minutes);
@@ -281,8 +276,6 @@ export function buildShiftBlocks(
             schedules: [...list].sort((left, right) =>
                 employeeName(left.employee).localeCompare(employeeName(right.employee)),
             ),
-            need,
-            shortage: need - list.length,
             ended,
         });
     }
@@ -296,12 +289,6 @@ export function buildShiftBlocks(
     }
 
     return byDate;
-}
-
-export function openShortage(blocks: ShiftBlock[] = []) {
-    return blocks
-        .filter((block) => !block.ended)
-        .reduce((total, block) => total + block.shortage, 0);
 }
 
 // Places overlapping blocks side by side; returns each block's lane and the lane count.

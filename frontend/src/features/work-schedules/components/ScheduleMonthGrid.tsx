@@ -2,7 +2,6 @@ import { interpolate } from '@/features/dashboard/lib/format';
 import { useI18n } from '@/i18n';
 import {
     mondayFirstWeekdayKeys,
-    openShortage,
     type ShiftBlock,
 } from '../lib/schedule-calendar';
 
@@ -11,7 +10,6 @@ type ScheduleMonthGridProps = {
     days: string[];
     month: string;
     selectedDate: string;
-    showStaffing: boolean;
     today: string;
     onOpenDay: (date: string) => void;
 };
@@ -21,7 +19,6 @@ export function ScheduleMonthGrid({
     days,
     month,
     selectedDate,
-    showStaffing,
     today,
     onOpenDay,
 }: ScheduleMonthGridProps) {
@@ -41,7 +38,6 @@ export function ScheduleMonthGrid({
                 {days.map((day) => {
                     const blocks = blocksByDate[day] ?? [];
                     const inMonth = day.slice(0, 7) === month;
-                    const shortage = showStaffing && inMonth ? openShortage(blocks) : 0;
                     const people = blocks.reduce(
                         (total, block) => total + block.schedules.length,
                         0,
@@ -75,11 +71,6 @@ export function ScheduleMonthGrid({
                                       })
                                     : '—'}
                             </span>
-                            {shortage > 0 && (
-                                <span className="text-[11px] font-semibold text-ember-strong">
-                                    {interpolate(t('workSchedules.shortPeople'), { count: shortage })}
-                                </span>
-                            )}
                         </button>
                     );
                 })}

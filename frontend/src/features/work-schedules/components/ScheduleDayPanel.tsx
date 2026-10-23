@@ -8,7 +8,6 @@ import {
     formatLongDate,
     formatTime,
     formatWeekdayLong,
-    openShortage,
     type ShiftBlock,
 } from '../lib/schedule-calendar';
 import { type WorkSchedule } from '../types';
@@ -59,7 +58,6 @@ export function ScheduleDayPanel({
     const { t } = useI18n();
     const query = search.trim().toLowerCase();
     const people = blocks.reduce((total, block) => total + block.schedules.length, 0);
-    const shortage = openShortage(blocks);
     const workedMinutes = blocks.reduce(
         (total, block) =>
             total +
@@ -85,20 +83,11 @@ export function ScheduleDayPanel({
                 <div className="grid grid-cols-3">
                     <Stat label={t('workSchedules.statShifts')} value={blocks.length} />
                     <Stat divided label={t('workSchedules.statPeople')} value={people} />
-                    {canManage ? (
-                        <Stat
-                            divided
-                            label={t('workSchedules.statShort')}
-                            tone={shortage ? 'text-ember-strong' : 'text-ink'}
-                            value={shortage}
-                        />
-                    ) : (
-                        <Stat
-                            divided
-                            label={t('workSchedules.statHours')}
-                            value={formatDuration(workedMinutes)}
-                        />
-                    )}
+                    <Stat
+                        divided
+                        label={t('workSchedules.statHours')}
+                        value={formatDuration(workedMinutes)}
+                    />
                 </div>
             </div>
 
@@ -108,17 +97,12 @@ export function ScheduleDayPanel({
                     const count = block.schedules.length;
                     const tag = block.ended
                         ? { label: t('workSchedules.tagDone'), className: 'bg-stone text-muted' }
-                        : canManage && block.shortage > 0
-                          ? {
-                                label: interpolate(t('workSchedules.tagShort'), {
-                                    count: block.shortage,
-                                }),
-                                className: 'bg-ember-tint text-ember-ink',
-                            }
-                          : {
-                                label: canManage ? `${count}/${block.need}` : t('workSchedules.tagUpcoming'),
-                                className: 'bg-[#dff0e4] text-[#1f6237]',
-                            };
+                        : {
+                              label: canManage
+                                  ? interpolate(t('workSchedules.peopleCount'), { count })
+                                  : t('workSchedules.tagUpcoming'),
+                              className: 'bg-[#dff0e4] text-[#1f6237]',
+                          };
 
                     return (
                         <div
@@ -219,15 +203,13 @@ export function ScheduleDayPanel({
                                             </div>
                                         );
                                     })}
-                                    {canManage && !block.ended && block.shortage > 0 && (
+                                    {canManage && !block.ended && (
                                         <button
                                             className="mt-1.5 h-[30px] min-h-0 cursor-pointer self-start rounded-md border-0 bg-ink px-3 text-xs font-medium text-sand transition-colors hover:bg-ink-soft"
                                             type="button"
                                             onClick={() => onFill(block)}
                                         >
-                                            {interpolate(t('workSchedules.fillMore'), {
-                                                count: block.shortage,
-                                            })}
+                                            {t('workSchedules.fillMore')}
                                         </button>
                                     )}
                                 </div>

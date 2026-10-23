@@ -4,7 +4,6 @@ import {
     hourHeight,
     hourWindow,
     layoutLanes,
-    openShortage,
     type ShiftBlock,
     weekdayKeys,
     weekdayOf,
@@ -20,18 +19,12 @@ type ScheduleTimeGridProps = {
     search: string;
     selectedDate: string;
     showBranch: boolean;
-    showStaffing: boolean;
     onPickBlock: (block: ShiftBlock) => void;
     onSelectDate: (date: string) => void;
 };
 
-function blockTone(block: ShiftBlock, showStaffing: boolean) {
-    if (block.ended) return 'border-stone bg-stone text-muted';
-    if (showStaffing && block.shortage > 0) {
-        return 'border-ember bg-ember-tint text-ember-ink';
-    }
-
-    return 'border-ink bg-ink text-sand';
+function blockTone(block: ShiftBlock) {
+    return block.ended ? 'border-stone bg-stone text-muted' : 'border-ink bg-ink text-sand';
 }
 
 // Day / week view: one column per day, shifts placed on an hourly timeline.
@@ -43,7 +36,6 @@ export function ScheduleTimeGrid({
     search,
     selectedDate,
     showBranch,
-    showStaffing,
     onPickBlock,
     onSelectDate,
 }: ScheduleTimeGridProps) {
@@ -80,7 +72,6 @@ export function ScheduleTimeGrid({
                 >
                     <span />
                     {days.map((day) => {
-                        const shortage = showStaffing ? openShortage(blocksByDate[day]) : 0;
                         const selected = day === selectedDate;
 
                         return (
@@ -108,11 +99,6 @@ export function ScheduleTimeGrid({
                                     >
                                         {Number(day.slice(8, 10))}
                                     </span>
-                                    {shortage > 0 && (
-                                        <span className="text-[11px] font-semibold text-ember-strong">
-                                            −{shortage}
-                                        </span>
-                                    )}
                                 </span>
                             </button>
                         );
@@ -151,21 +137,13 @@ export function ScheduleTimeGrid({
                                 );
                                 const compact = laneCount > 1;
                                 const count = block.schedules.length;
-                                const fill = showStaffing
-                                    ? compact
-                                        ? `${count}/${block.need}`
-                                        : interpolate(t('workSchedules.fillPeople'), {
-                                              count,
-                                              need: block.need,
-                                          })
+                                const fill = compact
+                                    ? String(count)
                                     : interpolate(t('workSchedules.peopleCount'), { count });
 
                                 return (
                                     <button
-                                        className={`absolute flex min-h-0 cursor-pointer flex-col gap-0.5 overflow-hidden rounded-[7px] border px-[7px] py-1.5 text-left transition-[opacity,box-shadow,transform] duration-200 hover:-translate-y-px ${blockTone(
-                                            block,
-                                            showStaffing,
-                                        )} ${matches(block) ? 'opacity-100' : 'opacity-25'} ${
+                                        className={`absolute flex min-h-0 cursor-pointer flex-col gap-0.5 overflow-hidden rounded-[7px] border px-[7px] py-1.5 text-left transition-[opacity,box-shadow,transform] duration-200 hover:-translate-y-px ${blockTone(block)} ${matches(block) ? 'opacity-100' : 'opacity-25'} ${
                                             openBlockId === block.id
                                                 ? 'z-[2] shadow-[0_0_0_2px_var(--color-paper),0_0_0_4px_var(--color-ember)]'
                                                 : 'z-[1]'
