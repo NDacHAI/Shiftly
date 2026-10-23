@@ -173,7 +173,7 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
     }
 
     return (
-        <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
+        <section className="mx-auto grid w-full max-w-[1400px] gap-5 px-8 pt-8 pb-24 text-ink max-sm:px-4">
             <PageHeader
                 actions={canManage && (
                     <Button
@@ -192,19 +192,19 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
                 title={t('workShifts.title')}
             />
 
-            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
+            <div className="relative overflow-hidden rounded-[14px] border border-rule bg-paper">
                 <LoadingOverlay
                     label={t('workShifts.loading')}
                     visible={loading}
                 />
-                <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
+                <div className="flex flex-wrap items-center gap-3 border-b border-rule px-5 py-4">
                     <label className="relative min-w-64 flex-1">
                         <FontAwesomeIcon
-                            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
+                            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-faint"
                             icon={faSearch}
                         />
                         <input
-                            className="min-h-11 w-full rounded-lg border border-slate-200 pl-9 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+                            className="min-h-10 w-full rounded-lg border border-rule-strong bg-white pr-3 pl-9 text-sm text-ink outline-none transition-colors placeholder:text-faint focus:border-ink"
                             placeholder={t('workShifts.searchPlaceholder')}
                             value={search}
                             onChange={(event) => {
@@ -275,7 +275,7 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
                             {!loading &&
                                 workShifts.map((workShift) => (
                                     <tr
-                                        className="border-b border-slate-100 hover:bg-slate-50"
+                                        className="border-b border-rule-soft hover:bg-[#f6f4ef]"
                                         key={workShift.id}
                                     >
                                         <td className="font-semibold">
@@ -295,10 +295,10 @@ export default function WorkShiftPage({ canManage }: WorkShiftPageProps) {
                                         </td>
                                         <td>
                                             <span
-                                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${workShift.status ===
+                                                className={`inline-flex items-center rounded-full px-[9px] py-[3px] text-xs font-semibold whitespace-nowrap ${workShift.status ===
                                                     WorkShiftStatus.Active
-                                                    ? 'bg-emerald-50 text-emerald-700'
-                                                    : 'bg-amber-50 text-amber-700'
+                                                    ? 'bg-[#dff0e4] text-[#1f6237]'
+                                                    : 'bg-ember-tint text-ember-ink'
                                                     }`}
                                             >
                                                 {workShift.status ===

@@ -17,12 +17,12 @@ export function LoadingOverlay({
     return (
         <div
             aria-live="polite"
-            className="absolute inset-0 z-20 flex items-center justify-center bg-white/75 backdrop-blur-[1px]"
+            className="absolute inset-0 z-20 flex items-center justify-center bg-paper/70"
             role="status"
         >
-            <div className="flex items-center gap-3 rounded-xl border border-primary-100 bg-white px-5 py-3 text-sm font-semibold text-primary-700 shadow-lg">
+            <div className="flex items-center gap-3 rounded-lg border border-rule bg-paper px-4 py-2.5 text-[13px] font-medium text-ink shadow-[0_8px_24px_rgba(23,22,15,0.1)]">
                 <FontAwesomeIcon
-                    className="animate-spin text-primary-600"
+                    className="animate-spin text-muted"
                     icon={faSpinner}
                 />
                 {label}

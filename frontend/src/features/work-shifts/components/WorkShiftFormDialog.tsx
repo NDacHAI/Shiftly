@@ -1,7 +1,6 @@
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type FormEvent, useState } from 'react';
 import { Button, DropdownSelect, fieldClass } from '@/components/ui';
+import { SideDrawer } from '@/components/feedback';
 import { useI18n } from '@/i18n';
 import {
     type UpdateWorkShiftPayload,
@@ -81,36 +80,22 @@ export function WorkShiftFormDialog({
     }
 
     return (
-        <div className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px] p-5">
-            <div
-                aria-modal="true"
-                className="dialog-panel flex max-h-[calc(100vh-40px)] w-full max-w-xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
-                role="dialog"
-            >
-                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-                    <h2 className="text-xl font-bold text-slate-950">
-                        {editing ? t('workShifts.update') : t('workShifts.add')}
-                    </h2>
-                    <Button
-                        aria-label={t('common.close')}
-                        disabled={saving}
-                        onClick={onClose}
-                        size="icon"
-                        variant="ghost"
-                    >
-                        <FontAwesomeIcon icon={faXmark} />
-                    </Button>
-                </div>
-
+        <SideDrawer
+            busy={saving}
+            closeLabel={t('common.close')}
+            title={editing ? t('workShifts.update') : t('workShifts.add')}
+            onClosed={onClose}
+        >
+            {(requestClose) => (
                 <form
                     className="flex min-h-0 flex-1 flex-col"
                     onSubmit={(event) => void handleSubmit(event)}
                 >
-                    <div className="grid gap-3 overflow-y-auto px-6 py-5">
-                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                    <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-6 py-6 max-sm:px-4">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             <span>
                                 {t('workShifts.code')}
-                                <span className="ml-1 text-red-500">*</span>
+                                <span className="ml-1 text-ember-strong">*</span>
                             </span>
                             <input
                                 className={fieldClass}
@@ -123,10 +108,10 @@ export function WorkShiftFormDialog({
                             />
                         </label>
 
-                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             <span>
                                 {t('workShifts.name')}
-                                <span className="ml-1 text-red-500">*</span>
+                                <span className="ml-1 text-ember-strong">*</span>
                             </span>
                             <input
                                 className={fieldClass}
@@ -140,10 +125,10 @@ export function WorkShiftFormDialog({
                         </label>
 
                         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>
                                     {t('workShifts.startTime')}
-                                    <span className="ml-1 text-red-500">*</span>
+                                    <span className="ml-1 text-ember-strong">*</span>
                                 </span>
                                 <input
                                     className={fieldClass}
@@ -159,10 +144,10 @@ export function WorkShiftFormDialog({
                                 />
                             </label>
 
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>
                                     {t('workShifts.endTime')}
-                                    <span className="ml-1 text-red-500">*</span>
+                                    <span className="ml-1 text-ember-strong">*</span>
                                 </span>
                                 <input
                                     className={fieldClass}
@@ -176,10 +161,10 @@ export function WorkShiftFormDialog({
                             </label>
                         </div>
 
-                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             <span>
                                 {t('workShifts.breakMinutes')}
-                                <span className="ml-1 text-red-500">*</span>
+                                <span className="ml-1 text-ember-strong">*</span>
                             </span>
                             <input
                                 className={fieldClass}
@@ -197,7 +182,7 @@ export function WorkShiftFormDialog({
                             />
                         </label>
 
-                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             {t('common.description')}
                             <textarea
                                 className={`${fieldClass} min-h-24 py-3`}
@@ -208,7 +193,7 @@ export function WorkShiftFormDialog({
                             />
                         </label>
 
-                        <div className="grid gap-2 text-sm font-semibold text-slate-700">
+                        <div className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             {t('common.status')}
                             <DropdownSelect
                                 ariaLabel={t('common.status')}
@@ -233,10 +218,10 @@ export function WorkShiftFormDialog({
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
+                    <div className="flex justify-end gap-2 border-t border-rule px-6 py-4 max-sm:px-4">
                         <Button
                             disabled={saving}
-                            onClick={onClose}
+                            onClick={requestClose}
                             variant="secondary"
                         >
                             {t('common.cancel')}
@@ -250,7 +235,7 @@ export function WorkShiftFormDialog({
                         </Button>
                     </div>
                 </form>
-            </div>
-        </div>
+            )}
+        </SideDrawer>
     );
 }

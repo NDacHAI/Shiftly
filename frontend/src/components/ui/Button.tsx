@@ -19,19 +19,18 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
-    primary:
-        'bg-primary-600 text-white shadow-xs hover:bg-primary-700 active:bg-primary-800',
+    primary: 'border-0 bg-ink text-sand hover:bg-ink-soft',
     secondary:
-        'border border-slate-200 bg-white text-slate-700 shadow-xs hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900',
-    danger: 'bg-red-600 text-white shadow-xs hover:bg-red-700',
-    ghost: 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900',
+        'border border-rule-strong bg-transparent text-ink hover:bg-stone-soft',
+    danger: 'border-0 bg-ember-strong text-white hover:bg-ember-ink',
+    ghost: 'border-0 bg-transparent text-muted hover:bg-stone hover:text-ink',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
     sm: 'min-h-8 px-3 text-[13px]',
-    md: 'min-h-9 px-3.5 text-sm',
-    lg: 'min-h-10 px-4 text-sm',
-    icon: 'size-9 min-h-0 p-0',
+    md: 'min-h-9 px-3.5 text-[13px]',
+    lg: 'min-h-[38px] px-4 text-[13px]',
+    icon: 'size-8 min-h-0 rounded-md p-0 text-xs',
 };
 
 export function Button({
@@ -48,7 +47,7 @@ export function Button({
     return (
         <button
             aria-busy={loading || undefined}
-            className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition focus-visible:ring-3 focus-visible:ring-primary-200 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+            className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
             disabled={disabled || loading}
             type={type}
             {...props}

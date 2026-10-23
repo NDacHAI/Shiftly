@@ -277,11 +277,10 @@ export function PayrollAdjustmentsPage({
     }
 
     return (
-        <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
+        <section className="mx-auto grid w-full max-w-[1400px] gap-5 px-8 pt-8 pb-24 text-ink max-sm:px-4">
             <PageHeader
                 actions={canManage && (
                     <Button
-                        className="shadow-sm"
                         onClick={() => {
                             setEditing(null);
                             setShowForm(true);
@@ -298,21 +297,21 @@ export function PayrollAdjustmentsPage({
             />
 
             {error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-lg border border-[#efc4b9] bg-[#f6dcd6] px-4 py-3 text-sm text-[#9a2f1f]">
                     {error}
                 </div>
             )}
 
-            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
+            <div className="relative overflow-hidden rounded-[14px] border border-rule bg-paper">
                 <LoadingOverlay
                     label={t('payrollAdjustments.loading')}
                     visible={loading}
                 />
-                <div className="flex items-center justify-between gap-4 border-b border-slate-200 p-4 max-lg:items-stretch max-lg:flex-col">
+                <div className="flex items-center justify-between gap-4 border-b border-rule px-5 py-4 max-lg:items-stretch max-lg:flex-col">
                     <label className="relative block w-full max-w-sm">
                         <span className="sr-only">{t('common.search')}</span>
                         <FontAwesomeIcon
-                            className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-slate-400"
+                            className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-faint"
                             icon={faSearch}
                         />
                         <input
@@ -396,7 +395,7 @@ export function PayrollAdjustmentsPage({
                                         key={field}
                                     >
                                         <button
-                                            className="min-h-0 cursor-pointer bg-transparent p-0 text-inherit hover:text-primary-600"
+                                            className="min-h-0 cursor-pointer bg-transparent p-0 text-inherit hover:text-ink"
                                             onClick={() => changeSort(field)}
                                             type="button"
                                         >
@@ -417,7 +416,7 @@ export function PayrollAdjustmentsPage({
                             {!loading &&
                                 adjustments.map((adjustment) => (
                                     <tr
-                                        className="border-b border-slate-100 transition hover:bg-slate-50/80 last:border-0"
+                                        className="border-b border-rule-soft transition hover:bg-[#f6f4ef] last:border-0"
                                         key={adjustment.id}
                                     >
                                         <td>
@@ -431,17 +430,17 @@ export function PayrollAdjustmentsPage({
                                         </td>
                                         <td>
                                             <span
-                                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${
+                                                className={`inline-flex items-center rounded-full px-[9px] py-[3px] text-xs font-semibold whitespace-nowrap ${
                                                     adjustment.category ===
                                                     RewardPenaltyCategory.Reward
-                                                        ? 'bg-emerald-50 text-emerald-700'
-                                                        : 'bg-red-50 text-red-700'
+                                                        ? 'bg-[#dff0e4] text-[#1f6237]'
+                                                        : 'bg-[#f6dcd6] text-[#9a2f1f]'
                                                 }`}
                                             >
                                                 {categoryLabel(adjustment.category)}
                                             </span>
                                         </td>
-                                        <td className="font-semibold text-slate-900">
+                                        <td className="font-semibold text-ink">
                                             {formatAmount(adjustment.amount)}
                                         </td>
                                         <td>

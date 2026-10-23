@@ -52,12 +52,12 @@
 
     body {
         background: var(--color-canvas);
-        color: var(--color-slate-900);
+        color: var(--color-ink);
         font-size: 14px;
     }
 
     ::selection {
-        background: var(--color-primary-100);
+        background: var(--color-ember-tint);
     }
 }
 
@@ -70,20 +70,20 @@
     }
 
     .data-table thead th {
-        border-bottom: 1px solid var(--color-line);
-        background: #f8fafc;
-        padding: 10px 16px;
-        color: var(--color-slate-500);
+        border-bottom: 1px solid var(--color-rule);
+        background: transparent;
+        padding: 10px 20px;
+        color: var(--color-muted);
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 500;
         text-align: left;
         white-space: nowrap;
     }
 
     .data-table tbody td {
-        border-bottom: 1px solid #eef1f5;
-        padding: 12px 16px;
-        color: var(--color-slate-700);
+        border-bottom: 1px solid var(--color-rule-soft);
+        padding: 14px 20px;
+        color: var(--color-ink);
         font-size: 14px;
         text-align: left;
         vertical-align: middle;
@@ -94,7 +94,7 @@
     }
 
     .data-table tbody tr:hover td {
-        background: #f9fbfd;
+        background: #f6f4ef;
     }
 
     .data-table .cell-num {
@@ -120,7 +120,7 @@
     }
 
     .data-table th button:hover {
-        color: var(--color-slate-900);
+        color: var(--color-ink);
     }
 }
 
@@ -289,6 +289,39 @@
     animation: dock-enter 280ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Calendar paging: the new range slides in from the side it came from. */
+@keyframes slide-next {
+    from {
+        opacity: 0;
+        transform: translateX(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slide-prev {
+    from {
+        opacity: 0;
+        transform: translateX(-24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-next {
+    animation: slide-next 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-prev {
+    animation: slide-prev 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .dropdown-select {
     position: relative;
     width: max-content;
@@ -314,12 +347,11 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-rule-strong);
     border-radius: 8px;
     background: #ffffff;
     padding: 0 12px;
-    box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
-    color: #1e293b;
+    color: var(--color-ink);
     font-size: 14px;
     font-weight: 500;
     outline: none;
@@ -330,14 +362,13 @@
 }
 
 .dropdown-select__trigger:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    background: var(--color-paper);
+    border-color: var(--color-fog);
 }
 
 .dropdown-select__trigger:focus-visible,
 .dropdown-select__trigger[aria-expanded='true'] {
-    border-color: var(--color-primary-500);
-    box-shadow: 0 0 0 3px rgb(37 82 227 / 14%);
+    border-color: var(--color-ink);
 }
 
 .dropdown-select__trigger:disabled {
@@ -376,7 +407,7 @@
 
 .dropdown-select__chevron {
     flex: none;
-    color: #94a3b8;
+    color: var(--color-faint);
     font-size: 12px;
     transition: transform 160ms ease;
 }
@@ -394,12 +425,12 @@
     min-width: 100%;
     max-width: calc(100vw - 32px);
     overflow: hidden;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-rule);
     border-radius: 10px;
-    background: #ffffff;
+    background: var(--color-paper);
     box-shadow:
-        0 12px 32px rgb(15 23 42 / 12%),
-        0 2px 6px rgb(15 23 42 / 6%);
+        0 12px 32px rgb(23 22 15 / 12%),
+        0 2px 6px rgb(23 22 15 / 6%);
 }
 
 .dropdown-select__list {
@@ -423,7 +454,7 @@
     border-radius: 6px;
     background: transparent;
     padding: 0 10px;
-    color: #0f172a;
+    color: var(--color-ink);
     font-size: 14px;
     font-weight: 500;
     text-align: left;
@@ -434,13 +465,13 @@
 
 .dropdown-select__option:hover,
 .dropdown-select__option--selected {
-    background: var(--color-primary-50);
+    background: var(--color-stone-soft);
 }
 
 .dropdown-select__check {
     flex: none;
     margin-left: auto;
-    color: var(--color-primary-600);
+    color: var(--color-ink);
 }
 
 .dropdown-select--xs .dropdown-select__trigger {
@@ -458,8 +489,8 @@
     width: 24px;
     height: 24px;
     border-radius: 7px;
-    background: var(--color-primary-50);
-    color: var(--color-primary-600);
+    background: var(--color-stone);
+    color: var(--color-ink);
     font-size: 13px;
 }
 
@@ -484,7 +515,7 @@
     width: 24px;
     height: 24px;
     border-radius: 7px;
-    background: #f8fafc;
+    background: var(--color-stone-soft);
     font-size: 11px;
     font-weight: 800;
 }
@@ -506,8 +537,8 @@
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: var(--color-primary-50);
-    color: var(--color-primary-600);
+    background: var(--color-stone);
+    color: var(--color-ink);
     font-size: 22px;
 }
 
@@ -536,128 +567,10 @@
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: #f8fafc;
+    background: var(--color-stone-soft);
     font-size: 13px;
     font-weight: 800;
     letter-spacing: 0;
-}
-
-.work-schedule-calendar .rbc-calendar {
-    min-height: 640px;
-    color: #0f172a;
-    font-family: inherit;
-}
-
-.work-schedule-calendar .rbc-month-view,
-.work-schedule-calendar .rbc-time-view {
-    overflow: hidden;
-    border-color: #e2e8f0;
-    border-radius: 12px;
-    background: #ffffff;
-}
-
-.work-schedule-calendar .rbc-header {
-    min-height: 44px;
-    border-color: #e2e8f0;
-    background: #f8fafc;
-    padding: 12px 8px;
-    color: #64748b;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0;
-}
-
-.work-schedule-calendar .rbc-month-row,
-.work-schedule-calendar .rbc-day-bg,
-.work-schedule-calendar .rbc-date-cell,
-.work-schedule-calendar .rbc-time-content,
-.work-schedule-calendar .rbc-timeslot-group {
-    border-color: #e2e8f0;
-}
-
-.work-schedule-calendar .rbc-date-cell {
-    padding: 8px 10px 4px;
-    color: #64748b;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.work-schedule-calendar .rbc-off-range-bg {
-    background: #f8fafc;
-}
-
-.work-schedule-calendar .rbc-today {
-    background: #f5f8ff;
-}
-
-.work-schedule-calendar .rbc-event,
-.work-schedule-calendar .rbc-day-slot .rbc-event {
-    border: 1px solid var(--color-primary-200);
-    border-radius: 8px;
-    background: var(--color-primary-50);
-    padding: 0;
-    color: var(--color-primary-900);
-    box-shadow: none;
-}
-
-.work-schedule-calendar .rbc-event:focus {
-    outline: 2px solid var(--color-primary-400);
-    outline-offset: 1px;
-}
-
-.work-schedule-calendar .rbc-event-content {
-    min-width: 0;
-}
-
-.work-schedule-calendar__event--employee .rbc-event-label {
-    display: none;
-}
-
-.work-schedule-calendar__event-content {
-    min-width: 0;
-    padding: 6px 8px;
-    line-height: 1.2;
-}
-
-.work-schedule-calendar__event--enough {
-    border-color: #a7f3d0 !important;
-    background: #ecfdf5 !important;
-    color: #047857 !important;
-}
-
-.work-schedule-calendar__event--understaffed {
-    border-color: #fde68a !important;
-    background: #fffbeb !important;
-    color: #b45309 !important;
-}
-
-.work-schedule-calendar__event--pending {
-    border-color: #bae6fd !important;
-    background: #f0f9ff !important;
-    color: #0369a1 !important;
-}
-
-.work-schedule-calendar__event--conflict {
-    border-color: #fecaca !important;
-    background: #fef2f2 !important;
-    color: #b91c1c !important;
-}
-
-.work-schedule-calendar__event--cancelled {
-    border-color: #e2e8f0 !important;
-    background: #f1f5f9 !important;
-    color: #475569 !important;
-}
-
-.work-schedule-calendar .rbc-show-more {
-    margin-top: 4px;
-    color: var(--color-primary-700);
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.work-schedule-calendar .rbc-current-time-indicator {
-    background: var(--color-primary-600);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -668,7 +581,9 @@
     .drawer-backdrop,
     .drawer-panel,
     .rise-enter,
-    .dock-enter {
+    .dock-enter,
+    .slide-next,
+    .slide-prev {
         animation: none;
     }
 

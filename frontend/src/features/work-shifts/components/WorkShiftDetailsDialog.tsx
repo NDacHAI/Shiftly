@@ -1,6 +1,4 @@
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button } from '@/components/ui';
+import { DrawerDetails, SideDrawer } from '@/components/feedback';
 import { useI18n } from '@/i18n';
 import { type WorkShift, WorkShiftStatus } from '../types';
 
@@ -56,41 +54,17 @@ export function WorkShiftDetailsDialog({
     ];
 
     return (
-        <div className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px] p-5">
-            <div
-                aria-modal="true"
-                className="dialog-panel w-full max-w-xl rounded-xl bg-white p-6 shadow-2xl"
-                role="dialog"
-            >
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <p className="text-xs font-bold tracking-wider text-primary-600 uppercase">
-                            {workShift.code}
-                        </p>
-                        <h2 className="mt-1 text-xl font-bold text-slate-950">
-                            {workShift.name}
-                        </h2>
-                    </div>
-                    <Button
-                        aria-label={t('common.close')}
-                        onClick={onClose}
-                        size="icon"
-                        variant="ghost"
-                    >
-                        <FontAwesomeIcon icon={faXmark} />
-                    </Button>
+        <SideDrawer
+            closeLabel={t('common.close')}
+            subtitle={workShift.code}
+            title={workShift.name}
+            onClosed={onClose}
+        >
+            {() => (
+                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-2 max-sm:px-4">
+                    <DrawerDetails items={details} />
                 </div>
-                <dl className="mt-6 divide-y divide-slate-200 border-y border-slate-200">
-                    {details.map(([label, value]) => (
-                        <div className="grid gap-1 py-4" key={label}>
-                            <dt className="text-xs font-semibold text-slate-500">
-                                {label}
-                            </dt>
-                            <dd className="text-sm text-slate-800">{value}</dd>
-                        </div>
-                    ))}
-                </dl>
-            </div>
-        </div>
+            )}
+        </SideDrawer>
     );
 }

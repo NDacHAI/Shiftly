@@ -7,13 +7,13 @@ export type BadgeTone =
     | 'info';
 
 export const badgeToneClasses: Record<BadgeTone, string> = {
-    neutral: 'bg-slate-100 text-slate-600 ring-slate-200',
-    primary: 'bg-primary-50 text-primary-700 ring-primary-100',
-    success: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
-    warning: 'bg-amber-50 text-amber-700 ring-amber-100',
-    danger: 'bg-red-50 text-red-700 ring-red-100',
-    info: 'bg-sky-50 text-sky-700 ring-sky-100',
+    neutral: 'bg-stone text-muted',
+    primary: 'bg-ink text-sand',
+    success: 'bg-[#dff0e4] text-[#1f6237]',
+    warning: 'bg-ember-tint text-ember-ink',
+    danger: 'bg-[#f6dcd6] text-[#9a2f1f]',
+    info: 'bg-[#e1e8ee] text-[#2f4a5e]',
 };
 
 export const badgeClass =
-    'inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset';
+    'inline-flex items-center gap-1.5 rounded-full px-[9px] py-[3px] text-xs font-semibold whitespace-nowrap';

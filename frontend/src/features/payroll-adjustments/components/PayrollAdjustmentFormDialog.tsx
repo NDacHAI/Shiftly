@@ -1,7 +1,5 @@
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type FormEvent, useEffect, useState } from 'react';
-import { useToast } from '@/components/feedback';
+import { SideDrawer, useToast } from '@/components/feedback';
 import { Button, DropdownSelect, fieldClass } from '@/components/ui';
 import { type Branch } from '@/features/branches/types';
 import { type Employee } from '@/features/employees/types';
@@ -127,35 +125,24 @@ export function PayrollAdjustmentFormDialog({
     }
 
     return (
-        <div className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px] p-5">
-            <div
-                aria-modal="true"
-                className="dialog-panel flex max-h-[calc(100vh-40px)] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
-                role="dialog"
-            >
-                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-                    <h2 className="text-xl font-bold text-slate-950">
-                        {editing
-                            ? t('payrollAdjustments.update')
-                            : t('payrollAdjustments.add')}
-                    </h2>
-                    <Button
-                        aria-label={t('common.close')}
-                        disabled={saving}
-                        onClick={onClose}
-                        size="icon"
-                        variant="ghost"
-                    >
-                        <FontAwesomeIcon icon={faXmark} />
-                    </Button>
-                </div>
-
+        <SideDrawer
+            busy={saving}
+            closeLabel={t('common.close')}
+            title={
+                editing
+                    ? t('payrollAdjustments.update')
+                    : t('payrollAdjustments.add')
+            }
+            widthClass="w-[min(640px,100%)]"
+            onClosed={onClose}
+        >
+            {(requestClose) => (
                 <form
                     className="flex min-h-0 flex-1 flex-col"
                     onSubmit={(event) => void handleSubmit(event)}
                 >
-                    <div className="grid gap-3 overflow-y-auto px-6 py-5">
-                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                    <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-6 py-6 max-sm:px-4">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             <span>{t('payrollAdjustments.period')} *</span>
                             <DropdownSelect
                                 ariaLabel={t('payrollAdjustments.period')}
@@ -177,7 +164,7 @@ export function PayrollAdjustmentFormDialog({
                         </label>
 
                         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>{t('payrollAdjustments.employee')} *</span>
                                 <DropdownSelect
                                     ariaLabel={t('payrollAdjustments.employee')}
@@ -199,7 +186,7 @@ export function PayrollAdjustmentFormDialog({
                                     }
                                 />
                             </label>
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>{t('payrollAdjustments.branch')} *</span>
                                 <DropdownSelect
                                     ariaLabel={t('payrollAdjustments.branch')}
@@ -224,7 +211,7 @@ export function PayrollAdjustmentFormDialog({
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>{t('payrollAdjustments.catalog')} *</span>
                                 <DropdownSelect
                                     ariaLabel={t('payrollAdjustments.catalog')}
@@ -244,7 +231,7 @@ export function PayrollAdjustmentFormDialog({
                                     onChange={handleCatalogChange}
                                 />
                             </label>
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>{t('payrollAdjustments.amount')} *</span>
                                 <input
                                     className={fieldClass}
@@ -263,7 +250,7 @@ export function PayrollAdjustmentFormDialog({
                             </label>
                         </div>
 
-                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             <span>{t('payrollAdjustments.adjustmentDate')} *</span>
                             <input
                                 className={fieldClass}
@@ -279,7 +266,7 @@ export function PayrollAdjustmentFormDialog({
                             />
                         </label>
 
-                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             <span>{t('payrollAdjustments.reason')} *</span>
                             <textarea
                                 className={`${fieldClass} min-h-24 py-3`}
@@ -293,10 +280,10 @@ export function PayrollAdjustmentFormDialog({
                         </label>
                     </div>
 
-                    <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
+                    <div className="flex justify-end gap-2 border-t border-rule px-6 py-4 max-sm:px-4">
                         <Button
                             disabled={saving}
-                            onClick={onClose}
+                            onClick={requestClose}
                             variant="secondary"
                         >
                             {t('common.cancel')}
@@ -310,7 +297,7 @@ export function PayrollAdjustmentFormDialog({
                         </Button>
                     </div>
                 </form>
-            </div>
-        </div>
+            )}
+        </SideDrawer>
     );
 }

@@ -21,7 +21,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import { Pagination } from '@/components/ui/Pagination';
 import { roles, type Role } from '@/constants/roles';
-import { DialogShell } from '@/components/feedback/DialogShell';
+import { DrawerShell } from '@/components/feedback';
 import { useToast } from '@/components/feedback/useToast';
 import { useI18n } from '@/i18n';
 import {
@@ -61,7 +61,7 @@ type AttendanceFormState = {
 
 const pageSize = 10;
 const textAreaClass =
-    'min-h-24 w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-primary-300 focus:ring-2 focus:ring-primary-100';
+    'min-h-24 w-full resize-y rounded-lg border border-rule-strong bg-white px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-ink';
 
 export function AttendancePage({ userRole }: AttendancePageProps) {
     const { t } = useI18n();
@@ -247,7 +247,7 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
     }
 
     return (
-        <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
+        <section className="mx-auto grid w-full max-w-[1400px] gap-5 px-8 pt-8 pb-24 text-ink max-sm:px-4">
             <PageHeader
                 actions={
                     <Button
@@ -265,14 +265,14 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                 title={title}
             />
 
-            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
+            <div className="relative overflow-hidden rounded-[14px] border border-rule bg-paper">
                 <LoadingOverlay
                     label={t('attendance.loading')}
                     visible={loading}
                 />
 
-                <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
-                    <label className="grid min-w-40 gap-1.5 text-xs font-bold text-slate-500 uppercase">
+                <div className="flex flex-wrap items-center gap-3 border-b border-rule px-5 py-4">
+                    <label className="grid min-w-40 gap-1.5 text-xs font-bold text-muted uppercase">
                         {t('attendance.fromDate')}
                         <input
                             className={fieldClass}
@@ -284,7 +284,7 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                             }}
                         />
                     </label>
-                    <label className="grid min-w-40 gap-1.5 text-xs font-bold text-slate-500 uppercase">
+                    <label className="grid min-w-40 gap-1.5 text-xs font-bold text-muted uppercase">
                         {t('attendance.toDate')}
                         <input
                             className={fieldClass}
@@ -298,7 +298,7 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                     </label>
                     <label className="relative min-w-72 flex-1">
                         <FontAwesomeIcon
-                            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
+                            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-faint"
                             icon={faSearch}
                         />
                         <input
@@ -343,14 +343,14 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                         <tbody>
                             {items.map((item) => (
                                 <tr
-                                    className="border-b border-slate-100 hover:bg-slate-50"
+                                    className="border-b border-rule-soft hover:bg-[#f6f4ef]"
                                     key={item.workScheduleId}
                                 >
                                     <td>
-                                        <div className="truncate font-semibold text-slate-800">
+                                        <div className="truncate font-semibold text-ink">
                                             {formatEmployee(item)}
                                         </div>
-                                        <div className="mt-1 truncate text-xs text-slate-500">
+                                        <div className="mt-1 truncate text-xs text-muted">
                                             {item.workSchedule.branch?.name}
                                             {' · '}
                                             {item.workSchedule.position?.name}
@@ -360,20 +360,20 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                                         {formatDate(item.scheduleDate)}
                                     </td>
                                     <td>
-                                        <div className="truncate font-semibold text-slate-800">
+                                        <div className="truncate font-semibold text-ink">
                                             {item.workSchedule.shiftNameSnapshot}
                                         </div>
-                                        <div className="text-xs text-slate-500">
+                                        <div className="text-xs text-muted">
                                             {item.workSchedule.shiftCodeSnapshot}
                                         </div>
                                     </td>
                                     <td>
-                                        <div className="font-semibold text-slate-800">
+                                        <div className="font-semibold text-ink">
                                             {formatTime(item.scheduledStartAt)}
                                             {' - '}
                                             {formatTime(item.scheduledEndAt)}
                                         </div>
-                                        <div className="text-xs text-slate-500">
+                                        <div className="text-xs text-muted">
                                             {formatTime(item.checkInAt)}
                                             {' / '}
                                             {formatTime(item.checkOutAt)}
@@ -384,14 +384,14 @@ export function AttendancePage({ userRole }: AttendancePageProps) {
                                     </td>
                                     <td>
                                         <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                                            <span className="text-slate-400">{t('attendance.worked')}</span>
-                                            <span className="font-semibold text-slate-700">{item.workedMinutes}</span>
-                                            <span className="text-slate-400">{t('attendance.late')}</span>
-                                            <span className="font-semibold text-slate-700">{item.lateMinutes}</span>
-                                            <span className="text-slate-400">{t('attendance.early')}</span>
-                                            <span className="font-semibold text-slate-700">{item.earlyLeaveMinutes}</span>
-                                            <span className="text-slate-400">{t('attendance.overtime')}</span>
-                                            <span className="font-semibold text-slate-700">{item.overtimeMinutes}</span>
+                                            <span className="text-faint">{t('attendance.worked')}</span>
+                                            <span className="font-semibold text-ink">{item.workedMinutes}</span>
+                                            <span className="text-faint">{t('attendance.late')}</span>
+                                            <span className="font-semibold text-ink">{item.lateMinutes}</span>
+                                            <span className="text-faint">{t('attendance.early')}</span>
+                                            <span className="font-semibold text-ink">{item.earlyLeaveMinutes}</span>
+                                            <span className="text-faint">{t('attendance.overtime')}</span>
+                                            <span className="font-semibold text-ink">{item.overtimeMinutes}</span>
                                         </div>
                                     </td>
                                     <td className="cell-actions">
@@ -513,97 +513,100 @@ function AttendanceActionDialog({
 }) {
     const { t } = useI18n();
 
-    if (!state) {
-        return null;
-    }
-
-    const isAbsent = state.type === 'absent';
-    const isManual = state.type === 'manual';
+    // While closing, state is already null; DrawerShell keeps the last content on screen.
+    const type = state?.type;
+    const isAbsent = type === 'absent';
+    const isManual = type === 'manual';
     const title =
-        state.type === 'manual'
+        type === 'manual'
             ? t('attendance.manualTitle')
-            : state.type === 'adjust'
+            : type === 'adjust'
               ? t('attendance.adjustTitle')
               : t('attendance.absentTitle');
     const description =
-        state.type === 'manual'
+        type === 'manual'
             ? t('attendance.manualDescription')
-            : state.type === 'adjust'
+            : type === 'adjust'
               ? t('attendance.adjustDescription')
               : t('attendance.absentDescription');
 
     return (
-        <DialogShell
+        <DrawerShell
+            busy={loading}
+            closeLabel={t('common.close')}
             description={description}
             open={Boolean(state)}
             title={title}
             onClose={onClose}
         >
-            <form className="mt-5 grid gap-4" onSubmit={onSubmit}>
-                {!isAbsent && (
-                    <>
-                        <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                            {t('attendance.checkInAt')}
-                            <input
-                                className={fieldClass}
-                                required={isManual}
-                                type="datetime-local"
-                                value={formState.checkInAt}
-                                onChange={(event) =>
-                                    onChange({
-                                        ...formState,
-                                        checkInAt: event.target.value,
-                                    })
-                                }
-                            />
-                        </label>
-                        <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                            {t('attendance.checkOutAt')}
-                            <input
-                                className={fieldClass}
-                                type="datetime-local"
-                                value={formState.checkOutAt}
-                                onChange={(event) =>
-                                    onChange({
-                                        ...formState,
-                                        checkOutAt: event.target.value,
-                                    })
-                                }
-                            />
-                        </label>
-                    </>
-                )}
+            <form className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit}>
+                <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-6 py-6 max-sm:px-4">
+                    {!isAbsent && (
+                        <>
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                                {t('attendance.checkInAt')}
+                                <input
+                                    className={fieldClass}
+                                    required={isManual}
+                                    type="datetime-local"
+                                    value={formState.checkInAt}
+                                    onChange={(event) =>
+                                        onChange({
+                                            ...formState,
+                                            checkInAt: event.target.value,
+                                        })
+                                    }
+                                />
+                            </label>
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                                {t('attendance.checkOutAt')}
+                                <input
+                                    className={fieldClass}
+                                    type="datetime-local"
+                                    value={formState.checkOutAt}
+                                    onChange={(event) =>
+                                        onChange({
+                                            ...formState,
+                                            checkOutAt: event.target.value,
+                                        })
+                                    }
+                                />
+                            </label>
+                        </>
+                    )}
 
-                <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                    {t('attendance.reason')}
-                    <textarea
-                        className={textAreaClass}
-                        required
-                        value={formState.reason}
-                        onChange={(event) =>
-                            onChange({
-                                ...formState,
-                                reason: event.target.value,
-                            })
-                        }
-                    />
-                </label>
+                    <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                        {t('attendance.reason')}
+                        <textarea
+                            className={textAreaClass}
+                            required
+                            value={formState.reason}
+                            onChange={(event) =>
+                                onChange({
+                                    ...formState,
+                                    reason: event.target.value,
+                                })
+                            }
+                        />
+                    </label>
 
-                <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                    {t('attendance.note')}
-                    <textarea
-                        className={textAreaClass}
-                        value={formState.note}
-                        onChange={(event) =>
-                            onChange({
-                                ...formState,
-                                note: event.target.value,
-                            })
-                        }
-                    />
-                </label>
+                    <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                        {t('attendance.note')}
+                        <textarea
+                            className={textAreaClass}
+                            value={formState.note}
+                            onChange={(event) =>
+                                onChange({
+                                    ...formState,
+                                    note: event.target.value,
+                                })
+                            }
+                        />
+                    </label>
 
-                <div className="mt-2 flex justify-end gap-3">
+                </div>
+
+                <div className="flex justify-end gap-2 border-t border-rule px-6 py-4 max-sm:px-4">
                     <Button
                         disabled={loading}
                         onClick={onClose}
@@ -617,7 +620,7 @@ function AttendanceActionDialog({
                     </Button>
                 </div>
             </form>
-        </DialogShell>
+        </DrawerShell>
     );
 }
 
@@ -645,11 +648,11 @@ function ActionButton({
 function StatusBadge({ status }: { status: AttendanceDisplayStatus }) {
     const { t } = useI18n();
     const className = {
-        NOT_CHECKED_IN: 'bg-slate-100 text-slate-600',
-        CHECKED_IN: 'bg-blue-50 text-blue-700',
-        PENDING_CONFIRMATION: 'bg-amber-50 text-amber-700',
-        CONFIRMED: 'bg-emerald-50 text-emerald-700',
-        ABSENT: 'bg-red-50 text-red-700',
+        NOT_CHECKED_IN: 'bg-stone text-muted',
+        CHECKED_IN: 'bg-[#e1e8ee] text-[#2f4a5e]',
+        PENDING_CONFIRMATION: 'bg-ember-tint text-ember-ink',
+        CONFIRMED: 'bg-[#dff0e4] text-[#1f6237]',
+        ABSENT: 'bg-[#f6dcd6] text-[#9a2f1f]',
     }[status];
     const labels: Record<AttendanceDisplayStatus, string> = {
         NOT_CHECKED_IN: t('attendance.status.notCheckedIn'),
@@ -660,7 +663,7 @@ function StatusBadge({ status }: { status: AttendanceDisplayStatus }) {
     };
 
     return (
-        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${className}`}>
+        <span className={`inline-flex items-center rounded-full px-[9px] py-[3px] text-xs font-semibold whitespace-nowrap ${className}`}>
             {labels[status]}
         </span>
     );

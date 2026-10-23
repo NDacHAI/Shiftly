@@ -16,7 +16,7 @@ import {
     faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { DialogShell } from '@/components/feedback/DialogShell';
-import { useToast } from '@/components/feedback';
+import { DrawerShell, useToast } from '@/components/feedback';
 import {
     Button,
     DropdownSelect,
@@ -108,10 +108,10 @@ function statusLabel(status: LeaveRequestStatus) {
 }
 
 function statusClass(status: LeaveRequestStatus) {
-    if (status === LeaveRequestStatus.Pending) return 'bg-amber-50 text-amber-700';
-    if (status === LeaveRequestStatus.Approved) return 'bg-emerald-50 text-emerald-700';
-    if (status === LeaveRequestStatus.Rejected) return 'bg-red-50 text-red-700';
-    return 'bg-slate-100 text-slate-600';
+    if (status === LeaveRequestStatus.Pending) return 'bg-ember-tint text-ember-ink';
+    if (status === LeaveRequestStatus.Approved) return 'bg-[#dff0e4] text-[#1f6237]';
+    if (status === LeaveRequestStatus.Rejected) return 'bg-[#f6dcd6] text-[#9a2f1f]';
+    return 'bg-stone text-muted';
 }
 
 function formatLeaveTime(request: LeaveRequest) {
@@ -484,7 +484,7 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
     }
 
     return (
-        <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
+        <section className="mx-auto grid w-full max-w-[1400px] gap-5 px-8 pt-8 pb-24 text-ink max-sm:px-4">
             <PageHeader
                 actions={
                     <Button
@@ -504,9 +504,9 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                 title={employeeMode ? 'Đơn nghỉ của tôi' : 'Quản lý đơn nghỉ'}
             />
 
-            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
+            <div className="relative overflow-hidden rounded-[14px] border border-rule bg-paper">
                 <LoadingOverlay label="Đang tải đơn nghỉ..." visible={loading} />
-                <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
+                <div className="flex flex-wrap items-center gap-3 border-b border-rule px-5 py-4">
                     <DropdownSelect
                         ariaLabel="Trạng thái"
                         options={[
@@ -585,10 +585,10 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                             {!loading &&
                                 requests.map((request) => (
                                     <tr
-                                        className="border-b border-slate-100 hover:bg-slate-50"
+                                        className="border-b border-rule-soft hover:bg-[#f6f4ef]"
                                         key={request.id}
                                     >
-                                        <td className="font-semibold text-slate-900">
+                                        <td className="font-semibold text-ink">
                                             {request.code}
                                         </td>
                                         <td>
@@ -606,7 +606,7 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                                             {formatLeaveTime(request)}
                                         </td>
                                         <td>
-                                            <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${statusClass(request.status)}`}>
+                                            <span className={`inline-flex items-center rounded-full px-[9px] py-[3px] text-xs font-semibold whitespace-nowrap ${statusClass(request.status)}`}>
                                                 {statusLabel(request.status)}
                                             </span>
                                         </td>
@@ -677,161 +677,165 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                 />
             </div>
 
-            <DialogShell
+            <DrawerShell
+                busy={saving}
+                closeLabel={t('common.close')}
                 description="Nhập thông tin nghỉ theo ngày/giờ hoặc chọn ca đã được phân công."
                 open={showForm}
-                panelClassName="max-w-2xl"
                 title="Tạo đơn nghỉ"
+                widthClass="w-[min(640px,100%)]"
                 onClose={() => !saving && setShowForm(false)}
             >
-                <form className="mt-5 grid gap-4" onSubmit={handleCreate}>
-                    {!employeeMode && (
-                        <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                            Nhân viên
+                <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleCreate}>
+                    <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-6 py-6 max-sm:px-4">
+                        {!employeeMode && (
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                                Nhân viên
+                                <div className="dropdown-select-field">
+                                    <DropdownSelect
+                                        ariaLabel="Nhân viên"
+                                        disabled={filtersLoading}
+                                        options={employees.map((employee) => ({
+                                            value: employee.id,
+                                            label: formatEmployee(employee),
+                                        }))}
+                                        placeholder="Chọn nhân viên"
+                                        value={formValues.employeeId}
+                                        onChange={(value) => updateForm('employeeId', value)}
+                                    />
+                                </div>
+                            </label>
+                        )}
+
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                            Chi nhánh
                             <div className="dropdown-select-field">
                                 <DropdownSelect
-                                    ariaLabel="Nhân viên"
+                                    ariaLabel="Chi nhánh"
                                     disabled={filtersLoading}
-                                    options={employees.map((employee) => ({
-                                        value: employee.id,
-                                        label: formatEmployee(employee),
+                                    options={branchOptions.map((branch) => ({
+                                        value: branch.id,
+                                        label: branch.name,
                                     }))}
-                                    placeholder="Chọn nhân viên"
-                                    value={formValues.employeeId}
-                                    onChange={(value) => updateForm('employeeId', value)}
+                                    placeholder="Chọn chi nhánh"
+                                    value={formValues.branchId}
+                                    onChange={(value) => updateForm('branchId', value)}
                                 />
                             </div>
                         </label>
-                    )}
 
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                        Chi nhánh
-                        <div className="dropdown-select-field">
-                            <DropdownSelect
-                                ariaLabel="Chi nhánh"
-                                disabled={filtersLoading}
-                                options={branchOptions.map((branch) => ({
-                                    value: branch.id,
-                                    label: branch.name,
-                                }))}
-                                placeholder="Chọn chi nhánh"
-                                value={formValues.branchId}
-                                onChange={(value) => updateForm('branchId', value)}
-                            />
-                        </div>
-                    </label>
-
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                        Hình thức nghỉ
-                        <div className="dropdown-select-field">
-                            <DropdownSelect
-                                ariaLabel="Hình thức nghỉ"
-                                options={[
-                                    { value: LeaveRequestMode.DateTime, label: 'Theo ngày/giờ' },
-                                    { value: LeaveRequestMode.Shift, label: 'Theo ca' },
-                                ]}
-                                value={formValues.requestMode}
-                                onChange={(value) => updateForm('requestMode', value)}
-                            />
-                        </div>
-                    </label>
-
-                    <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-                        <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                            Từ ngày
-                            <input
-                                className={fieldClass}
-                                type="date"
-                                value={formValues.startDate}
-                                onChange={(event) => updateForm('startDate', event.target.value)}
-                            />
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                            Hình thức nghỉ
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel="Hình thức nghỉ"
+                                    options={[
+                                        { value: LeaveRequestMode.DateTime, label: 'Theo ngày/giờ' },
+                                        { value: LeaveRequestMode.Shift, label: 'Theo ca' },
+                                    ]}
+                                    value={formValues.requestMode}
+                                    onChange={(value) => updateForm('requestMode', value)}
+                                />
+                            </div>
                         </label>
-                        <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                            Đến ngày
-                            <input
-                                className={fieldClass}
-                                type="date"
-                                value={formValues.endDate}
-                                onChange={(event) => updateForm('endDate', event.target.value)}
+
+                        <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                                Từ ngày
+                                <input
+                                    className={fieldClass}
+                                    type="date"
+                                    value={formValues.startDate}
+                                    onChange={(event) => updateForm('startDate', event.target.value)}
+                                />
+                            </label>
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                                Đến ngày
+                                <input
+                                    className={fieldClass}
+                                    type="date"
+                                    value={formValues.endDate}
+                                    onChange={(event) => updateForm('endDate', event.target.value)}
+                                />
+                            </label>
+                        </div>
+
+                        {formValues.requestMode === LeaveRequestMode.DateTime && (
+                            <>
+                                <label className="flex items-center gap-2 text-sm font-medium text-ink">
+                                    <input
+                                        checked={formValues.isFullDay}
+                                        type="checkbox"
+                                        onChange={(event) => updateForm('isFullDay', event.target.checked)}
+                                    />
+                                    Nghỉ cả ngày
+                                </label>
+                                {!formValues.isFullDay && (
+                                    <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+                                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                                            Giờ bắt đầu
+                                            <input
+                                                className={fieldClass}
+                                                type="time"
+                                                value={formValues.startTime}
+                                                onChange={(event) => updateForm('startTime', event.target.value)}
+                                            />
+                                        </label>
+                                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                                            Giờ kết thúc
+                                            <input
+                                                className={fieldClass}
+                                                type="time"
+                                                value={formValues.endTime}
+                                                onChange={(event) => updateForm('endTime', event.target.value)}
+                                            />
+                                        </label>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {formValues.requestMode === LeaveRequestMode.Shift && (
+                            <div className="grid gap-2">
+                                <div className="text-sm font-medium text-ink">
+                                    Ca được phân công
+                                </div>
+                                <div className="grid max-h-52 gap-2 overflow-y-auto rounded-lg border border-rule p-2">
+                                    {schedules.length === 0 ? (
+                                        <p className="px-2 py-4 text-center text-sm text-muted">
+                                            Không có ca phù hợp trong khoảng ngày đã chọn.
+                                        </p>
+                                    ) : (
+                                        schedules.map((schedule) => (
+                                            <label
+                                                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-[#f6f4ef]"
+                                                key={schedule.id}
+                                            >
+                                                <input
+                                                    checked={formValues.workScheduleIds.includes(schedule.id)}
+                                                    type="checkbox"
+                                                    onChange={() => toggleSchedule(schedule.id)}
+                                                />
+                                                <span>{formatSchedule(schedule)}</span>
+                                            </label>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                            Lý do
+                            <textarea
+                                className={`${fieldClass} min-h-24 py-3`}
+                                maxLength={1000}
+                                value={formValues.reason}
+                                onChange={(event) => updateForm('reason', event.target.value)}
                             />
                         </label>
                     </div>
 
-                    {formValues.requestMode === LeaveRequestMode.DateTime && (
-                        <>
-                            <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                                <input
-                                    checked={formValues.isFullDay}
-                                    type="checkbox"
-                                    onChange={(event) => updateForm('isFullDay', event.target.checked)}
-                                />
-                                Nghỉ cả ngày
-                            </label>
-                            {!formValues.isFullDay && (
-                                <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-                                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                                        Giờ bắt đầu
-                                        <input
-                                            className={fieldClass}
-                                            type="time"
-                                            value={formValues.startTime}
-                                            onChange={(event) => updateForm('startTime', event.target.value)}
-                                        />
-                                    </label>
-                                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                                        Giờ kết thúc
-                                        <input
-                                            className={fieldClass}
-                                            type="time"
-                                            value={formValues.endTime}
-                                            onChange={(event) => updateForm('endTime', event.target.value)}
-                                        />
-                                    </label>
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {formValues.requestMode === LeaveRequestMode.Shift && (
-                        <div className="grid gap-2">
-                            <div className="text-sm font-medium text-slate-700">
-                                Ca được phân công
-                            </div>
-                            <div className="grid max-h-52 gap-2 overflow-y-auto rounded-lg border border-slate-200 p-2">
-                                {schedules.length === 0 ? (
-                                    <p className="px-2 py-4 text-center text-sm text-slate-500">
-                                        Không có ca phù hợp trong khoảng ngày đã chọn.
-                                    </p>
-                                ) : (
-                                    schedules.map((schedule) => (
-                                        <label
-                                            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-slate-50"
-                                            key={schedule.id}
-                                        >
-                                            <input
-                                                checked={formValues.workScheduleIds.includes(schedule.id)}
-                                                type="checkbox"
-                                                onChange={() => toggleSchedule(schedule.id)}
-                                            />
-                                            <span>{formatSchedule(schedule)}</span>
-                                        </label>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                        Lý do
-                        <textarea
-                            className={`${fieldClass} min-h-24 py-3`}
-                            maxLength={1000}
-                            value={formValues.reason}
-                            onChange={(event) => updateForm('reason', event.target.value)}
-                        />
-                    </label>
-
-                    <div className="flex justify-end gap-3 pt-2">
+                    <div className="flex justify-end gap-2 border-t border-rule px-6 py-4 max-sm:px-4">
                         <Button
                             disabled={saving}
                             onClick={() => setShowForm(false)}
@@ -844,7 +848,7 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                         </Button>
                     </div>
                 </form>
-            </DialogShell>
+            </DrawerShell>
 
             <ReasonDialog
                 description="Lý do xử lý là bắt buộc."
@@ -874,15 +878,15 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                 onValueChange={setCancelReason}
             />
 
-            <DialogShell
+            <DrawerShell
+                closeLabel={t('common.close')}
                 description="Thông tin đơn nghỉ và các ca bị ảnh hưởng."
                 open={Boolean(selectedRequest)}
-                panelClassName="max-w-xl"
                 title="Chi tiết đơn nghỉ"
                 onClose={() => setSelectedRequest(null)}
             >
                 {selectedRequest && (
-                    <div className="mt-5 grid max-h-[62vh] gap-3 overflow-y-auto pr-1 text-sm">
+                    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-2 text-sm max-sm:px-4">
                         <DetailRow label="Mã đơn" value={selectedRequest.code} />
                         <DetailRow
                             label="Nhân viên"
@@ -914,14 +918,14 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                             label="Lý do hủy"
                             value={selectedRequest.cancelReason || '-'}
                         />
-                        <div className="grid gap-1 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                            <span className="text-xs font-semibold uppercase text-slate-500">
+                        <div className="flex flex-col gap-1.5 py-3.5">
+                            <span className="text-[13px] text-muted">
                                 Ca bị ảnh hưởng
                             </span>
                             {selectedRequest.assignments.length === 0 ? (
-                                <span className="text-slate-700">-</span>
+                                <span className="text-ink">-</span>
                             ) : (
-                                <ul className="grid gap-1 text-slate-700">
+                                <ul className="grid gap-1 text-ink">
                                     {selectedRequest.assignments.map((assignment) => (
                                         <li key={assignment.id}>
                                             {formatSchedule(assignment.workSchedule)}
@@ -930,17 +934,9 @@ export function LeaveRequestsPage({ userRole }: LeaveRequestsPageProps) {
                                 </ul>
                             )}
                         </div>
-                        <div className="flex justify-end pt-2">
-                            <Button
-                                onClick={() => setSelectedRequest(null)}
-                                variant="secondary"
-                            >
-                                Đóng
-                            </Button>
-                        </div>
                     </div>
                 )}
-            </DialogShell>
+            </DrawerShell>
         </section>
     );
 }
@@ -999,7 +995,7 @@ function ReasonDialog({
             onClose={() => !loading && onClose()}
         >
             <div className="mt-5 grid gap-4">
-                <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                <label className="grid gap-1.5 text-sm font-medium text-ink">
                     Lý do
                     <textarea
                         className={`${fieldClass} min-h-24 py-3`}
@@ -1027,11 +1023,11 @@ function ReasonDialog({
 
 function DetailRow({ label, value }: { label: string; value: string }) {
     return (
-        <div className="grid min-w-0 gap-1 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-            <span className="text-xs font-semibold uppercase text-slate-500">
+        <div className="grid min-w-0 grid-cols-[minmax(120px,38%)_1fr] gap-4 border-b border-rule-soft py-3.5 max-sm:grid-cols-1 max-sm:gap-1">
+            <span className="text-[13px] text-muted">
                 {label}
             </span>
-            <span className="min-w-0 whitespace-pre-wrap break-words font-medium text-slate-800 [overflow-wrap:anywhere]">
+            <span className="min-w-0 whitespace-pre-wrap break-words text-ink [overflow-wrap:anywhere]">
                 {value}
             </span>
         </div>

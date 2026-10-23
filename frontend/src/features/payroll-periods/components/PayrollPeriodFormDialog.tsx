@@ -1,7 +1,5 @@
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type FormEvent, useState } from 'react';
-import { useToast } from '@/components/feedback';
+import { SideDrawer, useToast } from '@/components/feedback';
 import { Button, fieldClass } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { getPayrollPeriodErrorKey } from '../api/payroll-periods.api';
@@ -100,39 +98,27 @@ export function PayrollPeriodFormDialog({
     }
 
     return (
-        <div className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px] p-5">
-            <div
-                aria-modal="true"
-                className="dialog-panel flex max-h-[calc(100vh-40px)] w-full max-w-xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
-                role="dialog"
-            >
-                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-                    <h2 className="text-xl font-bold text-slate-950">
-                        {editing
-                            ? t('payrollPeriods.update')
-                            : t('payrollPeriods.add')}
-                    </h2>
-                    <Button
-                        aria-label={t('common.close')}
-                        disabled={saving}
-                        onClick={onClose}
-                        size="icon"
-                        variant="ghost"
-                    >
-                        <FontAwesomeIcon icon={faXmark} />
-                    </Button>
-                </div>
-
+        <SideDrawer
+            busy={saving}
+            closeLabel={t('common.close')}
+            title={
+                editing
+                    ? t('payrollPeriods.update')
+                    : t('payrollPeriods.add')
+            }
+            onClosed={onClose}
+        >
+            {(requestClose) => (
                 <form
                     className="flex min-h-0 flex-1 flex-col"
                     onSubmit={(event) => void handleSubmit(event)}
                 >
-                    <div className="grid gap-3 overflow-y-auto px-6 py-5">
+                    <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-6 py-6 max-sm:px-4">
                         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>
                                     {t('payrollPeriods.month')}
-                                    <span className="ml-1 text-red-500">*</span>
+                                    <span className="ml-1 text-ember-strong">*</span>
                                 </span>
                                 <input
                                     className={fieldClass}
@@ -150,10 +136,10 @@ export function PayrollPeriodFormDialog({
                                     }
                                 />
                             </label>
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>
                                     {t('payrollPeriods.year')}
-                                    <span className="ml-1 text-red-500">*</span>
+                                    <span className="ml-1 text-ember-strong">*</span>
                                 </span>
                                 <input
                                     className={fieldClass}
@@ -174,15 +160,15 @@ export function PayrollPeriodFormDialog({
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>
                                     {t('payrollPeriods.startDate')}
-                                    <span className="ml-1 text-red-500">*</span>
+                                    <span className="ml-1 text-ember-strong">*</span>
                                 </span>
                                 <input
                                     className={`${fieldClass} ${
                                         fieldError
-                                            ? 'border-2 border-red-400 focus:border-red-500 focus:ring-red-100'
+                                            ? 'border-ember-strong focus:border-ember-strong'
                                             : ''
                                     }`}
                                     disabled={!canEdit}
@@ -194,15 +180,15 @@ export function PayrollPeriodFormDialog({
                                     }
                                 />
                             </label>
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>
                                     {t('payrollPeriods.endDate')}
-                                    <span className="ml-1 text-red-500">*</span>
+                                    <span className="ml-1 text-ember-strong">*</span>
                                 </span>
                                 <input
                                     className={`${fieldClass} ${
                                         fieldError
-                                            ? 'border-2 border-red-400 focus:border-red-500 focus:ring-red-100'
+                                            ? 'border-ember-strong focus:border-ember-strong'
                                             : ''
                                     }`}
                                     disabled={!canEdit}
@@ -215,15 +201,15 @@ export function PayrollPeriodFormDialog({
                                 />
                             </label>
                         </div>
-                        <span className="min-h-4 text-xs font-normal text-red-400">
+                        <span className="min-h-4 text-xs font-normal text-ember-strong">
                             {fieldError}
                         </span>
                     </div>
 
-                    <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
+                    <div className="flex justify-end gap-2 border-t border-rule px-6 py-4 max-sm:px-4">
                         <Button
                             disabled={saving}
-                            onClick={onClose}
+                            onClick={requestClose}
                             variant="secondary"
                         >
                             {t('common.cancel')}
@@ -238,7 +224,7 @@ export function PayrollPeriodFormDialog({
                         </Button>
                     </div>
                 </form>
-            </div>
-        </div>
+            )}
+        </SideDrawer>
     );
 }

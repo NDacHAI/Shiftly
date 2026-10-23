@@ -3,7 +3,8 @@ import {
     faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button } from './Button';
+const pagerButtonClass =
+    'grid size-8 min-h-0 cursor-pointer place-items-center rounded-md border border-rule-strong bg-transparent text-xs text-ink transition-colors hover:bg-stone-soft disabled:cursor-default disabled:text-[#b9b3a4] disabled:hover:bg-transparent';
 
 type PaginationProps = {
     page: number;
@@ -21,31 +22,31 @@ export function Pagination({
     const displayedPage = totalPages === 0 ? 0 : page;
 
     return (
-        <div className="flex items-center justify-between gap-4 border-t border-line px-4 py-3 text-[13px] text-slate-500 max-sm:flex-col">
+        <div className="flex items-center justify-between gap-4 border-t border-rule px-5 py-3 text-[13px] text-muted max-sm:flex-col max-sm:px-4">
             <span>Hiển thị {pageSize} trên mỗi trang</span>
-            <div className="flex items-center gap-2">
-                <Button
+            <div className="flex items-center gap-1.5">
+                <button
                     aria-label="Trang trước"
+                    className={pagerButtonClass}
                     disabled={page <= 1 || totalPages === 0}
+                    type="button"
                     onClick={() => onPageChange(page - 1)}
-                    size="icon"
-                    variant="secondary"
                 >
                     <FontAwesomeIcon icon={faChevronLeft} />
-                </Button>
-                <span className="flex size-9 items-center justify-center rounded-lg bg-primary-50 font-semibold text-primary-700 ring-1 ring-primary-100 ring-inset">
+                </button>
+                <span className="grid size-8 place-items-center rounded-md bg-ink text-[13px] font-semibold text-sand">
                     {displayedPage}
                 </span>
-                <Button
+                <button
                     aria-label="Trang sau"
+                    className={pagerButtonClass}
                     disabled={page >= totalPages || totalPages === 0}
+                    type="button"
                     onClick={() => onPageChange(page + 1)}
-                    size="icon"
-                    variant="secondary"
                 >
                     <FontAwesomeIcon icon={faChevronRight} />
-                </Button>
-                <span className="ml-3">
+                </button>
+                <span className="pl-2 tabular-nums text-xs">
                     Trang {displayedPage} / {totalPages}
                 </span>
             </div>

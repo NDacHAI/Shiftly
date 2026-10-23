@@ -10,7 +10,7 @@ import {
     faSearch,
     faXmark,
 } from '@fortawesome/free-solid-svg-icons';
-import { ConfirmDialog, useToast } from '@/components/feedback';
+import { ConfirmDialog, DrawerShell, useToast } from '@/components/feedback';
 import { DialogShell } from '@/components/feedback/DialogShell';
 import {
     Button,
@@ -92,10 +92,10 @@ function formatEmployee(request: ShiftRequest) {
 }
 
 function statusClass(status: ShiftRequestStatus) {
-    if (status === ShiftRequestStatus.Pending) return 'bg-amber-50 text-amber-700';
-    if (status === ShiftRequestStatus.Approved) return 'bg-emerald-50 text-emerald-700';
-    if (status === ShiftRequestStatus.Rejected) return 'bg-red-50 text-red-700';
-    return 'bg-slate-100 text-slate-600';
+    if (status === ShiftRequestStatus.Pending) return 'bg-ember-tint text-ember-ink';
+    if (status === ShiftRequestStatus.Approved) return 'bg-[#dff0e4] text-[#1f6237]';
+    if (status === ShiftRequestStatus.Rejected) return 'bg-[#f6dcd6] text-[#9a2f1f]';
+    return 'bg-stone text-muted';
 }
 
 function toStatusFilter(value: ShiftRequestStatusFilter) {
@@ -391,7 +391,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
     }
 
     return (
-        <section className="mx-auto grid max-w-[1440px] gap-5 p-6 max-sm:p-4">
+        <section className="mx-auto grid w-full max-w-[1400px] gap-5 px-8 pt-8 pb-24 text-ink max-sm:px-4">
             <PageHeader
                 actions={employeeMode && (
                     <Button
@@ -419,13 +419,13 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                 }
             />
 
-            <div className="relative overflow-hidden rounded-xl border border-line bg-white shadow-card">
+            <div className="relative overflow-hidden rounded-[14px] border border-rule bg-paper">
                 <LoadingOverlay
                     label={t('shiftRequests.loading')}
                     visible={loading}
                 />
 
-                <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 p-4">
+                <div className="flex flex-wrap items-center gap-3 border-b border-rule px-5 py-4">
                     <DropdownSelect
                         ariaLabel={t('common.status')}
                         options={[
@@ -466,7 +466,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
 
                     <label className="relative min-w-40">
                         <FontAwesomeIcon
-                            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
+                            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-faint"
                             icon={faSearch}
                         />
                         <input
@@ -534,11 +534,11 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                             {!loading &&
                                 requests.map((request) => (
                                     <tr
-                                        className="border-b border-slate-100 hover:bg-slate-50"
+                                        className="border-b border-rule-soft hover:bg-[#f6f4ef]"
                                         key={request.id}
                                     >
                                         <td>
-                                            <div className="truncate font-semibold text-slate-900">
+                                            <div className="truncate font-semibold text-ink">
                                                 {formatEmployee(request)}
                                             </div>
                                         </td>
@@ -552,17 +552,17 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                                             {request.position.name}
                                         </td>
                                         <td>
-                                            <div className="font-semibold text-slate-800">
+                                            <div className="font-semibold text-ink">
                                                 {request.workShift.name}
                                             </div>
-                                            <div className="text-xs text-slate-500">
+                                            <div className="text-xs text-muted">
                                                 {formatTime(request.workShift.startTime)} -{' '}
                                                 {formatTime(request.workShift.endTime)}
                                             </div>
                                         </td>
                                         <td>
                                             <span
-                                                className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-current/15 ring-inset ${statusClass(
+                                                className={`inline-flex items-center rounded-full px-[9px] py-[3px] text-xs font-semibold whitespace-nowrap ${statusClass(
                                                     request.status,
                                                 )}`}
                                             >
@@ -662,7 +662,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                                                 {employeeMode &&
                                                     request.status !==
                                                         ShiftRequestStatus.Pending && (
-                                                        <span className="text-xs text-slate-400">
+                                                        <span className="text-xs text-faint">
                                                             -
                                                         </span>
                                                     )}
@@ -693,7 +693,9 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                 />
             </div>
 
-            <DialogShell
+            <DrawerShell
+                busy={saving}
+                closeLabel={t('common.close')}
                 description={t('shiftRequests.formDescription')}
                 open={showForm}
                 title={t('shiftRequests.add')}
@@ -703,94 +705,96 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                     }
                 }}
             >
-                <form className="mt-5 grid gap-4" onSubmit={handleCreate}>
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                        {t('common.branch')}
-                        <div className="dropdown-select-field">
-                            <DropdownSelect
-                                ariaLabel={t('common.branch')}
-                                disabled={filtersLoading}
-                                options={branchOptions.map((branch) => ({
-                                    value: branch.id,
-                                    label: branch.name,
-                                }))}
-                                placeholder={t('shiftRequests.selectBranch')}
-                                value={formValues.branchId}
-                                onChange={(value) =>
-                                    updateFormValue('branchId', value)
+                <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleCreate}>
+                    <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-6 py-6 max-sm:px-4">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                            {t('common.branch')}
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel={t('common.branch')}
+                                    disabled={filtersLoading}
+                                    options={branchOptions.map((branch) => ({
+                                        value: branch.id,
+                                        label: branch.name,
+                                    }))}
+                                    placeholder={t('shiftRequests.selectBranch')}
+                                    value={formValues.branchId}
+                                    onChange={(value) =>
+                                        updateFormValue('branchId', value)
+                                    }
+                                />
+                            </div>
+                        </label>
+
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                            {t('common.position')}
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel={t('common.position')}
+                                    disabled={!formValues.branchId || filtersLoading}
+                                    options={positionOptions.map((position) => ({
+                                        value: position.id,
+                                        label: position.name,
+                                    }))}
+                                    placeholder={t('shiftRequests.selectPosition')}
+                                    value={formValues.positionId}
+                                    onChange={(value) =>
+                                        updateFormValue('positionId', value)
+                                    }
+                                />
+                            </div>
+                        </label>
+
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                            {t('shiftRequests.shift')}
+                            <div className="dropdown-select-field">
+                                <DropdownSelect
+                                    ariaLabel={t('shiftRequests.shift')}
+                                    disabled={filtersLoading}
+                                    options={workShifts.map((workShift) => ({
+                                        value: workShift.id,
+                                        label: `${workShift.name} (${formatTime(
+                                            workShift.startTime,
+                                        )} - ${formatTime(workShift.endTime)})`,
+                                    }))}
+                                    placeholder={t('shiftRequests.selectShift')}
+                                    value={formValues.workShiftId}
+                                    onChange={(value) =>
+                                        updateFormValue('workShiftId', value)
+                                    }
+                                />
+                            </div>
+                        </label>
+
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                            {t('shiftRequests.workDate')}
+                            <input
+                                className={fieldClass}
+                                type="date"
+                                value={formValues.workDate}
+                                onChange={(event) =>
+                                    updateFormValue('workDate', event.target.value)
                                 }
                             />
-                        </div>
-                    </label>
+                        </label>
 
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                        {t('common.position')}
-                        <div className="dropdown-select-field">
-                            <DropdownSelect
-                                ariaLabel={t('common.position')}
-                                disabled={!formValues.branchId || filtersLoading}
-                                options={positionOptions.map((position) => ({
-                                    value: position.id,
-                                    label: position.name,
-                                }))}
-                                placeholder={t('shiftRequests.selectPosition')}
-                                value={formValues.positionId}
-                                onChange={(value) =>
-                                    updateFormValue('positionId', value)
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
+                            {t('shiftRequests.employeeNote')}
+                            <textarea
+                                className={`${fieldClass} min-h-24 py-3`}
+                                maxLength={1000}
+                                value={formValues.employeeNote}
+                                onChange={(event) =>
+                                    updateFormValue(
+                                        'employeeNote',
+                                        event.target.value,
+                                    )
                                 }
                             />
-                        </div>
-                    </label>
+                        </label>
+                    </div>
 
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                        {t('shiftRequests.shift')}
-                        <div className="dropdown-select-field">
-                            <DropdownSelect
-                                ariaLabel={t('shiftRequests.shift')}
-                                disabled={filtersLoading}
-                                options={workShifts.map((workShift) => ({
-                                    value: workShift.id,
-                                    label: `${workShift.name} (${formatTime(
-                                        workShift.startTime,
-                                    )} - ${formatTime(workShift.endTime)})`,
-                                }))}
-                                placeholder={t('shiftRequests.selectShift')}
-                                value={formValues.workShiftId}
-                                onChange={(value) =>
-                                    updateFormValue('workShiftId', value)
-                                }
-                            />
-                        </div>
-                    </label>
-
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                        {t('shiftRequests.workDate')}
-                        <input
-                            className={fieldClass}
-                            type="date"
-                            value={formValues.workDate}
-                            onChange={(event) =>
-                                updateFormValue('workDate', event.target.value)
-                            }
-                        />
-                    </label>
-
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-                        {t('shiftRequests.employeeNote')}
-                        <textarea
-                            className={`${fieldClass} min-h-24 py-3`}
-                            maxLength={1000}
-                            value={formValues.employeeNote}
-                            onChange={(event) =>
-                                updateFormValue(
-                                    'employeeNote',
-                                    event.target.value,
-                                )
-                            }
-                        />
-                    </label>
-
-                    <div className="flex justify-end gap-3 pt-2">
+                    <div className="flex justify-end gap-2 border-t border-rule px-6 py-4 max-sm:px-4">
                         <Button
                             disabled={saving}
                             onClick={() => setShowForm(false)}
@@ -803,7 +807,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                         </Button>
                     </div>
                 </form>
-            </DialogShell>
+            </DrawerShell>
 
             <DialogShell
                 description={t('shiftRequests.reviewDescription')}
@@ -821,7 +825,7 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                 }}
             >
                 <div className="mt-5 grid gap-4">
-                    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                    <label className="grid gap-1.5 text-sm font-medium text-ink">
                         {t('shiftRequests.managerNote')}
                         <textarea
                             className={`${fieldClass} min-h-24 py-3`}
@@ -858,15 +862,15 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                 </div>
             </DialogShell>
 
-            <DialogShell
+            <DrawerShell
+                closeLabel={t('common.close')}
                 description={t('shiftRequests.detailsDescription')}
                 open={Boolean(selectedRequest)}
-                panelClassName="max-w-xl"
                 title={t('shiftRequests.detailsTitle')}
                 onClose={() => setSelectedRequest(null)}
             >
                 {selectedRequest && (
-                    <div className="mt-5 grid max-h-[62vh] min-w-0 gap-3 overflow-y-auto pr-1 text-sm">
+                    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-2 text-sm max-sm:px-4">
                         <DetailRow
                             label={t('shiftRequests.employee')}
                             value={formatEmployee(selectedRequest)}
@@ -911,17 +915,9 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
                             label={t('shiftRequests.managerNote')}
                             value={selectedRequest.managerNote || '-'}
                         />
-                        <div className="flex justify-end pt-2">
-                            <Button
-                                onClick={() => setSelectedRequest(null)}
-                                variant="secondary"
-                            >
-                                {t('common.close')}
-                            </Button>
-                        </div>
                     </div>
                 )}
-            </DialogShell>
+            </DrawerShell>
 
             <ConfirmDialog
                 confirmLabel={t('shiftRequests.cancelRequest')}
@@ -939,11 +935,11 @@ export function ShiftRequestsPage({ userRole }: ShiftRequestsPageProps) {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
     return (
-        <div className="grid min-w-0 gap-1 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-            <span className="text-xs font-semibold uppercase text-slate-500">
+        <div className="grid min-w-0 grid-cols-[minmax(120px,38%)_1fr] gap-4 border-b border-rule-soft py-3.5 max-sm:grid-cols-1 max-sm:gap-1">
+            <span className="text-[13px] text-muted">
                 {label}
             </span>
-            <span className="min-w-0 whitespace-pre-wrap break-words font-medium text-slate-800 [overflow-wrap:anywhere]">
+            <span className="min-w-0 whitespace-pre-wrap break-words text-ink [overflow-wrap:anywhere]">
                 {value}
             </span>
         </div>

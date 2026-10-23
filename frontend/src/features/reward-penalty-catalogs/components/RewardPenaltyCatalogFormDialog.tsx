@@ -1,7 +1,5 @@
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { type FormEvent, useState } from 'react';
-import { useToast } from '@/components/feedback';
+import { SideDrawer, useToast } from '@/components/feedback';
 import { Button, DropdownSelect, fieldClass } from '@/components/ui';
 import { useI18n } from '@/i18n';
 import { getRewardPenaltyCatalogErrorKey, getRewardPenaltyCatalogErrorMessage } from '../api/reward-penalty-catalogs.api';
@@ -115,44 +113,32 @@ export function RewardPenaltyCatalogFormDialog({
     }
 
     return (
-        <div className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px] p-5">
-            <div
-                aria-modal="true"
-                className="dialog-panel flex max-h-[calc(100vh-40px)] w-full max-w-xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl"
-                role="dialog"
-            >
-                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-                    <h2 className="text-xl font-bold text-slate-950">
-                        {editing
-                            ? t('rewardPenaltyCatalogs.update')
-                            : t('rewardPenaltyCatalogs.add')}
-                    </h2>
-                    <Button
-                        aria-label={t('common.close')}
-                        disabled={saving}
-                        onClick={onClose}
-                        size="icon"
-                        variant="ghost"
-                    >
-                        <FontAwesomeIcon icon={faXmark} />
-                    </Button>
-                </div>
-
+        <SideDrawer
+            busy={saving}
+            closeLabel={t('common.close')}
+            title={
+                editing
+                    ? t('rewardPenaltyCatalogs.update')
+                    : t('rewardPenaltyCatalogs.add')
+            }
+            onClosed={onClose}
+        >
+            {(requestClose) => (
                 <form
                     className="flex min-h-0 flex-1 flex-col"
                     onSubmit={(event) => void handleSubmit(event)}
                 >
-                    <div className="grid gap-3 overflow-y-auto px-6 py-5">
+                    <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-6 py-6 max-sm:px-4">
                         {!isEditing && (
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>
                                     {t('rewardPenaltyCatalogs.code')}
-                                    <span className="ml-1 text-red-500">*</span>
+                                    <span className="ml-1 text-ember-strong">*</span>
                                 </span>
                                 <input
                                     className={`${fieldClass} ${
                                         fieldError
-                                            ? 'border-2 border-red-400 focus:border-red-500 focus:ring-red-100'
+                                            ? 'border-ember-strong focus:border-ember-strong'
                                             : ''
                                     }`}
                                     maxLength={50}
@@ -163,7 +149,7 @@ export function RewardPenaltyCatalogFormDialog({
                                         updateField('code', event.target.value)
                                     }
                                 />
-                                <span className="min-h-4 text-xs font-normal text-red-400">
+                                <span className="min-h-4 text-xs font-normal text-ember-strong">
                                     {fieldError}
                                 </span>
                             </label>
@@ -171,19 +157,19 @@ export function RewardPenaltyCatalogFormDialog({
 
                         {isEditing && (
                             <div className="grid gap-1 text-sm">
-                                <span className="font-semibold text-slate-700">
+                                <span className="font-semibold text-ink">
                                     {t('rewardPenaltyCatalogs.code')}
                                 </span>
-                                <span className="rounded-lg bg-slate-100 px-3 py-2 font-semibold text-slate-700">
+                                <span className="rounded-lg bg-stone px-3 py-2 font-semibold text-ink">
                                     {values.code}
                                 </span>
                             </div>
                         )}
 
-                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             <span>
                                 {t('rewardPenaltyCatalogs.name')}
-                                <span className="ml-1 text-red-500">*</span>
+                                <span className="ml-1 text-ember-strong">*</span>
                             </span>
                             <input
                                 className={fieldClass}
@@ -197,7 +183,7 @@ export function RewardPenaltyCatalogFormDialog({
                         </label>
 
                         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 {t('rewardPenaltyCatalogs.category')}
                                 <DropdownSelect
                                     ariaLabel={t(
@@ -228,10 +214,10 @@ export function RewardPenaltyCatalogFormDialog({
                                 />
                             </label>
 
-                            <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                            <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                                 <span>
                                     {t('rewardPenaltyCatalogs.amount')}
-                                    <span className="ml-1 text-red-500">*</span>
+                                    <span className="ml-1 text-ember-strong">*</span>
                                 </span>
                                 <input
                                     className={fieldClass}
@@ -250,7 +236,7 @@ export function RewardPenaltyCatalogFormDialog({
                             </label>
                         </div>
 
-                        <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                        <label className="flex min-w-0 flex-col gap-1.5 text-[13px] font-medium text-ink">
                             {t('rewardPenaltyCatalogs.description')}
                             <textarea
                                 className={`${fieldClass} min-h-24 py-3`}
@@ -265,7 +251,7 @@ export function RewardPenaltyCatalogFormDialog({
                             />
                         </label>
 
-                        <label className="mt-2 flex cursor-pointer items-center justify-between gap-4 text-sm font-semibold text-slate-700">
+                        <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[10px] border border-rule px-4 py-3.5 text-sm font-medium text-ink">
                             <span>{t('common.active')}</span>
                             <span className="relative inline-flex">
                                 <input
@@ -285,15 +271,15 @@ export function RewardPenaltyCatalogFormDialog({
                                         )
                                     }
                                 />
-                                <span className="relative h-6 w-11 rounded-full bg-slate-300 transition-colors peer-checked:bg-primary-600 peer-focus-visible:ring-2 peer-focus-visible:ring-primary-200 peer-focus-visible:ring-offset-2 after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:content-[''] peer-checked:after:translate-x-5" />
+                                <span className="relative h-6 w-11 rounded-full bg-rule-strong transition-colors peer-checked:bg-ink peer-focus-visible:ring-2 peer-focus-visible:ring-ink/25 peer-focus-visible:ring-offset-2 after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:content-[''] peer-checked:after:translate-x-5" />
                             </span>
                         </label>
                     </div>
 
-                    <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
+                    <div className="flex justify-end gap-2 border-t border-rule px-6 py-4 max-sm:px-4">
                         <Button
                             disabled={saving}
-                            onClick={onClose}
+                            onClick={requestClose}
                             variant="secondary"
                         >
                             {t('common.cancel')}
@@ -307,7 +293,7 @@ export function RewardPenaltyCatalogFormDialog({
                         </Button>
                     </div>
                 </form>
-            </div>
-        </div>
+            )}
+        </SideDrawer>
     );
 }

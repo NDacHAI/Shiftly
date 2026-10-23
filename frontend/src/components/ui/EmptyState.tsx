@@ -14,15 +14,15 @@ export function EmptyState({
     title,
 }: EmptyStateProps) {
     return (
-        <div className="mx-auto flex max-w-md flex-col items-center px-5 py-10 text-center">
+        <div className="mx-auto flex max-w-md flex-col items-center px-5 py-14 text-center">
             {icon && (
-                <span className="mb-3 flex size-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+                <span className="mb-3 flex size-11 items-center justify-center rounded-xl bg-stone text-muted">
                     {icon}
                 </span>
             )}
-            <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
+            <h3 className="text-[15px] font-semibold text-ink">{title}</h3>
             {description && (
-                <p className="mt-1 text-sm leading-5 text-slate-500">
+                <p className="mt-1.5 text-[13px] leading-5 text-muted">
                     {description}
                 </p>
             )}

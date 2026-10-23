@@ -42,7 +42,7 @@ export function DialogShell({
 
     return createPortal(
         <div
-            className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-900/45 backdrop-blur-[2px] p-5"
+            className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center bg-[rgba(23,22,15,0.35)] p-5"
             onMouseDown={(event) => {
                 if (event.target === event.currentTarget) {
                     onClose();
@@ -53,17 +53,17 @@ export function DialogShell({
                 aria-describedby={descriptionId}
                 aria-labelledby={titleId}
                 aria-modal="true"
-                className={`dialog-panel w-full max-w-md rounded-xl bg-white p-6 shadow-2xl ${panelClassName}`}
+                className={`dialog-panel w-full max-w-md rounded-[14px] border border-rule bg-paper p-6 text-ink shadow-[0_24px_60px_rgba(23,22,15,0.18)] ${panelClassName}`}
                 role="dialog"
             >
                 <h2
-                    className="text-lg font-semibold text-slate-900"
+                    className="text-lg font-semibold tracking-[-0.01em]"
                     id={titleId}
                 >
                     {title}
                 </h2>
                 <p
-                    className="mt-2 text-sm leading-6 text-slate-600"
+                    className="mt-2 text-sm leading-6 text-muted"
                     id={descriptionId}
                 >
                     {description}

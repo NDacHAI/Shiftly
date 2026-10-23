@@ -3,3 +3,11 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { ToastProvider } from './ToastProvider';
 export { useToast } from './useToast';
 export type { ToastOptions, ToastVariant } from './toast-context';
+export { SideDrawer } from './SideDrawer';
+export {
+    DrawerBody,
+    DrawerDetails,
+    DrawerFooter,
+    DrawerSection,
+    DrawerShell,
+} from './DrawerParts';
