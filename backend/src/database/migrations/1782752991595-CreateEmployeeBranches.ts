@@ -18,7 +18,9 @@ export class CreateEmployeeBranches1782752991595 implements MigrationInterface {
             (foreignKey) => foreignKey.name === 'FK_employee_branches_branch',
         );
 
-        if (!employeeForeignKey) {
+        // On a fresh database `employees` is created later (CreateEmployees1783000000000),
+        // which adds this foreign key itself once the table exists.
+        if (!employeeForeignKey && (await queryRunner.hasTable('employees'))) {
             await queryRunner.query(`ALTER TABLE \`employee_branches\` ADD CONSTRAINT \`FK_employee_branches_employee\` FOREIGN KEY (\`employee_id\`) REFERENCES \`employees\`(\`id\`) ON DELETE CASCADE ON UPDATE CASCADE`);
         }
 
@@ -29,7 +31,14 @@ export class CreateEmployeeBranches1782752991595 implements MigrationInterface {
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE \`employee_branches\` DROP FOREIGN KEY \`FK_employee_branches_branch\``);
-        await queryRunner.query(`ALTER TABLE \`employee_branches\` DROP FOREIGN KEY \`FK_employee_branches_employee\``);
+        const employeeBranches = await queryRunner.getTable('employee_branches');
+        const employeeForeignKey = employeeBranches?.foreignKeys.find(
+            (foreignKey) => foreignKey.name === 'FK_employee_branches_employee',
+        );
+
+        if (employeeForeignKey) {
+            await queryRunner.dropForeignKey('employee_branches', employeeForeignKey);
+        }
         await queryRunner.query(`DROP INDEX \`IDX_83152ee2320a92aaa58dba4601\` ON \`employee_branches\``);
         await queryRunner.query(`DROP INDEX \`IDX_77a02ddcd5a528f1664a883dc1\` ON \`employee_branches\``);
         await queryRunner.query(`DROP TABLE \`employee_branches\``);

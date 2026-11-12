@@ -25,9 +25,31 @@ export class CreateEmployees1783000000000 implements MigrationInterface {
         await queryRunner.query(
             'ALTER TABLE `employee_positions` ADD CONSTRAINT `FK_employee_positions_position` FOREIGN KEY (`position_id`) REFERENCES `positions`(`id`) ON DELETE RESTRICT ON UPDATE NO ACTION',
         );
+
+        // CreateEmployeeBranches1782752991595 runs before this migration and skips its
+        // employee foreign key while `employees` does not exist yet; add it here.
+        const employeeBranches = await queryRunner.getTable('employee_branches');
+        const hasEmployeeBranchesForeignKey = employeeBranches?.foreignKeys.some(
+            (foreignKey) => foreignKey.name === 'FK_employee_branches_employee',
+        );
+
+        if (employeeBranches && !hasEmployeeBranchesForeignKey) {
+            await queryRunner.query(
+                'ALTER TABLE `employee_branches` ADD CONSTRAINT `FK_employee_branches_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees`(`id`) ON DELETE CASCADE ON UPDATE CASCADE',
+            );
+        }
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
+        const employeeBranches = await queryRunner.getTable('employee_branches');
+        const employeeBranchesForeignKey = employeeBranches?.foreignKeys.find(
+            (foreignKey) => foreignKey.name === 'FK_employee_branches_employee',
+        );
+
+        if (employeeBranchesForeignKey) {
+            await queryRunner.dropForeignKey('employee_branches', employeeBranchesForeignKey);
+        }
+
         await queryRunner.query(
             'ALTER TABLE `employee_positions` DROP FOREIGN KEY `FK_employee_positions_position`',
         );
